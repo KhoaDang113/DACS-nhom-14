@@ -15,6 +15,9 @@ const categorySchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    icon: {
+      type: String,
+    },
     parentCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
