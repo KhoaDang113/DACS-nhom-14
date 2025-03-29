@@ -1,14 +1,28 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Search, Pause } from "lucide-react";
+import { Search, Pause, Play } from "lucide-react";
 interface FeatureProp {
   children?: ReactNode;
 }
 const FeaturePage: React.FC<FeatureProp> = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const toggleVideo = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current?.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
   return (
-    <div className="relative z-0 w-full h-[20vh] object-cover overflow-hidden">
+    <div className="relative z-0 w-full h-[89%] object-cover overflow-hidden">
       <video
-        className="relative top-0 left-0 w-full h-[5vh] object-cover"
+        ref={videoRef}
+        className="absolute top-0 left-0 w-full object-cover"
         autoPlay
         loop
         muted
@@ -23,7 +37,7 @@ const FeaturePage: React.FC<FeatureProp> = () => {
         style={{ transform: "translate(-40%, -50%)" }}
       >
         <div className="max-w-3xl">
-          <h1 className="text-5xl md:text-6xl font-normal text-white mb-10 leading-tight">
+          <h1 className="text-7xl md:text-7xl font-normal text-white mb-10 leading-tight">
             Our freelancers
             <br />
             will take it from here
@@ -103,8 +117,11 @@ const FeaturePage: React.FC<FeatureProp> = () => {
       </div>
 
       {/* Pause Button */}
-      <button className="absolute bottom-6 right-6 z-20 bg-gray-800 bg-opacity-70 text-white p-3 rounded-full">
-        <Pause size={20} />
+      <button
+        onClick={toggleVideo}
+        className="absolute bottom-6 right-6 z-20 bg-gray-800 bg-opacity-70 text-white p-3 rounded-full"
+      >
+        {isPlaying ? <Pause size={20} /> : <Play size={20} />}
       </button>
     </div>
   );

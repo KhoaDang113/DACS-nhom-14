@@ -18,7 +18,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky left-0 top-0 gap-1 z-50 w-full text-lg border-b bg-white backdrop-blur supports-[backdrop-filter]:bg-white/60 justify-center">
+    <header className="sticky left-0 top-0 gap-1 z-50 w-full text-lg border-b bg-white justify-center">
       <div className="container mx-auto flex items-center justify-around h-20">
         <div className=" font-bold text-3xl">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
@@ -28,7 +28,7 @@ export default function Navbar() {
             <span>JopViet</span>
           </Link>
         </div>
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-[400px] max-w-[600px]">
             <input
               type="text"
@@ -130,7 +130,6 @@ export default function Navbar() {
             >
               FAQ
             </Link>
-            //cu
             {isSignedIn ? (
               <div className="w-[48px] h-[48px] flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md">
                 <UserButton />
