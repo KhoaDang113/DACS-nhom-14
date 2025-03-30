@@ -21,6 +21,14 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    priceRange: {
+      type: String,
+      require: true,
+    },
+    duration: {
+      type: String,
+      require: true,
+    },
   },
   {
     timestamps: true,
