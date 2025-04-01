@@ -6,26 +6,50 @@ import {
   benefitItems,
 } from "../lib/constant";
 import { SignUpButton } from "@clerk/clerk-react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import FeaturePage from "../components/HomePage/Feature";
 import CategoryCard from "../components/HomePage/CategoryCard";
 import PopularCard from "../components/HomePage/PopularCard";
 import ProLanding from "../components/HomePage/ProLandding";
 import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
+
 export default function HomePage() {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [scrollDistance, setScrollDistance] = useState(
+    window.innerWidth - window.innerWidth * 0.1
+  );
+  useEffect(() => {
+    const updateDistance = () =>
+      setScrollDistance(window.innerWidth - window.innerWidth * 0.2);
+    window.addEventListener("resize", updateDistance);
+    return () => window.removeEventListener("resize", updateDistance);
+  }, []);
   const scrollRight = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: 400, behavior: "smooth" });
+      sliderRef.current.scrollBy({
+        left: scrollDistance,
+        behavior: "smooth",
+      });
     }
   };
+  const scrollLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({
+        left: -scrollDistance,
+        behavior: "smooth",
+      });
+    }
+  };
+
   useEffect(() => {
     const checkScroll = () => {
       if (sliderRef.current) {
         const { scrollWidth, scrollLeft, clientWidth } = sliderRef.current;
         setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+        setCanScrollLeft(scrollLeft > 10);
       }
     };
 
@@ -66,18 +90,27 @@ export default function HomePage() {
 
         {/*list popular services*/}
         <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
-          <div className="mt-4 sm:mt-6 md:mt-10 overflow-hidden relative">
+          <div className="mt-4 sm:mt-6 md:mt-10 relative">
             <div className="justify-between items-center mb-6 sm:mb-8">
               <div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-700 mb-2">
-                  Popular services
+                  Dịch vụ phổ biến
                 </h2>
-                <p className="text-gray-500 text-sm sm:text-base hidden sm:block">
-                  Discover our most sought-after services by top freelancers
+                <p className="text-gray-500 text-sm sm:text-base hidden sm:block mb-12">
+                  Khám phá những dịch vụ được săn đón nhất từ các freelancer
+                  hàng đầu
                 </p>
               </div>
+              {canScrollLeft && (
+                <button
+                  onClick={scrollLeft}
+                  className="absolute -left-4 text-black top-[60%] transform -translate-y-1/2 bg-white shadow-lg rounded-full p-2 z-10"
+                >
+                  <ChevronLeft />
+                </button>
+              )}
               <div
-                className="flex flex-row relative gap-[24px]"
+                className="flex flex-row gap-6 overflow-x-auto scroll-smooth scrollbar-hide relative"
                 ref={sliderRef}
               >
                 {popularCards.map((popularCard, index) => (
@@ -88,20 +121,20 @@ export default function HomePage() {
                     key={index}
                   />
                 ))}
-                {canScrollRight && (
-                  <button
-                    onClick={scrollRight}
-                    className="absolute -right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-2 z-10"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                )}
               </div>
+              {canScrollRight && (
+                <button
+                  onClick={scrollRight}
+                  className="absolute -right-4 top-[60%] text-black transform -translate-y-1/2 bg-white shadow-lg rounded-full p-2 z-10"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              )}
             </div>
           </div>
         </div>
         {/*ProLandding*/}
-        <div className=" px-16 sm:px-4">
+        <div className=" px-4 sm:px-4">
           <ProLanding />
         </div>
         {/*What success in JobViet */}

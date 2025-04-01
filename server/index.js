@@ -9,7 +9,7 @@ const app = express();
 //Import routes
 const webhookRouter = require("./src/routes/webhook");
 const gigRouter = require("./src/routes/gigs");
-
+const sitRouter = require("./src/routes/site");
 dotenv.config();
 
 app.use(cors());
@@ -29,6 +29,7 @@ connect();
 //Routes
 app.use("/api/webhooks", webhookRouter);
 app.use("/gigs", gigRouter);
+app.use("/", sitRouter);
 
 const port = 5000;
 app.listen(port, () => {

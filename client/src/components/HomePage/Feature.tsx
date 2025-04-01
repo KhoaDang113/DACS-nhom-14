@@ -34,7 +34,7 @@ const FeaturePage: React.FC<FeatureProp> = () => {
   ];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative top-[-20px] w-full h-screen overflow-hidden">
       {/* Video Background */}
       <video
         ref={videoRef}
@@ -44,14 +44,14 @@ const FeaturePage: React.FC<FeatureProp> = () => {
         muted
         playsInline
       >
-        <source src="/test-video.mp4" type="video/mp4" />
+        <source src="\Desktop Header new version.mp4" type="video/mp4" />
       </video>
 
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black bg-opacity-30"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 h-full  flex flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto md:mx-0 md:ml-[10%] lg:ml-[15%] md:transform md:-translate-x-[12%] md:-translate-y-[10%] ">
           {/* Heading */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal text-white mb-6 md:mb-10 leading-tight">
@@ -61,14 +61,14 @@ const FeaturePage: React.FC<FeatureProp> = () => {
           </h1>
 
           {/* Search Bar */}
-          <div className="relative max-w-full sm:max-w-2xl">
+          <div className="relative sm:max-w-2xl md:max-w-full ">
             <input
               type="text"
               placeholder="Tìm kiếm dịch vụ..."
               className="w-full py-3 sm:py-4 px-4 pr-12 rounded-md text-gray-800 text-base sm:text-lg bg-white"
             />
-            <button className="absolute right-0 top-0 bg-[#1dbf73] text-white p-3 sm:p-4 rounded-r-md h-full flex items-center justify-center">
-              <Search size={20} className="sm:size-12" />
+            <button className="absolute right-0 top-0 bg-gray-900 text-white p-3 sm:p-4 rounded-r-md h-full flex items-center justify-center">
+              <Search size={16} className="sm:size-10" />
             </button>
           </div>
 
