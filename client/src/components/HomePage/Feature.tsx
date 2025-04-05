@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { type ReactNode, useState, useRef } from "react";
+import { type ReactNode, useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Search, Pause, Play } from "lucide-react";
 import { trustedCompanies } from "../../lib/constant";
@@ -10,6 +10,55 @@ import { trustedCompanies } from "../../lib/constant";
 interface FeatureProp {
   children?: ReactNode;
 }
+
+// Component hiệu ứng đánh máy
+interface TypewriterProps {
+  text: string;
+  typingSpeed?: number;
+  pauseDuration?: number;
+  className?: string;
+}
+
+const Typewriter: React.FC<TypewriterProps> = ({
+  text,
+  typingSpeed = 100,
+  pauseDuration = 3000,
+  className = "",
+}) => {
+  const [displayText, setDisplayText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (isPaused) {
+      const pauseTimer = setTimeout(() => {
+        setIsPaused(false);
+        setCurrentIndex(0);
+        setDisplayText('');
+      }, pauseDuration);
+
+      return () => clearTimeout(pauseTimer);
+    }
+
+    if (currentIndex < text.length) {
+      const typingTimer = setTimeout(() => {
+        setDisplayText(prev => prev + text.charAt(currentIndex));
+        setCurrentIndex(prev => prev + 1);
+      }, typingSpeed);
+
+      return () => clearTimeout(typingTimer);
+    } else {
+      setIsPaused(true);
+    }
+  }, [currentIndex, isPaused, text, typingSpeed, pauseDuration]);
+
+  return (
+    <span className={className}>
+      {displayText}
+      <span className="animate-pulse"></span>
+    </span>
+  );
+};
 
 const FeaturePage: React.FC<FeatureProp> = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -51,17 +100,21 @@ const FeaturePage: React.FC<FeatureProp> = () => {
       <div className="absolute inset-0 bg-black bg-opacity-30"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 h-full  flex flex-col justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto md:mx-0 md:ml-[10%] lg:ml-[15%] md:transform md:-translate-x-[12%] md:-translate-y-[10%] ">
-          {/* Heading */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal text-white mb-6 md:mb-10 leading-tight">
-            Các freelancer của chúng tôi
-            <br />
-            sẽ lo phần còn lại
-          </h1>
+      <div className="relative z-10 h-full flex flex-col justify-center px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto md:mx-0 md:ml-[10%] lg:ml-[15%] md:transform md:-translate-x-[12%] md:-translate-y-[10%]">
+          {/* Heading with Typewriter Effect - With Fixed Height Container */}
+          <div className="h-24 sm:h-28 md:h-36 lg:h-40 xl:h-44 flex items-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal text-white mb-6 md:mb-10 leading-tight">
+              <Typewriter 
+                text="ALO ALO ALO ALO ALO ALO ALO ALO ALO ALO" 
+                typingSpeed={100} 
+                pauseDuration={3000}
+              />
+            </h1>
+          </div>
 
           {/* Search Bar */}
-          <div className="relative sm:max-w-2xl md:max-w-full ">
+          <div className="relative sm:max-w-2xl md:max-w-full">
             <input
               type="text"
               placeholder="Tìm kiếm dịch vụ..."

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+
 interface PopularCardProps {
   title: string;
   image: string;
@@ -13,9 +14,7 @@ export default function PopularCard({
   return (
     <Link to="#">
       <div
-        className={
-          "rounded-lg overflow-hidden min-w-[200px]  min-h-[266px] flex flex-col"
-        }
+        className={"rounded-lg overflow-hidden min-w-[200px] min-h-[310px] flex flex-col mr-8"}
         style={{ backgroundColor: `${bgColor}` }}
       >
         <div className="p-4 text-white">
@@ -23,7 +22,7 @@ export default function PopularCard({
         </div>
         <div className="mt-auto bg-opacity-20 bg-white rounded-lg m-2">
           <div className="relative h-full w-full">
-            <img src={image} alt="" className="rounded-lg" />
+            <img src={image} alt="" className="h-full w-full rounded-lg" />
           </div>
         </div>
       </div>
