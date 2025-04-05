@@ -57,7 +57,7 @@ const CategoryNav = () => {
           {category.subcategories.length > 0 && (
             <div className="absolute left-0 top-full hidden group-hover:flex w-[800px] bg-white shadow-lg p-6 rounded-lg border border-gray-200 z-50">
               <div className="grid grid-cols-3 gap-6 w-full">
-                {category.subcategories.map((sub, index) => (
+                {category.subcategories.map((sub) => (
                   <div key={sub._id} className="space-y-2">
                     <h4 className="font-semibold text-gray-900">{sub.name}</h4>
                     <ul className="space-y-1">

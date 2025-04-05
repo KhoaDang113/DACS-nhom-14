@@ -1,101 +1,101 @@
 export const categoryContentCards = [
   {
     title: "Lập trình & Công nghệ",
-    icon: "/categoryIcon/programming-tech-thin.56382a2.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/programming-tech-thin.56382a2.svg",
   },
   {
     title: "Thiết kế đồ họa",
-    icon: "/categoryIcon/graphics-design-thin.ff38893.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/graphics-design-thin.ff38893.svg",
   },
   {
     title: "Tiếp thị số",
-    icon: "/categoryIcon/digital-marketing-thin.68edb44.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/digital-marketing-thin.68edb44.svg",
   },
   {
     title: "Viết & Dịch thuật",
-    icon: "/categoryIcon/writing-translation-thin.fd3699b.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/writing-translation-thin.fd3699b.svg",
   },
   {
     title: "Video & Hoạt hình",
-    icon: "/categoryIcon/video-animation-thin.9d3f24d.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/video-animation-thin.9d3f24d.svg",
   },
   {
     title: "Dịch vụ AI",
-    icon: "/categoryIcon/ai-services-thin.104f389.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/ai-services-thin.104f389.svg",
   },
   {
     title: "Âm nhạc & Âm thanh",
-    icon: "/categoryIcon/music-audio-thin.43a9801.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/music-audio-thin.43a9801.svg",
   },
   {
     title: "Kinh doanh",
-    icon: "/categoryIcon/business-thin.885e68e.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/business-thin.885e68e.svg",
   },
   {
     title: "Tư vấn",
-    icon: "/categoryIcon/consulting-thin.d5547ff.svg",
+    icon: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/consulting-thin.d5547ff.svg",
   },
 ];
 
 export const popularCards = [
   {
     title: "Website Development",
-    Image: "popularImage/website-development.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156477/website-development.png",
     backgroundColor: "#00732e",
   },
   {
     title: "Logo Design",
-    Image: "popularImage/logo-design.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156494/logo-design.png",
     backgroundColor: "#ff7640",
   },
   {
     title: "SEO",
-    Image: "popularImage/seo.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156488/seo.png",
     backgroundColor: "#003912",
   },
   {
     title: "Architecture & Interior Design",
-    Image: "popularImage/architecture-design.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156473/architecture-design.png",
     backgroundColor: "#4d1727",
   },
   {
     title: "Voice Over",
-    Image: "popularImage/voice-over.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156479/voice-over.png",
     backgroundColor: "#421300",
   },
   {
     title: "Social Media Marketing",
-    Image: "popularImage/social-media-marketing.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156476/social-media-marketing.png",
     backgroundColor: "#687200",
   },
   {
     title: "UGC Videos",
-    Image: "popularImage/UGC Video img.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/ece24f7f595e2dd44b26567705d1c600-1728279781879/UGC%20Video%20img.png",
     backgroundColor: "#be5272",
   },
   {
     title: "Software Development",
-    Image: "popularImage/software-development.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156476/software-development.png",
     backgroundColor: "#254200",
   },
   {
     title: "Data Science & ML",
-    Image: "popularImage/data-science.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156495/data-science.png",
     backgroundColor: "#8f2900",
   },
   {
     title: "Product Photography",
-    Image: "popularImage/product-photography.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156481/product-photography.png",
     backgroundColor: "#687200",
   },
   {
     title: "E-Commerce Marketing",
-    Image: "popularImage/e-commerce.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156474/e-commerce.png",
     backgroundColor: "#00732e",
   },
   {
     title: "Video Editing",
-    Image: "popularImage/video-editing.webp",
+    Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156494/video-editing.png",
     backgroundColor: "#be5272",
   },
 ];
