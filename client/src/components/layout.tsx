@@ -11,11 +11,9 @@ const Layout: React.FC<LayoutProps> = () => {
   return (
     <div className="flex flex-col w-full h-full items-center justify-start">
       <Navbar />
-      <div className="sticky top-[81px] z-50 w-full items-center ">
-        <CategoryNav />
-      </div>
+      <CategoryNav />
       <main>
-        <Outlet /> {}
+        <Outlet />
       </main>
       <Footer />
     </div>

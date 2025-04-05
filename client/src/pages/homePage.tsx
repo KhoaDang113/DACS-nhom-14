@@ -15,6 +15,7 @@ import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
 import { Autoplay } from "swiper/modules";
 
+
 export default function HomePage() {
   return (
     <div className="h-full w-screen ">
@@ -59,10 +60,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Rest of the code remains the same */}
+        
         {/*ProLandding*/}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        <div className="px-4 sm:px-4">
           <ProLanding />
         </div>
         
@@ -77,21 +77,25 @@ export default function HomePage() {
               Vontélle Eyewear tìm đến các freelancer trên Fiverr để biến tầm nhìn của họ thành hiện thực.
             </span>
 
-            <div className="relative w-full aspect-video rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg">
-              <video
-                className="w-full h-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-              >
-                <source
-                  src="Vontelle Cutdown- Breakthrough V5.mp4"
-                  type="video/mp4"
-                />
-                Your browser does not support the video tag.
-              </video>
+            {/* Sửa đổi container video */}
+            <div className="w-full overflow-hidden">
+              <div className="relative aspect-video rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden shadow-lg w-full">
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls
+                  style={{ maxWidth: "100%" }}
+                >
+                  <source
+                    src="Vontelle Cutdown- Breakthrough V5.mp4"
+                    type="video/mp4"
+                  />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
             </div>
 
             {/*Optional: Add a caption or additional information below the video*/}
@@ -99,8 +103,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/*Trusted service*/}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8   ">
+        {/*Trusted service */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-2 w-full">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#404145] mb-6 md:mb-10">
               Các dịch vụ đáng tin cậy của chúng tôi !!!
@@ -153,11 +157,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/*fiver banner*/}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-full bg-[#4a1a2a] rounded-lg sm:rounded-xl md:rounded-2xl py-8 sm:py-12 md:py-16 px-4 sm:px-8 md:px-12 flex flex-col items-center justify-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff6b4a] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#ff6b4a] opacity-10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        {/*fiver banner - Sửa container để không bị tràn */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div
+            className="w-full bg-[#4a1a2a] rounded-lg sm:rounded-xl md:rounded-2xl py-8 sm:py-12 md:py-16 px-4 sm:px-8 md:px-12 
+        flex flex-col items-center justify-center relative overflow-hidden"
+          >
+            {/* Điều chỉnh vị trí các hình tròn tuyệt đối để không bị tràn */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff6b4a] opacity-10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#ff6b4a] opacity-10 rounded-full translate-y-1/3 -translate-x-1/3"></div>
+
             <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-center mb-6 sm:mb-8 md:mb-10 max-w-4xl leading-tight">
               Freelance services at your{" "}
               <span className="text-[#ff6b4a] relative inline-block">

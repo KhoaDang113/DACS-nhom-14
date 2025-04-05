@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown, Search } from "lucide-react";
@@ -13,11 +13,28 @@ import {
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const { isSignedIn } = useUser();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+
+  // Xử lý hiện/ẩn thanh tìm kiếm khi scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      // Lấy element hero section có chứa thanh search chính
+      const heroSection = document.querySelector('.h-screen');
+      if (heroSection) {
+        const heroBottom = heroSection.getBoundingClientRect().bottom;
+        // Hiện thanh search trong navbar khi scroll qua hero section
+        setShowSearch(heroBottom < 0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navLinks = [
     { title: "Khám phá", path: "#", hasDropdown: true },
@@ -37,8 +54,10 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Search Bar */}
-        <div className="hidden lg:flex items-center flex-1 max-w-xl mx-4">
+        {/* Desktop Search Bar - Hiển thị có điều kiện */}
+        <div className={`hidden lg:flex items-center flex-1 max-w-xl mx-4 transition-all duration-300 ${
+          showSearch ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}>
           <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-full">
             <input
               type="text"
@@ -111,8 +130,8 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden border-t bg-white shadow-lg">
-          {/* Mobile Search */}
+        <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
+          {/* Mobile Search - Luôn hiển thị trong mobile menu */}
           <div className="px-4 py-3 border-b">
             <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-full">
               <input

@@ -1,21 +1,34 @@
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+// Dữ liệu giả cho API category
+// Sử dụng để mô phỏng API response từ http://localhost:5000/api/category
+
+// Định nghĩa interfaces
 interface Subcategory {
   _id: string;
   name: string;
   subcategoryChildren?: Subcategory[]; // Hỗ trợ danh mục con của danh mục con
 }
+
 interface Category {
   _id: string;
   name: string;
   subcategories: Subcategory[];
 }
+
 const CategoryNav = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  
+  
   const categoryRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
+  const [showCategory, setShowCategory] = useState(false);
+
+  // Thêm effect để kiểm tra scroll position
   useEffect(() => {
     const axiosCategories = async () => {
       try {
@@ -26,7 +39,22 @@ const CategoryNav = () => {
       }
     };
     axiosCategories();
+  }, []);
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.querySelector('.h-screen');
+      if (heroSection) {
+        const heroBottom = heroSection.getBoundingClientRect().bottom;
+        setShowCategory(heroBottom < 0);
+      }
+    };
 
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Xử lý scroll ngang
+  useEffect(() => {
     const checkScroll = () => {
       if (categoryRef.current) {
         const { scrollWidth, scrollLeft, clientWidth } = categoryRef.current;
@@ -34,6 +62,7 @@ const CategoryNav = () => {
         setCanScrollLeft(scrollLeft > 0);
       }
     };
+    
     const slider = categoryRef.current;
     if (slider) {
       slider.addEventListener("scroll", checkScroll);
@@ -41,50 +70,134 @@ const CategoryNav = () => {
       return () => slider.removeEventListener("scroll", checkScroll);
     }
   }, []);
+
+  // Xử lý sự kiện scroll khi click nút left/right
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (categoryRef.current) {
+      const scrollAmount = 300;
+      const currentScroll = categoryRef.current.scrollLeft;
+      categoryRef.current.scrollTo({
+        left: direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Xử lý hiển thị/ẩn dropdown với delay
+  const handleCategoryHover = (categoryId: string) => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    setHoverTimeout(setTimeout(() => {
+      setActiveCategory(categoryId);
+    }, 100) as unknown as number);
+  };
+
+  const handleCategoryLeave = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    setHoverTimeout(setTimeout(() => {
+      setActiveCategory(null);
+    }, 100) as unknown as number);
+  };
+
   return (
-    <div
-      className="hidden md:flex relative space-x-6 gap-6 bg-white cursor-pointer px-6 border-b overflow-x-hidden"
-      ref={categoryRef}
+    <div 
+      className={`fixed left-0 right-0 bg-white border-b shadow-sm transition-all duration-300 ${
+        showCategory 
+          ? 'translate-y-0 opacity-100 z-50' 
+          : '-translate-y-full opacity-0 -z-10'
+      }`}
+      style={{
+        top: '81px', // Điều chỉnh vị trí dựa theo navbar của bạn
+      }}
     >
-      {canScrollLeft && (
-        <ChevronLeft className="absolute text-gray-800 left-1" />
-      )}
-      {categories.map((category) => (
-        <div key={category._id} className="relative group ">
-          <h3 className="font-normal text-md text-nowrap text-gray-700 hover:text-black border-b-4 border-b-transparent hover:border-b-green-500">
-            {category.name}
-          </h3>
-          {category.subcategories.length > 0 && (
-            <div className="absolute left-0 top-full hidden group-hover:flex w-[800px] bg-white shadow-lg p-6 rounded-lg border border-gray-200 z-50">
-              <div className="grid grid-cols-3 gap-6 w-full">
-                {category.subcategories.map((sub) => (
-                  <div key={sub._id} className="space-y-2">
-                    <h4 className="font-semibold text-gray-900">{sub.name}</h4>
-                    <ul className="space-y-1">
-                      {/* Mục con (nếu có) */}
-                      {sub.subcategoryChildren &&
-                        sub.subcategoryChildren.length > 0 && (
-                          <ul className="space-y-1 pl-4 border-l border-gray-300">
-                            {sub.subcategoryChildren.map((subSub) => (
-                              <li
-                                key={subSub._id}
-                                className="text-gray-600 hover:text-black cursor-pointer"
-                              >
-                                {subSub.name}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+      {/* Main navigation - Updated spacing and sizes */}
+      <div
+        className="flex items-center space-x-10 px-8 overflow-x-auto scrollbar-hide scroll-smooth" // Changed from space-x-8 px-6
+        ref={categoryRef}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {categories.map((category) => (
+          <div 
+            key={category._id} 
+            className="relative py-2 flex-shrink-0"
+            onMouseEnter={() => handleCategoryHover(category._id)}
+            onMouseLeave={handleCategoryLeave}
+          >
+            <h3 className={`font-medium text-[15.5px] text-nowrap cursor-pointer pb-1.5 border-b-2 transition-all duration-150 ${
+              activeCategory === category._id 
+                ? 'text-[#1dbf73] border-[#1dbf73]' 
+                : 'text-gray-600 hover:text-gray-900 border-transparent'
+            }`}>
+              {category.name}
+            </h3>
+          </div>
+        ))}
+      </div>
+      
+      {/* Dropdown mega menu */}
+      {activeCategory && (
+        <div 
+          className="absolute left-0 top-full w-full bg-white shadow-lg z-40 border-t border-gray-100 animate-fadeIn"
+          onMouseEnter={() => handleCategoryHover(activeCategory)}
+          onMouseLeave={handleCategoryLeave}
+        >
+          {/* Container with max-width and right space */}
+          <div className="container mx-auto px-8 py-6 relative">
+            {/* Add hover area on the right */}
+            <div className="absolute right-[-100px] top-0 bottom-0 w-[100px]" />
+            
+            <div className="grid grid-cols-4 gap-x-12 gap-y-6 pr-16"> {/* Added right padding */}
+              {categories.find(cat => cat._id === activeCategory)?.subcategories.map((sub) => (
+                <div key={sub._id} className="mb-5">
+                  {/* Category title */}
+                  <h4 className="font-semibold text-[#404145] mb-3 text-[25px] leading-6">
+                    {sub.name}
+                  </h4>
+                  
+                  {sub.subcategoryChildren && sub.subcategoryChildren.length > 0 && (
+                    <ul className="space-y-2.5">
+                      {sub.subcategoryChildren.map((subSub) => (
+                        <li
+                          key={subSub._id}
+                          className="group" 
+                        >
+                          <a 
+                            href="#" 
+                            className="text-[#74767e] hover:text-[#404145] text-[16px] block transition-all duration-200 hover:translate-x-[2px]"
+                          >
+                            {subSub.name}
+                          </a>
+                        </li>
+                      ))}
                     </ul>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </div>
         </div>
-      ))}
+      )}
+      
+      {/* Nút điều hướng */}
+      {canScrollLeft && (
+        <button 
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10 hover:bg-gray-50 transition-colors"
+          onClick={() => handleScroll('left')}
+        >
+          <ChevronLeft className="text-gray-700" size={18} />
+        </button>
+      )}
+      
       {canScrollRight && (
-        <ChevronRight className="absolute text-gray-800 right-1" />
+        <button 
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10 hover:bg-gray-50 transition-colors"
+          onClick={() => handleScroll('right')}
+        >
+          <ChevronRight className="text-gray-700" size={18} />
+        </button>
       )}
     </div>
   );
