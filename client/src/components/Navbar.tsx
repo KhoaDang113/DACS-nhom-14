@@ -37,7 +37,6 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { title: "JobViet Pro", path: "#" },
     { title: "Khám phá", path: "#", hasDropdown: true },
     { title: "Trở thành người bán", path: "#" },
   ];
