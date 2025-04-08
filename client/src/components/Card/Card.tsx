@@ -189,10 +189,6 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               />
             </div>
             <span className="font-medium text-xs sm:text-sm">{gig.freelancer?.name || "Freelancer"}</span>
-            <div className="ml-auto flex items-center gap-1 bg-gray-100 px-1.5 py-0.5 rounded text-[10px] sm:text-xs">
-              <span>Level {gig.freelancer?.level || 1}</span>
-              <span>♦♦</span>
-            </div>
           </div>
 
           {/* Gig Title */}

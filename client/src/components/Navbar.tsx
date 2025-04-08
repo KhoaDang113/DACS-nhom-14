@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Search } from "lucide-react";
+import { Menu, X, ChevronDown, Search, Bell, Mail, Heart } from "lucide-react";
 import {
   useUser,
   UserButton,
@@ -16,6 +16,8 @@ export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const { isSignedIn } = useUser();
   const navigate = useNavigate(); // Hook điều hướng
+  const location = useLocation(); // Lấy thông tin đường dẫn hiện tại
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -39,7 +41,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
+  // Thay đổi navLinks thành conditional rendering
+  const navLinks = isSignedIn ? [
+    { title: "", path: "#", icon: <Bell size={20} /> },
+    { title: "", path: "#", icon: <Mail size={20} /> },
+    { title: "", path: "#", icon: <Heart size={20} /> }
+  ] : [
     { title: "Khám phá", path: "#", hasDropdown: true },
     { title: "Trở thành người bán", path: "#" },
     { title: "Danh sách công việc", path: "/jobs" },
@@ -51,9 +58,11 @@ export default function Navbar() {
         {/* Logo */}
         <div className="font-bold text-2xl sm:text-3xl">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
-              Jop
-            </div>
+            <img 
+              src="/Logo_jopViet.png" 
+              alt="JopViet Logo"
+              className="h-8 w-8" // Bạn có thể điều chỉnh kích thước phù hợp
+            />
             <span>JopViet</span>
           </Link>
         </div>
@@ -84,30 +93,46 @@ export default function Navbar() {
             <div key={index} className="flex items-center">
               <Link
                 to={link.path}
-                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap"
+                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center"
               >
-                {link.title}
+                {link.icon ? link.icon : link.title}
               </Link>
-              {link.hasDropdown && (
+              {!isSignedIn && link.hasDropdown && (
                 <ChevronDown className="text-black ml-1" size={16} />
               )}
             </div>
           ))}
 
-          <div className="flex items-center gap-1">
-            <span className="text-black">🌐</span>
+          {!isSignedIn && (
+            <div className="flex items-center gap-1">
+              <span className="text-black">🌐</span>
+              <Link
+                to="#"
+                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base"
+              >
+                English
+              </Link>
+            </div>
+          )}
+
+          {/* Thêm Link Xem Profile vào đây */}
+          {isSignedIn && location.pathname !== "/profile" && (
             <Link
-              to="#"
+              to="/profile"
               className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base"
             >
-              English
+              Xem Profile
             </Link>
-          </div>
+          )}
 
           {/* Authentication */}
           {isSignedIn ? (
-            <div className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md">
-              <UserButton />
+            <div className="relative">
+              <div 
+                className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md cursor-pointer"
+              >
+                <UserButton afterSignOutUrl="/" />
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -166,21 +191,30 @@ export default function Navbar() {
                 className="flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73]"
                 onClick={() => setMenuOpen(false)}
               >
-                <span>{link.title}</span>
-                {link.hasDropdown && <ChevronDown size={16} />}
+                {link.icon ? (
+                  <div className="flex items-center gap-2">
+                    {link.icon}
+                    <span>{link.title}</span>
+                  </div>
+                ) : (
+                  <span>{link.title}</span>
+                )}
+                {!isSignedIn && link.hasDropdown && <ChevronDown size={16} />}
               </Link>
             ))}
 
-            <Link
-              to="#"
-              className="flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73]"
-              onClick={() => setMenuOpen(false)}
-            >
-              <div className="flex items-center gap-2">
-                <span>🌐</span>
-                <span>English</span>
-              </div>
-            </Link>
+            {!isSignedIn && (
+              <Link
+                to="#"
+                className="flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73]"
+                onClick={() => setMenuOpen(false)}
+              >
+                <div className="flex items-center gap-2">
+                  <span>🌐</span>
+                  <span>English</span>
+                </div>
+              </Link>
+            )}
 
             {/* Mobile Authentication */}
             {isSignedIn ? (

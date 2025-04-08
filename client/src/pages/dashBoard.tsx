@@ -22,12 +22,6 @@ function dashBoard() {
         <div className="h-full w-screen">
           <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className="py-3 sm:py-4 md:py-6 lg:py-8">
-              {/* Video Message */}
-              {videoMessage && (
-                <div className="fixed top-2 right-2 sm:top-4 sm:right-4 bg-black/80 text-white p-3 sm:p-4 rounded-md shadow-lg z-50 max-w-[calc(100%-1rem)] sm:max-w-md text-sm sm:text-base">
-                  {videoMessage}
-                </div>
-              )}
 
               {/* Welcome Section */}
               <div className="bg-gradient-to-r from-black to-gray-800 text-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-md mb-4 sm:mb-6 lg:mb-8">
@@ -78,8 +72,7 @@ function dashBoard() {
             </div>
           </div>
         </div>
-        </SignedIn>
-        
+        </SignedIn>       
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
