@@ -45,7 +45,7 @@ export default function HomePage() {
               <CategoryCard
                 key={index}
                 icon={categoryCard.icon}
-                title={categoryCard.title}                
+                title={categoryCard.title}
               />
             ))}
           </div>
@@ -62,26 +62,26 @@ export default function HomePage() {
                 <p className="text-gray-500 text-sm sm:text-base hidden sm:block mb-5">
                   Khám phá những dịch vụ được săn đón nhất từ các freelancer hàng đầu
                 </p>
-              </div>              
-              <Slide>            
-                  {popularCards.map((popularCard, index) => (
-                    <PopularCard
-                      title={popularCard.title}
-                      image={popularCard.Image}
-                      bgColor={popularCard.backgroundColor}
-                      key={index}                      
-                    />
-                  ))}                              
+              </div>
+              <Slide>
+                {popularCards.map((popularCard, index) => (
+                  <PopularCard
+                    title={popularCard.title}
+                    image={popularCard.Image}
+                    bgColor={popularCard.backgroundColor}
+                    key={index}
+                  />
+                ))}
               </Slide>
             </div>
           </div>
         </div>
-        
+
         {/*ProLandding*/}
         <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
           <ProLanding />
         </div>
-        
+
         {/*What success in JobViet */}
         <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
           <div className="flex flex-col mt-10 md:mt-16 lg:mt-20 gap-4">
@@ -106,7 +106,7 @@ export default function HomePage() {
                   controls
                 >
                   <source
-                    src="Vontelle Cutdown- Breakthrough V5.mp4"
+                    src="/your-video-source.mp4"
                     type="video/mp4"
                   />
                   Your browser does not support the video tag.
@@ -136,7 +136,7 @@ export default function HomePage() {
                   <ServiceCard
                     key={index}
                     image={service.Image}
-                    title={service.title}                    
+                    title={service.title}
                   />
                 ))}
               </div>
