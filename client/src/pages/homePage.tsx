@@ -23,7 +23,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isSignedIn) {
-      navigate("/dashboard");
+      navigate("/dash-board");
     }
   }, [isSignedIn, navigate]);
   useEffect(() => {

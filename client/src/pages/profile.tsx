@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useUser } from "@clerk/clerk-react";
-import ProfileHeader from '../../components/Profile/ProfileHeader';
-import ProfileInfo from '../../components/Profile/ProfileInfo';
-import ProfileStats from '../../components/Profile/ProfileStats';
-import ProfileTabs from '../../components/Profile/ProfileTabs';
+import ProfileHeader from '../components/Profile/ProfileHeader';
+import ProfileInfo from '../components/Profile/ProfileInfo';
+import ProfileTabs from '../components/Profile/ProfileTabs';
 
 const mockGigs = [
   {
@@ -131,14 +130,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProfileHeader user={userData} />
-      
+      <ProfileHeader user={userData} />     
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ProfileInfo user={userData} />
-            <ProfileStats stats={userData.stats} />
+            <ProfileInfo user={userData} />            
           </div>
           
           {/* Main Content */}

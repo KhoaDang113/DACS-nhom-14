@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { sampleGigs, Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
 import SlideCard from "../components/Card/SlideCard";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 
-function dashBoard() {
-
+function Dashboard() {
+  const navigate = useNavigate();
   const [videoMessage, setVideoMessage] = useState<string | null>(null);
   const [filteredGigs] = useState<Gig[]>(sampleGigs);
 
@@ -19,32 +20,40 @@ function dashBoard() {
   return (
     <>
       <SignedIn>
-        <div className="h-full w-screen">
-          <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="py-3 sm:py-4 md:py-6 lg:py-8">
+        <div className="min-h-screen w-screen bg-gray-50">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
+            <div className="py-4 sm:py-6 md:py-10">
 
               {/* Welcome Section */}
-              <div className="bg-gradient-to-r from-black to-gray-800 text-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-md mb-4 sm:mb-6 lg:mb-8">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 md:mb-4">
-                  Chào mừng đến với JopViet
+              <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl mb-6 md:mb-10">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+                  👋 Chào mừng đến với JopViet
                 </h1>
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl opacity-90">
-                  Chọn công việc của Freelancer và tạo ngay tác phẩm theo phong cách riêng biệt của bạn.
+                <p className="text-sm sm:text-base md:text-lg opacity-95">
+                  Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc, tạo sản phẩm mang dấu ấn cá nhân!
                 </p>
+                <button
+                  onClick={() => navigate("/create-gig")}
+                  className="mt-5 inline-block rounded-xl bg-white text-blue-700 font-semibold px-5 py-2 text-sm shadow-md hover:bg-blue-50 transition"
+                >
+                  + Đăng dịch vụ
+                </button>
               </div>
 
               {/* Featured Gigs Section */}
-              <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 lg:mb-8">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4 md:mb-6">
-                  Bài viết nổi bật
+              <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 mb-6 md:mb-10">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-4">
+                  🌟 Dịch vụ nổi bật
                 </h2>
-                <div className="overflow-hidden -mx-3 sm:-mx-4">
+                <div className="overflow-hidden -mx-2 sm:-mx-3">
                   <SlideCard>
                     {filteredGigs.map((gig: Gig) => (
                       <div key={gig._id} className="px-2 sm:px-3">
                         <GigCard
                           gig={gig}
-                          onFavorite={(id: string) => console.log(`Favorited gig: ${id}`)}
+                          onFavorite={(id: string) =>
+                            console.log(`Favorited gig: ${id}`)
+                          }
                           onPlayVideo={handlePlayVideo}
                         />
                       </div>
@@ -54,25 +63,35 @@ function dashBoard() {
               </div>
 
               {/* All Gigs Grid Section */}
-              <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4 md:p-6">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4 md:mb-6">
-                  Tất cả bài viết 
+              <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mb-4">
+                  🗂️ Tất cả dịch vụ
                 </h2>
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
                   {filteredGigs.map((gig: Gig) => (
                     <GigCard
                       key={gig._id}
                       gig={gig}
-                      onFavorite={(id: string) => console.log(`Favorited gig: ${id}`)}
+                      onFavorite={(id: string) =>
+                        console.log(`Favorited gig: ${id}`)
+                      }
                       onPlayVideo={handlePlayVideo}
                     />
                   ))}
                 </div>
               </div>
+
+              {/* Video Message Alert */}
+              {videoMessage && (
+                <div className="fixed bottom-6 right-6 bg-blue-600 text-white py-2 px-4 rounded-xl shadow-lg z-50 animate-bounce">
+                  {videoMessage}
+                </div>
+              )}
             </div>
           </div>
         </div>
-        </SignedIn>       
+      </SignedIn>
+
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
@@ -80,4 +99,4 @@ function dashBoard() {
   );
 }
 
-export default dashBoard;
+export default Dashboard;
