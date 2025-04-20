@@ -1,100 +1,105 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Heart, Play, Star } from "lucide-react"
-import { GrFormNext, GrFormPrevious } from "react-icons/gr"
-import { Link } from "react-router-dom"
-import * as Tooltip from "@radix-ui/react-tooltip"
+import { useState, useRef, useEffect } from "react";
+import { Heart, Play } from "lucide-react";
+import { GrFormNext, GrFormPrevious } from "react-icons/gr";
+import { Link } from "react-router-dom";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 interface User {
-  _id: string
-  name: string
-  avatar: string
-  level: number
+  _id: string;
+  name: string;
+  avatar: string;
+  level: number;
 }
 
 interface MediaItem {
-  url: string
-  type: "image" | "video"
-  thumbnailUrl?: string
+  url: string;
+  type: "image" | "video";
+  thumbnailUrl?: string;
 }
 
 interface Gig {
-  _id: string
-  title: string
+  _id: string;
+  title: string;
   price: {
-    toString: () => string
-  }
-  media: MediaItem[]
-  freelancer?: User
+    toString: () => string;
+  };
+  media: MediaItem[];
+  freelancer?: User;
   rating?: {
-    average: number
-    count: number
-  }
+    average: number;
+    count: number;
+  };
 }
 
 interface GigCardProps {
-  gig: Gig
-  videoUrl?: string
-  onFavorite: (id: string) => void
-  onPlayVideo: (videoUrl: string) => void
+  gig: Gig;
+  videoUrl?: string;
+  onFavorite: (id: string) => void;
+  onPlayVideo: (videoUrl: string) => void;
 }
 
-const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVideo }) => {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [showVideoModal, setShowVideoModal] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const slideInterval = useRef<NodeJS.Timeout | null>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+const GigCard: React.FC<GigCardProps> = ({
+  gig,
+  videoUrl,
+  onFavorite,
+  onPlayVideo,
+}) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const slideInterval = useRef<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2)
-  const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video"
+  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2);
+  const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
 
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/)?.[1]
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url
-  }
+    const videoId = url.match(
+      /(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/
+    )?.[1];
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  };
 
   useEffect(() => {
     if (!isCurrentMediaVideo && isHovered) {
       slideInterval.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1))
-      }, 1000)
+        setCurrentSlide((prev) =>
+          prev === gig.media.length - 1 ? 0 : prev + 1
+        );
+      }, 1000);
     }
     return () => {
       if (slideInterval.current) {
-        clearInterval(slideInterval.current)
+        clearInterval(slideInterval.current);
       }
-    }
-  }, [isCurrentMediaVideo, gig.media.length, isHovered])
+    };
+  }, [isCurrentMediaVideo, gig.media.length, isHovered]);
 
   const nextSlide = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1))
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1));
+  };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1))
-  }
+    setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1));
+  };
 
   const handlePlayVideo = () => {
-    const currentMedia = gig.media[currentSlide]
+    const currentMedia = gig.media[currentSlide];
     if (currentMedia.type === "video") {
-      setShowVideoModal(true)
-      onPlayVideo?.(currentMedia.url)
+      setShowVideoModal(true);
+      onPlayVideo?.(currentMedia.url);
     }
-  }
+  };
 
   const toggleFavorite = () => {
-    setIsFavorite((prev) => !prev)
-    onFavorite?.(gig._id)
-  }
-
-  const formatRatingCount = (count: number) => {
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count.toString()
-  }
+    setIsFavorite((prev) => !prev);
+    onFavorite?.(gig._id);
+  };
 
   return (
     <Tooltip.Provider>
@@ -114,7 +119,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
                 }`}
               >
                 <img
-                  src={media.type === "image" ? media.url : media.thumbnailUrl || "/placeholder.svg"}
+                  src={
+                    media.type === "image"
+                      ? media.url
+                      : media.thumbnailUrl || "/placeholder.svg"
+                  }
                   alt={`${gig.title} - image ${index + 1}`}
                   className="object-cover w-full h-full"
                 />
@@ -144,29 +153,19 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               />
             </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              {gig.media.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    index === currentSlide ? "bg-white w-3" : "bg-white/60 hover:bg-white/80"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-
             {/* Favorite Button */}
             <button
               onClick={toggleFavorite}
               className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
             >
               <Heart
                 size={20}
-                className={`transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                className={`transition-colors ${
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                }`}
               />
             </button>
           </div>
@@ -220,15 +219,6 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               </Tooltip.Portal>
             </Tooltip.Root>
 
-            {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <Star size={12} className="fill-yellow-400 text-yellow-400" />
-              <span className="font-bold text-xs sm:text-sm">{gig.rating?.average || 4.9}</span>
-              <span className="text-gray-500 text-[10px] sm:text-xs">
-                ({gig.rating?.count ? formatRatingCount(gig.rating.count) : "1k+"})
-              </span>
-            </div>
-
             {/* Price */}
             <div className="font-bold text-sm sm:text-lg text-blue-600">
               From US${formattedPrice}
@@ -254,7 +244,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
             >
               Đóng
             </button>
-            {gig.media[currentSlide].url.includes("youtube.com") || gig.media[currentSlide].url.includes("youtu.be") ? (
+            {gig.media[currentSlide].url.includes("youtube.com") ||
+            gig.media[currentSlide].url.includes("youtu.be") ? (
               <iframe
                 src={getYouTubeEmbedUrl(gig.media[currentSlide].url)}
                 className="w-full aspect-video rounded-lg"
@@ -277,7 +268,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
         </div>
       )}
     </Tooltip.Provider>
-  )
-}
+  );
+};
 
-export default GigCard
+export default GigCard;

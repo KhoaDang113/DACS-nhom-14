@@ -10,12 +10,12 @@ import ProfilePage from "../pages/profile";
 import GigDetailPage from "../pages/gigDetail";
 import CustomOrderPage from "../pages/customOrderPage";
 import BuyerOrdersPage from "../pages/buyerOrders";
-import AdvancedSearchPage from '../pages/advancedSearchPage';
+import AdvancedSearchPage from "../pages/advancedSearchPage";
 import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
 import OrderManagement from "../pages/orderManagement";
-import SellerDashboard from "../pages/sellerDashboard"; 
-import EditGig from "../pages/editGig";// Import the SellerDashboard component
+import SellerDashboard from "../pages/sellerDashboard";
+import EditGig from "../pages/editGig"; // Import the SellerDashboard component
 
 const router: RouteObject[] = [
   {
@@ -28,11 +28,13 @@ const router: RouteObject[] = [
       { path: "/payment", element: <PaymentPage /> },
       { path: "/dash-board", element: <Dashboard /> },
       { path: "/create-gig", element: <CreateGigForm /> },
-      { path: "/seller-gigs", element: <SellerGigsPage />},
-      { path: "/order-management", element: <OrderManagement />},
-      { path: "/seller-dashboard", element: <SellerDashboard/>},
-      { path: "/edit-gigs", element: <EditGig/>}, // Add the jobs route
-      { path: "/profile", element: (
+      { path: "/seller-gigs", element: <SellerGigsPage /> },
+      { path: "/order-management", element: <OrderManagement /> },
+      { path: "/seller-dashboard", element: <SellerDashboard /> },
+      { path: "/edit-gigs", element: <EditGig /> }, // Add the jobs route
+      {
+        path: "/profile",
+        element: (
           <>
             <SignedIn>
               <ProfilePage />
@@ -41,11 +43,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/gig/:id", element: <GigDetailPage /> },
-      { 
-        path: "/custom-order/:id", 
+      {
+        path: "/custom-order/:id",
         element: (
           <>
             <SignedIn>
@@ -55,10 +57,10 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
-      { 
-        path: "/orders", 
+      {
+        path: "/orders",
         element: (
           <>
             <SignedIn>
@@ -68,7 +70,7 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
     ],
