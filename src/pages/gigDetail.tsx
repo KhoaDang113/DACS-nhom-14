@@ -10,6 +10,7 @@ const GigDetailPage = () => {
   const [gig, setGig] = useState<Gig | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
   useEffect(() => {
     // Trong thực tế, bạn sẽ gọi API ở đây
@@ -26,6 +27,31 @@ const GigDetailPage = () => {
     
     setIsLoading(false);
   }, [id]);
+
+  useEffect(() => {
+    if (gig) {
+      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      setIsFavorite(bookmarks.includes(gig._id));
+    }
+  }, [gig]);
+
+  const toggleFavorite = () => {
+    if (!gig) return;
+    
+    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+    let newBookmarks;
+    
+    if (isFavorite) {
+      // Xóa khỏi bookmarks
+      newBookmarks = bookmarks.filter((id: string) => id !== gig._id);
+    } else {
+      // Thêm vào bookmarks
+      newBookmarks = [...bookmarks, gig._id];
+    }
+    
+    localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
+    setIsFavorite(!isFavorite);
+  };
 
   if (isLoading) {
     return (
@@ -186,12 +212,7 @@ const GigDetailPage = () => {
               <button className="px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1 whitespace-nowrap">
                 Cơ bản
               </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Nâng cao
-              </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Cao cấp
-              </button>
+              
             </div>
             
             {/* Package Content */}
@@ -232,16 +253,17 @@ const GigDetailPage = () => {
               </Link>
               
               {/* Compare Packages */}
-              <button className="text-gray-500 hover:text-gray-700 text-sm block text-center mt-4 w-full">
-                So sánh các gói
-              </button>
+              
             </div>
             
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
-              <button className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full">
-                <Heart size={18} />
-                <span>Lưu vào yêu thích</span>
+              <button 
+                onClick={toggleFavorite} 
+                className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
+              >
+                <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
+                <span>{isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}</span>
               </button>
               
               <Link 

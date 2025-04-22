@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { FiSearch, FiUser, FiShoppingBag, FiMenu } from 'react-icons/fi';
+import { FiSearch, FiUser, FiShoppingCart, FiMenu } from 'react-icons/fi';
 
 const MobileNavbar: React.FC = () => {
   const { user } = useUser();
@@ -17,8 +17,8 @@ const MobileNavbar: React.FC = () => {
         
         <SignedIn>
           <Link to="/orders" className="flex flex-col items-center text-gray-600 hover:text-blue-600">
-            <FiShoppingBag size={20} />
-            <span className="text-xs mt-1">Đơn hàng</span>
+            <FiShoppingCart size={20} />
+            <span className="text-xs mt-1">Giỏ hàng</span>
           </Link>
           
           <Link to="/profile" className="flex flex-col items-center text-gray-600 hover:text-blue-600">

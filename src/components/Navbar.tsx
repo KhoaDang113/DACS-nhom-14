@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Search, Bell, Mail, Heart } from "lucide-react";
+import { Menu, X, ChevronDown, Search, Bell, Mail, Heart, ShoppingCart } from "lucide-react";
 import {
   useUser,
   UserButton,
@@ -55,8 +55,8 @@ export default function Navbar() {
   const navLinks = isSignedIn ? [
     { title: "", path: "#", icon: <Bell size={20} /> },
     { title: "", path: "#", icon: <Mail size={20} /> },
-    { title: "", path: "#", icon: <Heart size={20} /> },
-    { title: "Đơn hàng", path: "/orders" }
+    { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
+    { title: "", path: "/orders", icon: <ShoppingCart size={20} /> }
   ] : [
     { title: "Khám phá", path: "#", hasDropdown: true },
     { title: "Trở thành người bán", path: "#" },

@@ -15,7 +15,8 @@ import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
 import OrderManagement from "../pages/orderManagement";
 import SellerDashboard from "../pages/sellerDashboard"; 
-import EditGig from "../pages/editGig";// Import the SellerDashboard component
+import EditGig from "../pages/editGig";
+import BookmarkPage from "../pages/bookmarkPage"; // Import the SellerDashboard component
 
 const router: RouteObject[] = [
   {
@@ -31,7 +32,7 @@ const router: RouteObject[] = [
       { path: "/seller-gigs", element: <SellerGigsPage />},
       { path: "/order-management", element: <OrderManagement />},
       { path: "/seller-dashboard", element: <SellerDashboard/>},
-      { path: "/edit-gigs", element: <EditGig/>}, // Add the jobs route
+      { path: "/edit-gigs", element: <EditGig/>}, 
       { path: "/profile", element: (
           <>
             <SignedIn>
@@ -71,6 +72,17 @@ const router: RouteObject[] = [
         ) 
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
+      { path: "/bookmarks", element: (
+          <>
+            <SignedIn>
+              <BookmarkPage />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ) 
+      },
     ],
   },
 ];
