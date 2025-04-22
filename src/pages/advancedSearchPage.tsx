@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { parseMongoDecimal } from "../lib/utils"; // Import hàm tiện ích
+import GigCard from "../components/Card/Card";
 
 // Định nghĩa kiểu dữ liệu cho kết quả tìm kiếm
 interface SearchResult {
@@ -9,7 +9,7 @@ interface SearchResult {
   title: string;
   description: string;
   price: number;
-  media: Array<{ url: string; type: string; thumbnailUrl?: string }>;
+  media: Array<{ url: string; type: "image" | "video"; thumbnailUrl?: string }>;
   category_id?: string;
   duration?: number;
   freelancerId?: string;
@@ -47,43 +47,10 @@ export default function AdvancedSearchPage() {
     // Lấy danh sách danh mục cho bộ lọc
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/category");
-        if (response.data && response.data.data) {
-          // Lấy danh sách danh mục phẳng
-          let allCategories: { _id: string; name: string }[] = [];
-
-          response.data.data.forEach((cat: any) => {
-            // Thêm danh mục chính
-            allCategories.push({ _id: cat._id, name: cat.name });
-
-            // Thêm danh mục con nếu có
-            if (cat.subcategories && cat.subcategories.length > 0) {
-              cat.subcategories.forEach((subcat: any) => {
-                allCategories.push({
-                  _id: subcat._id,
-                  name: `${cat.name} > ${subcat.name}`,
-                });
-
-                // Thêm danh mục con của con nếu có
-                if (
-                  subcat.subcategoryChildren &&
-                  subcat.subcategoryChildren.length > 0
-                ) {
-                  subcat.subcategoryChildren.forEach((subsubcat: any) => {
-                    allCategories.push({
-                      _id: subsubcat._id,
-                      name: `${cat.name} > ${subcat.name} > ${subsubcat.name}`,
-                    });
-                  });
-                }
-              });
-            }
-          });
-
-          setCategories(allCategories);
-        }
+        const res = await axios.get("http://localhost:5000/api/category");
+        setCategories(res.data.data);
       } catch (error) {
-        console.error("Lỗi khi lấy danh mục:", error);
+        console.error("Không thể lấy danh sách danh mục:", error);
       }
     };
 
@@ -149,7 +116,7 @@ export default function AdvancedSearchPage() {
     performSearch(newSortBy);
   };
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen w-full bg-gray-50 px-4 sm:px-6 md:px-8">
       {/* Bộ lọc ngay dưới navbar - Luôn hiển thị */}
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
@@ -191,9 +158,9 @@ export default function AdvancedSearchPage() {
                   className="w-full px-3 py-2 border rounded-md text-sm"
                 >
                   <option value="">Tất cả danh mục</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -242,60 +209,26 @@ export default function AdvancedSearchPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
             {searchResults.map((result) => (
-              <div
+              <GigCard
                 key={result._id}
-                className="bg-white rounded-lg overflow-hidden shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => navigate(`/gig/${result._id}`)}
-              >
-                <div className="h-40 overflow-hidden">
-                  <img
-                    src={
-                      (result.media && result.media[1]?.url) ||
-                      "/placeholder-image.jpg"
-                    }
-                    alt={result.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  {/* Thông tin người bán */}
-                  {result && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
-                        {result?.name.charAt(0) || "U"}
-                      </div>
-                      <span className="text-sm text-gray-700 truncate">
-                        {result.name}
-                      </span>
-                    </div>
-                  )}
-
-                  <h3 className="font-medium text-gray-800 mb-2 line-clamp-2">
-                    {result.title}
-                  </h3>
-
-                  {/* Rating nếu có */}
-                  {result.rating && (
-                    <div className="flex items-center gap-1 mb-2">
-                      <div className="text-yellow-400">★</div>
-                      <span className="text-sm font-medium">
-                        {result.rating.average.toFixed(1)}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        ({result.rating.count})
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-[#1dbf73] font-medium">
-                      ${parseMongoDecimal(result.price).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                gig={{
+                  _id: result._id,
+                  title: result.title,
+                  price: result.price,
+                  media: result.media,
+                  freelancer: {
+                    _id: result.freelancerId || "",
+                    name: result.name,
+                    avatar: "",
+                    level: 1,
+                  },
+                  rating: result.rating,
+                }}
+                onFavorite={(id) => console.log(`Favorited gig: ${id}`)}
+                onPlayVideo={(url) => console.log(`Playing video: ${url}`)}
+              />
             ))}
           </div>
         )}

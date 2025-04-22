@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Heart, Star, Clock, MessageSquare, CheckCircle, RefreshCw, FileText } from "lucide-react";
+import {
+  Heart,
+  Star,
+  Clock,
+  MessageSquare,
+  CheckCircle,
+  FileText,
+} from "lucide-react";
 import { sampleGigs, Gig } from "../data/jobs";
 import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
@@ -14,8 +21,8 @@ const GigDetailPage = () => {
   useEffect(() => {
     // Trong thực tế, bạn sẽ gọi API ở đây
     // Tạm thời dùng dữ liệu mẫu
-    const fetchedGig = sampleGigs.find(g => g._id === id);
-    
+    const fetchedGig = sampleGigs.find((g) => g._id === id);
+
     if (fetchedGig) {
       setGig(fetchedGig);
       // Đặt ảnh đầu tiên làm ảnh được chọn
@@ -23,7 +30,7 @@ const GigDetailPage = () => {
         setSelectedImage(fetchedGig.media[0].url);
       }
     }
-    
+
     setIsLoading(false);
   }, [id]);
 
@@ -39,9 +46,11 @@ const GigDetailPage = () => {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Không tìm thấy dịch vụ</h1>
-        <p className="mb-8">Dịch vụ bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.</p>
-        <Link 
-          to="/dashboard" 
+        <p className="mb-8">
+          Dịch vụ bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.
+        </p>
+        <Link
+          to="/dash-board"
           className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"
         >
           Quay lại trang chính
@@ -63,15 +72,18 @@ const GigDetailPage = () => {
           <div className="flex items-center mb-6 gap-3">
             {gig.freelancer && (
               <>
-                <img 
-                  src={gig.freelancer.avatar} 
+                <img
+                  src={gig.freelancer.avatar}
                   alt={gig.freelancer.name}
-                  className="w-10 h-10 rounded-full object-cover" 
+                  className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
                   <p className="font-medium">{gig.freelancer.name}</p>
                   <div className="flex items-center">
-                    <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                    <Star
+                      size={14}
+                      className="text-yellow-400 fill-yellow-400"
+                    />
                     <span className="text-sm font-medium ml-1">
                       {gig.rating?.average || "5.0"}
                     </span>
@@ -87,25 +99,31 @@ const GigDetailPage = () => {
           {/* Main Image Gallery */}
           <div className="mb-6">
             <div className="mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <img 
-                src={selectedImage || (gig.media[0]?.url || "")} 
+              <img
+                src={selectedImage || gig.media[0]?.url || ""}
                 alt={gig.title}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover"
               />
             </div>
-            
+
             {/* Thumbnails */}
             <div className="grid grid-cols-5 gap-2">
               {gig.media.map((mediaItem, index) => (
-                <div 
+                <div
                   key={index}
                   className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
-                    selectedImage === mediaItem.url ? "border-green-500" : "border-transparent"
+                    selectedImage === mediaItem.url
+                      ? "border-green-500"
+                      : "border-transparent"
                   }`}
                   onClick={() => setSelectedImage(mediaItem.url)}
                 >
-                  <img 
-                    src={mediaItem.type === "image" ? mediaItem.url : (mediaItem.thumbnailUrl || "")} 
+                  <img
+                    src={
+                      mediaItem.type === "image"
+                        ? mediaItem.url
+                        : mediaItem.thumbnailUrl || ""
+                    }
                     alt={`${gig.title} - ảnh ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -125,20 +143,27 @@ const GigDetailPage = () => {
           {/* About The Seller */}
           <div className="bg-gray-50 p-6 rounded-lg mb-10">
             <h2 className="text-xl font-bold mb-4">Về người bán</h2>
-            
+
             <div className="flex items-center gap-4 mb-6">
               {gig.freelancer && (
                 <>
-                  <img 
-                    src={gig.freelancer.avatar} 
+                  <img
+                    src={gig.freelancer.avatar}
                     alt={gig.freelancer.name}
-                    className="w-16 h-16 rounded-full object-cover" 
+                    className="w-16 h-16 rounded-full object-cover"
                   />
                   <div>
                     <p className="font-medium text-lg">{gig.freelancer.name}</p>
-                    <p className="text-gray-500">{gig.freelancer.level === 1 ? "Người bán mới" : `Cấp độ ${gig.freelancer.level}`}</p>
+                    <p className="text-gray-500">
+                      {gig.freelancer.level === 1
+                        ? "Người bán mới"
+                        : `Cấp độ ${gig.freelancer.level}`}
+                    </p>
                     <div className="flex items-center mt-1">
-                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                      <Star
+                        size={16}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
                       <span className="font-medium ml-1">
                         {gig.rating?.average || "5.0"}
                       </span>
@@ -150,7 +175,7 @@ const GigDetailPage = () => {
                 </>
               )}
             </div>
-            
+
             <button className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
               Liên hệ với tôi
             </button>
@@ -159,12 +184,12 @@ const GigDetailPage = () => {
           {/* Reviews */}
           <div className="mb-10">
             <h2 className="text-xl font-bold mb-4">
-              Đánh giá 
+              Đánh giá
               <span className="text-gray-500 font-normal ml-2">
                 ({gig.rating?.count || "0"})
               </span>
             </h2>
-            
+
             {/* Placeholder for reviews */}
             <div className="text-gray-500 italic text-center py-8">
               Chưa có đánh giá nào cho dịch vụ này.
@@ -193,25 +218,27 @@ const GigDetailPage = () => {
                 Cao cấp
               </button>
             </div>
-            
+
             {/* Package Content */}
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold">Gói cơ bản</h3>
-                <span className="font-bold text-xl">${gig.price.toString()}</span>
+                <span className="font-bold text-xl">
+                  ${gig.price.toString()}
+                </span>
               </div>
-              
+
               <p className="text-gray-700 mb-4 text-sm">
                 {gig.description.substring(0, 100)}...
               </p>
-              
+
               {/* Details */}
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-gray-500" />
                   <span className="text-sm">{gig.duration} ngày giao hàng</span>
                 </div>
-                
+
                 {/* More features can be added here */}
                 <div className="flex items-center gap-2">
                   <MessageSquare size={16} className="text-gray-500" />
@@ -222,7 +249,7 @@ const GigDetailPage = () => {
                   <span className="text-sm">Bàn giao đầy đủ mã nguồn</span>
                 </div>
               </div>
-              
+
               {/* Order Button */}
               <Link
                 to={`/payment?gig=${gig._id}&price=${gig.price}`}
@@ -230,21 +257,21 @@ const GigDetailPage = () => {
               >
                 Đặt dịch vụ ngay
               </Link>
-              
+
               {/* Compare Packages */}
               <button className="text-gray-500 hover:text-gray-700 text-sm block text-center mt-4 w-full">
                 So sánh các gói
               </button>
             </div>
-            
+
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
               <button className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full">
                 <Heart size={18} />
                 <span>Lưu vào yêu thích</span>
               </button>
-              
-              <Link 
+
+              <Link
                 to={`/custom-order/${gig._id}`}
                 className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
               >

@@ -3,7 +3,16 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Search, Bell, Mail, Heart } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  Bell,
+  Mail,
+  Heart,
+  ShoppingCart,
+} from "lucide-react";
 import {
   useUser,
   UserButton,
@@ -48,7 +57,7 @@ export default function Navbar() {
         { title: "", path: "#", icon: <Bell size={20} /> },
         { title: "", path: "#", icon: <Mail size={20} /> },
         { title: "", path: "#", icon: <Heart size={20} /> },
-        { title: "Đơn hàng", path: "/orders" },
+        { title: "", path: "/orders", icon: <ShoppingCart size={20} /> },
       ]
     : [
         { title: "Khám phá", path: "#", hasDropdown: true },
@@ -61,7 +70,10 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
         {/* Logo */}
         <div className="font-bold text-2xl sm:text-3xl flex-shrink-0">
-          <a href="/" className="flex items-center gap-2 font-bold text-xl">
+          <a
+            href="/dash-board"
+            className="flex items-center gap-2 font-bold text-xl"
+          >
             <img
               src="/Logo_jopViet.png"
               alt="JopViet Logo"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Heart, Play } from "lucide-react";
+import { Heart, Play, Pause } from "lucide-react";
 import { GrFormNext, GrFormPrevious } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
@@ -35,33 +35,19 @@ interface Gig {
 
 interface GigCardProps {
   gig: Gig;
-  videoUrl?: string;
   onFavorite: (id: string) => void;
-  onPlayVideo: (videoUrl: string) => void;
 }
 
-const GigCard: React.FC<GigCardProps> = ({
-  gig,
-  videoUrl,
-  onFavorite,
-  onPlayVideo,
-}) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2);
   const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
-
-  const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(
-      /(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/
-    )?.[1];
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-  };
 
   useEffect(() => {
     if (!isCurrentMediaVideo && isHovered) {
@@ -69,7 +55,7 @@ const GigCard: React.FC<GigCardProps> = ({
         setCurrentSlide((prev) =>
           prev === gig.media.length - 1 ? 0 : prev + 1
         );
-      }, 1000);
+      }, 2000);
     }
     return () => {
       if (slideInterval.current) {
@@ -77,6 +63,28 @@ const GigCard: React.FC<GigCardProps> = ({
       }
     };
   }, [isCurrentMediaVideo, gig.media.length, isHovered]);
+
+  useEffect(() => {
+    if (isCurrentMediaVideo && videoRef.current) {
+      videoRef.current.play();
+      setIsPlaying(true);
+
+      const handleVideoEnd = () => {
+        setCurrentSlide((prev) =>
+          prev === gig.media.length - 1 ? 0 : prev + 1
+        );
+        setIsPlaying(false);
+      };
+
+      videoRef.current.addEventListener("ended", handleVideoEnd);
+
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener("ended", handleVideoEnd);
+        }
+      };
+    }
+  }, [currentSlide, isCurrentMediaVideo, gig.media.length]);
 
   const nextSlide = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -88,17 +96,22 @@ const GigCard: React.FC<GigCardProps> = ({
     setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1));
   };
 
-  const handlePlayVideo = () => {
-    const currentMedia = gig.media[currentSlide];
-    if (currentMedia.type === "video") {
-      setShowVideoModal(true);
-      onPlayVideo?.(currentMedia.url);
-    }
-  };
-
   const toggleFavorite = () => {
     setIsFavorite((prev) => !prev);
     onFavorite?.(gig._id);
+  };
+
+  const togglePlayPause = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   return (
@@ -118,26 +131,44 @@ const GigCard: React.FC<GigCardProps> = ({
                   index === currentSlide ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <img
-                  src={
-                    media.type === "image"
-                      ? media.url
-                      : media.thumbnailUrl || "/placeholder.svg"
-                  }
-                  alt={`${gig.title} - image ${index + 1}`}
-                  className="object-cover w-full h-full"
-                />
-                {media.type === "video" && index === currentSlide && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <button
-                      onClick={handlePlayVideo}
-                      className="w h-6 rounded-full bg-white/80 flex items-center justify-center text-black hover:bg-white transition-colors"
-                      aria-label="Play video"
-                    >
-                      <Play size={10} />
-                    </button>
+                {media.type === "image" ? (
+                  <img
+                    src={media.url}
+                    alt={`${gig.title} - image ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                ) : media.type === "video" ? (
+                  <div className="relative w-full h-full">
+                    {index === currentSlide ? (
+                      <>
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          loop={false}
+                        >
+                          <source src={media.url} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                        <button
+                          onClick={togglePlayPause}
+                          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 z-30 ${
+                            isHovered ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                        </button>
+                      </>
+                    ) : (
+                      <img
+                        src={media.thumbnailUrl || "/placeholder.svg"}
+                        alt={`${gig.title} - video thumbnail ${index + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                    )}
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
 
@@ -223,50 +254,9 @@ const GigCard: React.FC<GigCardProps> = ({
             <div className="font-bold text-sm sm:text-lg text-blue-600">
               From US${formattedPrice}
             </div>
-
-            {/* Inline video (optional) */}
-            {videoUrl && (
-              <video className="mt-4 rounded-md" controls src={videoUrl}>
-                Your browser does not support the video tag.
-              </video>
-            )}
           </div>
         </div>
       </Link>
-
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-4xl">
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
-            >
-              Đóng
-            </button>
-            {gig.media[currentSlide].url.includes("youtube.com") ||
-            gig.media[currentSlide].url.includes("youtu.be") ? (
-              <iframe
-                src={getYouTubeEmbedUrl(gig.media[currentSlide].url)}
-                className="w-full aspect-video rounded-lg"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                className="absolute top-0 left-0 w-full h-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-              >
-                <source src={gig.media[currentSlide].url} type="video/mp4" />
-              </video>
-            )}
-          </div>
-        </div>
-      )}
     </Tooltip.Provider>
   );
 };

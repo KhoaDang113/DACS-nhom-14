@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = () => {
     <div className="flex flex-col w-full h-full items-center justify-start">
       <Navbar />
       <CategoryNav />
-      <main className="pb-16 md:pb-0">
+      <main className="pb-16 md:pb-0 w-full">
         <Outlet />
       </main>
       <MobileNavbar />
