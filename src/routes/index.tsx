@@ -3,20 +3,34 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import SignInPage from "../pages/signIn";
 import SignUpPage from "../pages/signUp";
 import PaymentPage from "../pages/paymentPage";
-import Layout from "../components/layout";
+import Layout from "../components/layouts/layout";
 import HomePage from "../pages/homePage";
 import Dashboard from "../pages/dashboard";
 import ProfilePage from "../pages/profile";
 import GigDetailPage from "../pages/gigDetail";
 import CustomOrderPage from "../pages/customOrderPage";
 import BuyerOrdersPage from "../pages/buyerOrders";
-import AdvancedSearchPage from '../pages/advancedSearchPage';
+import AdvancedSearchPage from "../pages/advancedSearchPage";
 import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
 import OrderManagement from "../pages/orderManagement";
-import SellerDashboard from "../pages/sellerDashboard"; 
-import EditGigsPage from "../pages/editGig";// Import the SellerDashboard component
-
+import SellerDashboard from "../pages/sellerDashboard";
+import EditGig from "../pages/editGig";
+import BookmarkPage from "../pages/bookmarkPage";
+import RedirectDashboard from "../pages/RedirectDashboard";
+import RequireAdmin from "../middleware/RequireAdmin";
+//admin
+import AdminLayout from "../components/layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/Dashboard";
+import AdminAccounts from "../pages/admin/AdminAccounts";
+import AdminCategoryManagement from "../pages/admin/CategoryManagement";
+import AdminGigApproval from "../pages/admin/GigApproval";
+import AdminSellerManagement from "../pages/admin/SellerManagement";
+import AdminTagManagement from "../pages/admin/TagManagement";
+import AdminTransactionHistory from "../pages/admin/TransactionHistory";
+import AdminUserFeedback from "../pages/admin/UserFeedback";
+import AdminUserPermission from "../pages/admin/UserPermissions";
+import AdminViolationReport from "../pages/admin/ViolationReports";
 const router: RouteObject[] = [
   {
     path: "/",
@@ -30,8 +44,8 @@ const router: RouteObject[] = [
       { path: "/create-gig", element: <CreateGigForm /> },
       { path: "/seller-gigs", element: <SellerGigsPage />},
       { path: "/order-management", element: <OrderManagement />},
-      { path: "/seller-dashboard", element: <SellerDashboard/>}, 
-      { path: "/edit-gig/:id", element: <EditGigsPage/>}, // Add the jobs route
+      { path: "/seller-dashboard", element: <SellerDashboard/>},
+      { path: "/edit-gigs", element: <EditGig/>}, 
       { path: "/profile", element: (
           <>
             <SignedIn>
@@ -41,10 +55,12 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/gig/:id", element: <GigDetailPage /> },
-      { path: "/custom-order/:id", element: (
+      {
+        path: "/custom-order/:id",
+        element: (
           <>
             <SignedIn>
               <CustomOrderPage />
@@ -53,10 +69,10 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
-      { 
-        path: "/orders", 
+      {
+        path: "/orders",
         element: (
           <>
             <SignedIn>
@@ -66,9 +82,43 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
+      { path: "/bookmarks", element: (
+          <>
+            <SignedIn>
+              <BookmarkPage />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ) 
+      },
+      { path: "/redirect-dashboard", element: <RedirectDashboard /> },
+    ],
+  },
+
+  //admin path
+  {
+    path: "/admin",
+    element: (
+      <RequireAdmin>
+        <AdminLayout />
+      </RequireAdmin>
+    ),
+    children: [
+      { path: "dashboard", element: <AdminDashboard /> },
+      { path: "accounts", element: <AdminAccounts /> },
+      { path: "category-management", element: <AdminCategoryManagement /> },
+      { path: "gig-approval", element: <AdminGigApproval /> },
+      { path: "seller-management", element: <AdminSellerManagement /> },
+      { path: "tag-management", element: <AdminTagManagement /> },
+      { path: "transaction-history", element: <AdminTransactionHistory /> },
+      { path: "user-feedback", element: <AdminUserFeedback /> },
+      { path: "user-permission", element: <AdminUserPermission /> },
+      { path: "violation-report", element: <AdminViolationReport /> },
     ],
   },
 ];

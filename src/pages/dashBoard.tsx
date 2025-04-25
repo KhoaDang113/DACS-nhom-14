@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { sampleGigs, Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+import Skeleton from "../components/Card/Sekeleton";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -27,26 +28,32 @@ function Dashboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const [loading, setLoading] = useState(true);
   const handlePlayVideo = (videoUrl: string) => {
     setVideoMessage(`Video would play: ${videoUrl}`);
     setTimeout(() => {
       setVideoMessage(null);
     }, 3000);
   };
-
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  }, []);
   return (
     <>
       <SignedIn>
         <div className="min-h-screen w-full bg-gray-50">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
             <div className="py-4 sm:py-6 md:py-10">
-
+              {/* Welcome Section */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl mb-6 md:mb-10">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
                   👋 Chào mừng đến với JopViet
                 </h1>
                 <p className="text-sm sm:text-base md:text-lg opacity-95">
-                  Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc, tạo sản phẩm mang dấu ấn cá nhân!
+                  Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc,
+                  tạo sản phẩm mang dấu ấn cá nhân!
                 </p>
                 <div className="mt-5">
                   <button
@@ -97,17 +104,21 @@ function Dashboard() {
                 </div>
 
                 <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
-                  {filteredGigs.map((gig: Gig) => (
-                    <GigCard
-                      key={gig._id}
-                      gig={gig}
-                      onFavorite={(id: string) =>
-                        console.log(`Favorited gig: ${id}`)
-                      }
-                      onPlayVideo={handlePlayVideo}
-                      viewMode={viewMode}
-                    />
-                  ))}
+                  {filteredGigs.map((gig: Gig) =>
+                    loading ? (
+                      <Skeleton />
+                    ) : (
+                      <GigCard
+                        key={gig._id}
+                        gig={gig}
+                        onFavorite={(id: string) =>
+                          console.log(`Favorited gig: ${id}`)
+                        }
+                        onPlayVideo={handlePlayVideo}
+                        viewMode={viewMode}
+                      />
+                    )
+                  )}
                 </div>
               </div>
 

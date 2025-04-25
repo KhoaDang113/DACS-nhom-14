@@ -1,9 +1,10 @@
-import React from 'react';
-import { mockData } from '../data/mockData';
-import { FaDollarSign, FaShoppingCart, FaStar, FaBell } from 'react-icons/fa';
+import React from "react";
+import { mockData } from "../data/mockData";
+import { FaDollarSign, FaShoppingCart, FaStar, FaBell } from "react-icons/fa";
 
 const SellerDashboard: React.FC = () => {
-  const { revenue, completedOrders, averageRating, newOrders, notifications } = mockData;
+  const { revenue, completedOrders, averageRating, newOrders, notifications } =
+    mockData;
 
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
@@ -28,7 +29,9 @@ const SellerDashboard: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold">Đơn hoàn thành</h2>
             <p className="text-2xl font-bold">{completedOrders.count}</p>
-            <p className="text-sm">Tỷ lệ hoàn thành: {completedOrders.completionRate}</p>
+            <p className="text-sm">
+              Tỷ lệ hoàn thành: {completedOrders.completionRate}
+            </p>
           </div>
         </div>
 

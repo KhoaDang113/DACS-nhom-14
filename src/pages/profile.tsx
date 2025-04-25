@@ -111,19 +111,34 @@ const mockUser = {
 export default function ProfilePage() {
   const { user: clerkUser } = useUser();
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  // Kết hợp dữ liệu từ Clerk với mockUser
-  const userData = {
+  const [userData, setUserData] = useState({
     ...mockUser,
-    fullName: clerkUser?.fullName || mockUser.fullName,
-    profilePicture: clerkUser?.imageUrl || mockUser.profilePicture,
-  };
+    fullName: '',
+    profilePicture: '',
+  });
 
   useEffect(() => {
     if (clerkUser) {
+      setUserData({
+        ...mockUser,
+        fullName: clerkUser?.fullName || mockUser.fullName,
+        profilePicture: clerkUser?.imageUrl || mockUser.profilePicture,
+      });
       setLoading(false);
     }
   }, [clerkUser]);
+
+  const handleUpdateUser = (updatedData: any) => {
+    // Trong trường hợp thực tế, bạn sẽ gửi API request để cập nhật thông tin
+    setUserData(prev => ({
+      ...prev,
+      ...updatedData
+    }));
+    
+    // Giả lập API call thành công
+    // Trong thực tế, bạn có thể hiển thị thông báo thành công sau khi API trả về
+    alert("Cập nhật thông tin thành công!");
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -142,7 +157,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ProfileInfo user={userData} />            
+            <ProfileInfo user={userData} onUpdateUser={handleUpdateUser} />            
           </div>
           
           {/* Main Content */}

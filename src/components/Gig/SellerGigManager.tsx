@@ -8,7 +8,7 @@ interface Gig {
   title: string;
   description: string;
   media: [{ url: string; type: string }];
-  status: 'approved' | 'hidden' | 'pending' | 'rejected';
+  status: "approved" | "hidden" | "pending" | "rejected";
   views: number;
   orders: number;
 }
@@ -86,15 +86,31 @@ const SellerGigManager: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'approved':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Đang hoạt động</span>;
-      case 'hidden':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Tạm dừng</span>;
-      case 'rejected':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Bị từ chối</span>;
+    switch (status) {
+      case "approved":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Đang hoạt động
+          </span>
+        );
+      case "hidden":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            Tạm dừng
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            Bị từ chối
+          </span>
+        );
       default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Đang chờ duyệt</span>;
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            Đang chờ duyệt
+          </span>
+        );
     }
   };
 
