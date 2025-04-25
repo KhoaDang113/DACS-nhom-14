@@ -16,29 +16,41 @@ import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
 import { useNavigate } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
+
 export default function HomePage() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
   const { getToken } = useAuth();
-  const fectToken = async () => {
+
+  const fetchToken = async () => {
     try {
       const token = await getToken({ template: "TemplateClaim" });
       console.log("Token:", token);
-      // Bạn có thể sử dụng token này sau khi lấy được
+      return token;
     } catch (error) {
       console.error("Lỗi khi lấy token:", error);
+      return null;
     }
   };
+
   useEffect(() => {
-    if (isSignedIn) {
-      fectToken();
-    }
-  }, [isSignedIn, location]);
-  useEffect(() => {
-    if (isSignedIn) {
-      navigate("/dash-board");
-    }
-  }, [isSignedIn, navigate]);
+    const checkAuthAndRedirect = async () => {
+      if (!isLoaded) return; // Đợi cho đến khi Clerk đã tải xong
+
+      if (isSignedIn) {
+        const token = await fetchToken();
+        if (token) {
+          // Thêm một khoảng thời gian ngắn để đảm bảo token đã được lưu
+          setTimeout(() => {
+            navigate("/redirect-dashboard");
+          }, 500);
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [isSignedIn, isLoaded, navigate, getToken]);
+
   useEffect(() => {
     document.body.style.overflowX = "hidden";
     return () => {

@@ -92,7 +92,7 @@ export default function SearchBar() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setShowDropdown(true)}
-          placeholder="What service are you looking for today?"
+          placeholder="Bạn sẽ tìm kiếm dịch vụ nào cho hôm nay?"
           className="w-full px-3 py-2 text-sm text-gray-700 bg-white outline-none"
         />
         <button

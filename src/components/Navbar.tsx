@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  Search,
   Bell,
   Mail,
   Heart,
@@ -69,7 +68,7 @@ export default function Navbar() {
         {/* Logo */}
         <div className="font-bold text-2xl sm:text-3xl flex-shrink-0">
           <a
-            href="/dash-board"
+            href="/dashboard"
             className="flex items-center gap-2 font-bold text-xl"
           >
             <img

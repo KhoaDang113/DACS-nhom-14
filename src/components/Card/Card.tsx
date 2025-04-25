@@ -85,7 +85,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2);
+  const formattedPrice = Number.parseFloat(gig.price.toString());
   const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
 
   useEffect(() => {
@@ -305,7 +305,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
 
             {/* Price */}
             <div className="font-bold text-sm sm:text-lg text-blue-600">
-              {formatPrice(gig.price)}
+            Giá: {formatPrice(gig.price)}
             </div>
           </div>
         </div>
