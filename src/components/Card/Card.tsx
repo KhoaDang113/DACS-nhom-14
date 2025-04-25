@@ -46,7 +46,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2);
+  const formattedPrice = Number.parseFloat(gig.price.toString());
   const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
 
   useEffect(() => {
@@ -234,7 +234,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
             {/* Title with Tooltip */}
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 mb-2 hover:text-blue-600 transition-colors cursor-default">
+                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 min-h-[40px] mb-2 hover:text-blue-600 transition-colors cursor-default">
                   {gig.title}
                 </h3>
               </Tooltip.Trigger>
@@ -252,7 +252,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
 
             {/* Price */}
             <div className="font-bold text-sm sm:text-lg text-blue-600">
-              From US${formattedPrice}
+              Giá:{formattedPrice}VND
             </div>
           </div>
         </div>
