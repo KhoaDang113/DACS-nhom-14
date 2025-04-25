@@ -8,7 +8,7 @@ const SellerDashboard: React.FC = () => {
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <h1 className="text-3xl font-bold text-gray-800">Tổng quan kinh doanh</h1>
+      <h1 className="text-3xl font-bold text-gray-800">Dashboard tổng quan</h1>
 
       {/* Metrics Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -41,14 +41,6 @@ const SellerDashboard: React.FC = () => {
               {averageRating.score}/{averageRating.maxScore}
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Chart Section */}
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">Biểu đồ doanh thu</h2>
-        <div className="h-64 bg-gray-100 flex items-center justify-center rounded-lg">
-          <p className="text-gray-500">Biểu đồ sẽ được hiển thị ở đây</p>
         </div>
       </div>
 

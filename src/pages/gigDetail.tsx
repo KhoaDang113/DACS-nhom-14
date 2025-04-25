@@ -156,21 +156,6 @@ const GigDetailPage = () => {
             </button>
           </div>
 
-          {/* Reviews */}
-          <div className="mb-10">
-            <h2 className="text-xl font-bold mb-4">
-              Đánh giá 
-              <span className="text-gray-500 font-normal ml-2">
-                ({gig.rating?.count || "0"})
-              </span>
-            </h2>
-            
-            {/* Placeholder for reviews */}
-            <div className="text-gray-500 italic text-center py-8">
-              Chưa có đánh giá nào cho dịch vụ này.
-            </div>
-          </div>
-
           {/* Phần hiển thị đánh giá seller */}
           <div className="mt-10">
             {/* Lọc đánh giá theo gigId hiện tại nếu cần */}
@@ -180,24 +165,11 @@ const GigDetailPage = () => {
 
         {/* Sidebar - Order Box */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-md sticky top-24">
-            {/* Package Options (Tabs) */}
-            <div className="flex border-b overflow-auto scrollbar-hide">
-              <button className="px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1 whitespace-nowrap">
-                Cơ bản
-              </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Nâng cao
-              </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Cao cấp
-              </button>
-            </div>
-            
+          <div className="bg-white border border-gray-200 rounded-lg shadow-md sticky top-24">            
             {/* Package Content */}
             <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold">Gói cơ bản</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-xl">Giá</h4>
                 <span className="font-bold text-xl">${gig.price.toString()}</span>
               </div>
               
@@ -230,11 +202,6 @@ const GigDetailPage = () => {
               >
                 Đặt dịch vụ ngay
               </Link>
-              
-              {/* Compare Packages */}
-              <button className="text-gray-500 hover:text-gray-700 text-sm block text-center mt-4 w-full">
-                So sánh các gói
-              </button>
             </div>
             
             {/* Contact Seller */}

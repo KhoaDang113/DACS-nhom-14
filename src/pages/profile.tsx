@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileInfo from '../components/Profile/ProfileInfo';
-
+import { useNavigate } from "react-router-dom";
 import ProfileTabs from '../components/Profile/ProfileTabs';
 
 const mockGigs = [
@@ -111,7 +111,7 @@ const mockUser = {
 export default function ProfilePage() {
   const { user: clerkUser } = useUser();
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   // Kết hợp dữ liệu từ Clerk với mockUser
   const userData = {
     ...mockUser,
@@ -131,7 +131,13 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProfileHeader user={userData} />     
+      <ProfileHeader user={userData} />
+      <button
+        onClick={() => navigate("/seller-gigs")}
+        className="mt-5 inline-block rounded-xl bg-white text-blue-700 font-semibold px-5 py-2 text-sm shadow-md hover:bg-blue-50 transition"
+      >
+        Danh sách dịch vụ của bạn
+      </button>   
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
@@ -145,6 +151,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

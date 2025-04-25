@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Search, Bell, Mail, Heart } from "lucide-react";
+import { Menu, X, ChevronDown, Search, Heart } from "lucide-react";
 import {
   useUser,
   UserButton,
   SignInButton,
   SignUpButton,
 } from "@clerk/clerk-react";
-import axios from "axios"; // Thêm import axios
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,24 +38,8 @@ export default function Navbar() {
     }
   };
 
-  // Tạm bỏ phần xử lý ẩn hiện thanh tìm kiếm theo scroll
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     const heroSection = document.querySelector(".h-screen");
-  //     if (heroSection) {
-  //       const heroBottom = heroSection.getBoundingClientRect().bottom;
-  //       setShowSearch(heroBottom < 0);
-  //     }
-  //   };
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
-
-  // Thay đổi navLinks thành conditional rendering
   const navLinks = isSignedIn ? [
-    { title: "", path: "#", icon: <Bell size={20} /> },
-    { title: "", path: "#", icon: <Mail size={20} /> },
-    { title: "", path: "#", icon: <Heart size={20} /> },
+    { path: "#", icon: <Heart size={20} /> },
     { title: "Đơn hàng", path: "/orders" }
   ] : [
     { title: "Khám phá", path: "#", hasDropdown: true },
@@ -99,13 +83,15 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
+          {isSignedIn && <NotificationBell unreadCount={2} />}
           {navLinks.map((link, index) => (
             <div key={index} className="flex items-center">
               <Link
                 to={link.path}
-                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center"
+                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2"
               >
-                {link.icon ? link.icon : link.title}
+                {link.icon}
+                <span>{link.title}</span>
               </Link>
               {!isSignedIn && link.hasDropdown && (
                 <ChevronDown className="text-black ml-1" size={16} />

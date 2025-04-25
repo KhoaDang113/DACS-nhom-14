@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Heart, Play, Star } from "lucide-react"
-import { GrFormNext, GrFormPrevious } from "react-icons/gr"
+import { Heart, Play } from "lucide-react"
+
 import { Link } from "react-router-dom"
 import * as Tooltip from "@radix-ui/react-tooltip"
 
@@ -38,9 +38,10 @@ interface GigCardProps {
   videoUrl?: string
   onFavorite: (id: string) => void
   onPlayVideo: (videoUrl: string) => void
+  viewMode?: "grid" | "list"
 }
 
-const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVideo }) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVideo, viewMode = "grid" }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isFavorite, setIsFavorite] = useState(false)
   const [showVideoModal, setShowVideoModal] = useState(false)
@@ -69,15 +70,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
     }
   }, [isCurrentMediaVideo, gig.media.length, isHovered])
 
-  const nextSlide = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1))
-  }
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1))
-  }
+
+
 
   const handlePlayVideo = () => {
     const currentMedia = gig.media[currentSlide]
@@ -92,20 +87,27 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
     onFavorite?.(gig._id)
   }
 
-  const formatRatingCount = (count: number) => {
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count.toString()
-  }
-
   return (
     <Tooltip.Provider>
-      <Link to={`/gig/${gig._id}`} className="block">
+      <Link
+        to={`/gig/${gig._id}`}
+        className={`block ${viewMode === "list" ? "flex p-4 rounded-lg" : ""}`}
+      >
         <div
-          className="w-full rounded-lg overflow-hidden shadow-md bg-gray-50 transition-transform hover:scale-[1.02]"
+          className={`w-full rounded-lg overflow-hidden shadow-md bg-gray-50 transition-transform hover:scale-[1.02] ${
+            viewMode === "list" ? "flex gap-6 items-start py-4" : ""
+          }`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Media Slider */}
-          <div className="relative aspect-[4/3] w-full group">
+          <div
+            className={`relative ${
+              viewMode === "list" 
+                ? "w-60 h-40 flex-shrink-0 rounded-lg overflow-hidden ml-4" 
+                : "aspect-[4/3]"
+            } group`}
+          >
             {gig.media.map((media, index) => (
               <div
                 key={index}
@@ -122,10 +124,10 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <button
                       onClick={handlePlayVideo}
-                      className="w h-6 rounded-full bg-white/80 flex items-center justify-center text-black hover:bg-white transition-colors"
+                      className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-black hover:bg-white transition-colors"
                       aria-label="Play video"
                     >
-                      <Play size={10} />
+                      <Play size={16} />
                     </button>
                   </div>
                 )}
@@ -133,30 +135,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
             ))}
 
             {/* Controls */}
-            <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-              <GrFormPrevious
-                className="bg-white border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 ml-2 hover:bg-gray-50 transition-colors"
-                onClick={prevSlide}
-              />
-              <GrFormNext
-                className="bg-white border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 mr-2 hover:bg-gray-50 transition-colors"
-                onClick={nextSlide}
-              />
-            </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              {gig.media.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    index === currentSlide ? "bg-white w-3" : "bg-white/60 hover:bg-white/80"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
 
             {/* Favorite Button */}
             <button
@@ -172,10 +151,10 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
           </div>
 
           {/* Info */}
-          <div className="p-3 sm:p-4">
+          <div className={`p-3 sm:p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
             {/* Freelancer */}
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden relative">
+              <div className={`${viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"} rounded-full overflow-hidden relative`}>
                 <img
                   src={gig.freelancer?.avatar || "/placeholder.svg"}
                   alt={gig.freelancer?.name || "Freelancer"}
@@ -184,7 +163,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               </div>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
-                  <span className="font-medium text-xs sm:text-sm cursor-default">
+                  <span className={`font-medium ${viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"} cursor-default`}>
                     {gig.freelancer?.name || "Freelancer"}
                   </span>
                 </Tooltip.Trigger>
@@ -204,7 +183,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
             {/* Title with Tooltip */}
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 mb-2 hover:text-blue-600 transition-colors cursor-default">
+                <h3 className={`font-medium line-clamp-2 mb-3 hover:text-blue-600 transition-colors cursor-default ${
+                  viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
+                }`}>
                   {gig.title}
                 </h3>
               </Tooltip.Trigger>
@@ -220,17 +201,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               </Tooltip.Portal>
             </Tooltip.Root>
 
-            {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <Star size={12} className="fill-yellow-400 text-yellow-400" />
-              <span className="font-bold text-xs sm:text-sm">{gig.rating?.average || 4.9}</span>
-              <span className="text-gray-500 text-[10px] sm:text-xs">
-                ({gig.rating?.count ? formatRatingCount(gig.rating.count) : "1k+"})
-              </span>
-            </div>
-
             {/* Price */}
-            <div className="font-bold text-sm sm:text-lg text-blue-600">
+            <div className={`font-bold text-blue-600 ${viewMode === "list" ? "text-xl" : "text-sm sm:text-lg"}`}>
               From US${formattedPrice}
             </div>
 
@@ -264,10 +236,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
             ) : (
               <video
                 ref={videoRef}
-                className="absolute top-0 left-0 w-full h-full object-cover"
+                className="w-full aspect-video rounded-lg"
                 autoPlay
-                loop
-                muted
+                controls
                 playsInline
               >
                 <source src={gig.media[currentSlide].url} type="video/mp4" />
