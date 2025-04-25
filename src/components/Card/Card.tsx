@@ -40,7 +40,8 @@ interface GigCardProps {
   gig: Gig;
   onFavorite?: (id: string) => void;
   onPlayVideo?: (videoUrl: string) => void;
-  isFavorited?: boolean; // Thêm prop này
+  isFavorited?: boolean;
+  viewMode?: "grid" | "list" // Thêm prop này
 }
 
 // Hàm format giá trong Card.tsx
@@ -67,7 +68,7 @@ const formatPrice = (price: any) => {
   }).format(numericalPrice);
 }
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavorited = false }) => {
+const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavorited = false, viewMode }) => {
   // Lấy trạng thái từ context
   const { isGigFavorited, toggleFavorite: toggleFavoriteContext } = useFavoritesContext();
   
@@ -238,7 +239,6 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
 
             {/* Controls */}
 
-
             {/* Favorite Button */}
             <button
               onClick={toggleFavorite} // Sử dụng hàm toggleFavorite mới
@@ -289,7 +289,9 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
             {/* Title with Tooltip */}
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 min-h-[40px] mb-2 hover:text-blue-600 transition-colors cursor-default">
+                <h3 className={`font-medium line-clamp-2 mb-3 hover:text-blue-600 transition-colors cursor-default ${
+                  viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
+                }`}>
                   {gig.title}
                 </h3>
               </Tooltip.Trigger>
@@ -306,8 +308,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
             </Tooltip.Root>
 
             {/* Price */}
-            <div className="font-bold text-sm sm:text-lg text-blue-600">
-            Giá: {formatPrice(gig.price)}
+            <div className={`font-bold text-blue-600 ${viewMode === "list" ? "text-xl" : "text-sm sm:text-lg"}`}>
+              Giá: {formatPrice(gig.price)}
             </div>
           </div>
         </div>
