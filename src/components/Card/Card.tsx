@@ -5,6 +5,8 @@ import { Heart, Play, Pause } from "lucide-react";
 import { GrFormNext, GrFormPrevious } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import axios from "axios"; // Thêm import axios ở đầu file
+import { useFavoritesContext } from '../../context/FavoritesContext';
 
 interface User {
   _id: string;
@@ -33,14 +35,51 @@ interface Gig {
   };
 }
 
+// Cập nhật interface GigCardProps để bổ sung prop isFavorited
 interface GigCardProps {
   gig: Gig;
-  onFavorite: (id: string) => void;
+  onFavorite?: (id: string) => void;
+  onPlayVideo?: (videoUrl: string) => void;
+  isFavorited?: boolean; // Thêm prop này
 }
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
+// Hàm format giá trong Card.tsx
+const formatPrice = (price: any) => {
+  let numericalPrice = price;
+  
+  // Xử lý nếu là object Decimal128
+  if (price && typeof price === 'object' && price.$numberDecimal) {
+    numericalPrice = parseFloat(price.$numberDecimal);
+  } 
+  // Xử lý nếu là string
+  else if (typeof price === 'string') {
+    numericalPrice = parseFloat(price);
+  }
+  
+  // Kiểm tra nếu giá trị không hợp lệ
+  if (isNaN(numericalPrice)) {
+    return 'Liên hệ';
+  }
+  
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(numericalPrice);
+}
+
+const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavorited = false }) => {
+  // Lấy trạng thái từ context
+  const { isGigFavorited, toggleFavorite: toggleFavoriteContext } = useFavoritesContext();
+  
+  // Ưu tiên prop từ parent, nếu không có thì lấy từ context
+  const [isFavorite, setIsFavorite] = useState(isFavorited || isGigFavorited(gig._id));
+
+  // Cập nhật state khi prop hoặc context thay đổi
+  useEffect(() => {
+    setIsFavorite(isFavorited || isGigFavorited(gig._id));
+  }, [isFavorited, isGigFavorited, gig._id]);
+
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
@@ -96,9 +135,23 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
     setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1));
   };
 
-  const toggleFavorite = () => {
-    setIsFavorite((prev) => !prev);
-    onFavorite?.(gig._id);
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const result = await toggleFavoriteContext(gig._id);
+      
+      // Cập nhật state local
+      setIsFavorite(result.isFavorite);
+      
+      // Gọi callback từ parent nếu có
+      if (onFavorite) {
+        onFavorite(gig._id);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
   };
 
   const togglePlayPause = (e: React.MouseEvent) => {
@@ -186,7 +239,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
 
             {/* Favorite Button */}
             <button
-              onClick={toggleFavorite}
+              onClick={toggleFavorite} // Sử dụng hàm toggleFavorite mới
               className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
               aria-label={
                 isFavorite ? "Remove from favorites" : "Add to favorites"
@@ -252,7 +305,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite }) => {
 
             {/* Price */}
             <div className="font-bold text-sm sm:text-lg text-blue-600">
-              Giá:{formattedPrice}VND
+            Giá: {formatPrice(gig.price)}
             </div>
           </div>
         </div>

@@ -51,18 +51,16 @@ export default function Navbar() {
   // }, []);
 
   // Thay đổi navLinks thành conditional rendering
-  const navLinks = isSignedIn
-    ? [
-        { title: "", path: "#", icon: <Bell size={20} /> },
-        { title: "", path: "#", icon: <Mail size={20} /> },
-        { title: "", path: "#", icon: <Heart size={20} /> },
-        { title: "", path: "/orders", icon: <ShoppingCart size={20} /> },
-      ]
-    : [
-        { title: "Khám phá", path: "#", hasDropdown: true },
-        { title: "Trở thành người bán", path: "#" },
-        { title: "Danh sách công việc", path: "/jobs" },
-      ];
+  const navLinks = isSignedIn ? [
+    { title: "", path: "#", icon: <Bell size={20} /> },
+    { title: "", path: "#", icon: <Mail size={20} /> },
+    { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
+    { title: "", path: "/orders", icon: <ShoppingCart size={20} /> }
+  ] : [
+    { title: "Khám phá", path: "#", hasDropdown: true },
+    { title: "Trở thành người bán", path: "#" },
+    { title: "Danh sách công việc", path: "/jobs" },
+  ];
 
   return (
     <header className="sticky left-0 top-0 z-50 w-full border-b bg-white md:pl-[30px] md:pr-[30px]">

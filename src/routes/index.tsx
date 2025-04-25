@@ -16,6 +16,7 @@ import SellerGigsPage from "../pages/sellerGigs";
 import OrderManagement from "../pages/orderManagement";
 import SellerDashboard from "../pages/sellerDashboard";
 import EditGig from "../pages/editGig";
+import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import RequireAdmin from "../middleware/RequireAdmin";
 //admin
@@ -41,13 +42,11 @@ const router: RouteObject[] = [
       { path: "/payment", element: <PaymentPage /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/create-gig", element: <CreateGigForm /> },
-      { path: "/seller-gigs", element: <SellerGigsPage /> },
-      { path: "/order-management", element: <OrderManagement /> },
-      { path: "/seller-dashboard", element: <SellerDashboard /> },
-      { path: "/edit-gigs", element: <EditGig /> }, // Add the jobs route
-      {
-        path: "/profile",
-        element: (
+      { path: "/seller-gigs", element: <SellerGigsPage />},
+      { path: "/order-management", element: <OrderManagement />},
+      { path: "/seller-dashboard", element: <SellerDashboard/>},
+      { path: "/edit-gigs", element: <EditGig/>}, 
+      { path: "/profile", element: (
           <>
             <SignedIn>
               <ProfilePage />
@@ -86,6 +85,17 @@ const router: RouteObject[] = [
         ),
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
+      { path: "/bookmarks", element: (
+          <>
+            <SignedIn>
+              <BookmarkPage />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ) 
+      },
       { path: "/redirect-dashboard", element: <RedirectDashboard /> },
     ],
   },

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import axios from "axios"; // Thêm import axios
 import {
   Heart,
   Star,
@@ -8,31 +9,146 @@ import {
   CheckCircle,
   FileText,
 } from "lucide-react";
-import { sampleGigs, Gig } from "../data/jobs";
+import { Gig } from "../data/jobs"; // Vẫn giữ lại type Gig
 import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
 
+// Định nghĩa loại MediaItem cho mảng media
+interface MediaItem {
+  url: string;
+  type: string;
+  thumbnailUrl?: string;
+}
+
+// Cập nhật interface Gig để phản ánh cấu trúc dữ liệu từ API
+interface GigDetail {
+  _id: string;
+  freelancerId: string;
+  category_id: string;
+  views: number;
+  status: string;
+  ordersCompleted: number;
+  title: string;
+  description: string;
+  price: number;
+  media: MediaItem[];
+  rating?: {
+    average: number;
+    count: number;
+  };
+  duration?: number; // Thêm các trường tùy chọn nếu cần
+}
+
+// Định nghĩa interface cho dữ liệu freelancer
+interface Freelancer {
+  _id: string;
+  name: string;
+  avatar?: string;
+  level?: number;
+  rating?: number;
+  reviewCount?: number;
+}
+
 const GigDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [gig, setGig] = useState<Gig | null>(null);
+  const [gig, setGig] = useState<GigDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
 
   useEffect(() => {
-    // Trong thực tế, bạn sẽ gọi API ở đây
-    // Tạm thời dùng dữ liệu mẫu
-    const fetchedGig = sampleGigs.find((g) => g._id === id);
-
-    if (fetchedGig) {
-      setGig(fetchedGig);
-      // Đặt ảnh đầu tiên làm ảnh được chọn
-      if (fetchedGig.media && fetchedGig.media.length > 0) {
-        setSelectedImage(fetchedGig.media[0].url);
+    const fetchGigDetails = async () => {
+      try {
+        setIsLoading(true);
+        
+        const response = await axios.get(`http://localhost:5000/api/${id}/get-gig-detail`, {
+          withCredentials: true
+        });
+        
+        if (response.data && !response.data.error) {
+          const gigData = response.data.gig;
+          // Xử lý giá từ Decimal128
+          if (gigData.price && typeof gigData.price === 'object' && gigData.price.$numberDecimal) {
+            gigData.price = parseFloat(gigData.price.$numberDecimal);
+          } else if (typeof gigData.price === 'string') {
+            gigData.price = parseFloat(gigData.price);
+          }
+          setGig(gigData);
+          
+          if (response.data.gig.media && response.data.gig.media.length > 0) {
+            setSelectedImage(response.data.gig.media[0].url);
+          }
+          
+          // Luôn gọi API user nếu có freelancerId
+          if (response.data.freelancerId) {
+            try {
+              const userResponse = await axios.get(`http://localhost:5000/api/user/${response.data.freelancerId}`, {
+                withCredentials: true
+              });
+              
+              if (userResponse.data && !userResponse.data.error) {
+                const userData = userResponse.data.data || userResponse.data;
+                
+                setFreelancer({
+                  _id: userData._id,
+                  name: userData.name || "Freelancer", // Đặt giá trị mặc định
+                  avatar: userData.avatar || "/default-avatar.png", // Đặt giá trị mặc định
+                  level: userData.level || 1,
+                  rating: userData.rating || 5.0,
+                  reviewCount: userData.reviewCount || 0
+                });
+              }
+            } catch (error) {
+              console.error("Lỗi khi tải thông tin người bán:", error);
+              // Đặt giá trị mặc định nếu API user thất bại
+              setFreelancer({
+                _id: response.data.freelancerId,
+                name: "Không tìm thấy người bán",
+                avatar: "/default-avatar.png",
+                level: 1,
+                rating: 5.0,
+                reviewCount: 0
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chi tiết gig:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
 
-    setIsLoading(false);
+    if (id) {
+      fetchGigDetails();
+    }
   }, [id]);
+
+  useEffect(() => {
+    if (gig) {
+      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      setIsFavorite(bookmarks.includes(gig._id));
+    }
+  }, [gig]);
+
+  const toggleFavorite = () => {
+    if (!gig) return;
+    
+    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+    let newBookmarks;
+    
+    if (isFavorite) {
+      // Xóa khỏi bookmarks
+      newBookmarks = bookmarks.filter((id: string) => id !== gig._id);
+    } else {
+      // Thêm vào bookmarks
+      newBookmarks = [...bookmarks, gig._id];
+    }
+    
+    localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
+    setIsFavorite(!isFavorite);
+  };
 
   if (isLoading) {
     return (
@@ -70,29 +186,37 @@ const GigDetailPage = () => {
 
           {/* Seller Info - Top */}
           <div className="flex items-center mb-6 gap-3">
-            {gig.freelancer && (
+            {freelancer ? (
               <>
                 <img
-                  src={gig.freelancer.avatar}
-                  alt={gig.freelancer.name}
+                  src={freelancer.avatar || "https://via.placeholder.com/40"}
+                  alt={freelancer.name}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-medium">{gig.freelancer.name}</p>
+                  <p className="font-medium">{freelancer.name}</p>
                   <div className="flex items-center">
                     <Star
                       size={14}
                       className="text-yellow-400 fill-yellow-400"
                     />
                     <span className="text-sm font-medium ml-1">
-                      {gig.rating?.average || "5.0"}
+                      {freelancer.rating || "5.0"}
                     </span>
                     <span className="text-sm text-gray-500 ml-1">
-                      ({gig.rating?.count || "0"})
+                      ({freelancer.reviewCount || "0"})
                     </span>
                   </div>
                 </div>
               </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                <div>
+                  <div className="h-4 bg-gray-200 rounded w-20 mb-2 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                </div>
+              </div>
             )}
           </div>
 
@@ -145,19 +269,19 @@ const GigDetailPage = () => {
             <h2 className="text-xl font-bold mb-4">Về người bán</h2>
 
             <div className="flex items-center gap-4 mb-6">
-              {gig.freelancer && (
+              {freelancer ? (
                 <>
                   <img
-                    src={gig.freelancer.avatar}
-                    alt={gig.freelancer.name}
+                    src={freelancer.avatar || "https://via.placeholder.com/40"}
+                    alt={freelancer.name}
                     className="w-16 h-16 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-medium text-lg">{gig.freelancer.name}</p>
+                    <p className="font-medium text-lg">{freelancer.name}</p>
                     <p className="text-gray-500">
-                      {gig.freelancer.level === 1
+                      {freelancer.level === 1
                         ? "Người bán mới"
-                        : `Cấp độ ${gig.freelancer.level}`}
+                        : `Cấp độ ${freelancer.level}`}
                     </p>
                     <div className="flex items-center mt-1">
                       <Star
@@ -165,14 +289,23 @@ const GigDetailPage = () => {
                         className="text-yellow-400 fill-yellow-400"
                       />
                       <span className="font-medium ml-1">
-                        {gig.rating?.average || "5.0"}
+                        {freelancer.rating || "5.0"}
                       </span>
                       <span className="text-gray-500 ml-1">
-                        ({gig.rating?.count || "0"})
+                        ({freelancer.reviewCount || "0"})
                       </span>
                     </div>
                   </div>
                 </>
+              ) : (
+                <div className="flex items-center gap-4 w-full">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="w-full">
+                    <div className="h-5 bg-gray-200 rounded w-32 mb-2 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -211,12 +344,7 @@ const GigDetailPage = () => {
               <button className="px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1 whitespace-nowrap">
                 Cơ bản
               </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Nâng cao
-              </button>
-              <button className="px-4 py-3 font-medium text-gray-500 hover:text-gray-700 flex-1 whitespace-nowrap">
-                Cao cấp
-              </button>
+              
             </div>
 
             {/* Package Content */}
@@ -224,7 +352,10 @@ const GigDetailPage = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold">Gói cơ bản</h3>
                 <span className="font-bold text-xl">
-                  ${gig.price.toString()}
+                  {new Intl.NumberFormat('vi-VN', { 
+                    style: 'currency', 
+                    currency: 'VND' 
+                  }).format(gig.price)}
                 </span>
               </div>
 
@@ -236,7 +367,7 @@ const GigDetailPage = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-gray-500" />
-                  <span className="text-sm">{gig.duration} ngày giao hàng</span>
+                  <span className="text-sm">{gig.duration || 3} ngày giao hàng</span>
                 </div>
 
                 {/* More features can be added here */}
@@ -257,18 +388,16 @@ const GigDetailPage = () => {
               >
                 Đặt dịch vụ ngay
               </Link>
-
-              {/* Compare Packages */}
-              <button className="text-gray-500 hover:text-gray-700 text-sm block text-center mt-4 w-full">
-                So sánh các gói
-              </button>
             </div>
 
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
-              <button className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full">
-                <Heart size={18} />
-                <span>Lưu vào yêu thích</span>
+              <button 
+                onClick={toggleFavorite} 
+                className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
+              >
+                <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
+                <span>{isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}</span>
               </button>
 
               <Link
