@@ -1,66 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { Clock, CheckCircle, ShoppingBag, AlertCircle, Search, Filter } from "lucide-react";
+import axios from "axios";
 
-// Mock data cho đơn hàng
-const mockOrders = [
-  {
-    id: "ord-123456",
-    title: "Thiết kế logo doanh nghiệp",
-    seller: "designmaster",
-    price: 1200000,
-    date: "2025-04-10T10:30:00Z",
-    status: "processing", // đang xử lý
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=1000&auto=format&fit=crop",
-  },
-  {
-    id: "ord-789012",
-    title: "Thiết kế website landing page",
-    seller: "webwizard",
-    price: 3500000,
-    date: "2025-03-28T14:20:00Z",
-    status: "completed", // hoàn tất
-    image: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?q=80&w=1000&auto=format&fit=crop",
-  },
-  {
-    id: "ord-345678",
-    title: "Dịch vụ SEO tối ưu từ khóa",
-    seller: "seoguru",
-    price: 2500000,
-    date: "2025-04-05T09:15:00Z",
-    status: "processing",
-    image: "https://images.unsplash.com/photo-1562577309-4932fdd64cd1?q=80&w=1000&auto=format&fit=crop",
-  },
-  {
-    id: "ord-901234",
-    title: "Video giới thiệu sản phẩm",
-    seller: "videocreator",
-    price: 4200000,
-    date: "2025-03-20T16:45:00Z",
-    status: "completed",
-    image: "https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=1000&auto=format&fit=crop",
-  },
-  {
-    id: "ord-567890",
-    title: "Thiết kế bài đăng mạng xã hội",
-    seller: "socialdesigner",
-    price: 850000,
-    date: "2025-04-08T11:10:00Z",
-    status: "cancelled", // đã hủy
-    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-  }
-];
+// Định nghĩa type cho đơn hàng
+interface Order {
+  _id: string;
+  title: string;
+  price: number;
+  status: string;
+  createdAt: string;
+}
+
+// Định nghĩa type cho dữ liệu phân trang
+interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalOrders: number;
+  ordersPerPage: number;
+}
 
 export default function BuyerOrdersPage() {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch đơn hàng từ API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/order/get-list", {
+          withCredentials: true,
+          params: { page: pagination?.currentPage || 1 }
+        });
+
+        if (response.data.error === false) {
+          setOrders(response.data.orders);
+          setPagination(response.data.pagination);
+        } else {
+          setError("Có lỗi khi tải danh sách đơn hàng.");
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải danh sách đơn hàng:", err);
+        setError("Không thể kết nối đến server. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [pagination?.currentPage]);
 
   // Lọc đơn hàng theo trạng thái và từ khóa tìm kiếm
-  const filteredOrders = mockOrders.filter(order => {
+  const filteredOrders = orders.filter(order => {
     const matchesFilter = filter === "all" || order.status === filter;
     const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          order.seller.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          order.id.toLowerCase().includes(searchTerm.toLowerCase());
+                          order._id.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesFilter && matchesSearch;
   });
@@ -88,7 +87,7 @@ export default function BuyerOrdersPage() {
   // Icon và màu sắc cho trạng thái
   const getStatusInfo = (status: string) => {
     switch(status) {
-      case "processing":
+      case "pending":
         return { 
           icon: <Clock className="h-5 w-5" />, 
           text: "Đang xử lý", 
@@ -113,6 +112,11 @@ export default function BuyerOrdersPage() {
           color: "bg-gray-100 text-gray-800"
         };
     }
+  };
+
+  // Chuyển đến trang khác
+  const handlePageChange = (page: number) => {
+    setPagination(prev => prev ? {...prev, currentPage: page} : null);
   };
 
   return (
@@ -191,7 +195,17 @@ export default function BuyerOrdersPage() {
 
             {/* Danh sách đơn hàng */}
             <div className="space-y-4">
-              {filteredOrders.length === 0 ? (
+              {loading ? (
+                <div className="flex justify-center items-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : error ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Đã xảy ra lỗi</h3>
+                  <p className="text-gray-500">{error}</p>
+                </div>
+              ) : filteredOrders.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy đơn hàng nào</h3>
@@ -201,12 +215,12 @@ export default function BuyerOrdersPage() {
                 filteredOrders.map((order) => {
                   const { icon, text, color } = getStatusInfo(order.status);
                   return (
-                    <div key={order.id} className="bg-white rounded-lg shadow overflow-hidden">
+                    <div key={order._id} className="bg-white rounded-lg shadow overflow-hidden">
                       <div className="p-4 border-b border-gray-200">
                         <div className="flex justify-between items-center">
                           <div>
                             <h3 className="text-lg font-medium text-gray-900">{order.title}</h3>
-                            <p className="text-sm text-gray-500">ID Đơn hàng: {order.id}</p>
+                            <p className="text-sm text-gray-500">ID Đơn hàng: {order._id}</p>
                           </div>
                           <div className={`flex items-center px-3 py-1 rounded-full ${color}`}>
                             {icon}
@@ -215,57 +229,61 @@ export default function BuyerOrdersPage() {
                         </div>
                       </div>
                       
-                      <div className="p-4 flex flex-col md:flex-row">
-                        <div className="w-full md:w-1/4 mb-4 md:mb-0">
-                          <div className="aspect-video w-full rounded-md overflow-hidden">
-                            <img 
-                              src={order.image} 
-                              alt={order.title} 
-                              className="w-full h-full object-cover"
-                            />
+                      <div className="p-4">
+                        <div className="flex flex-col md:flex-row justify-between mb-4">
+                          <div>
+                            <p className="text-sm text-gray-500 mb-1">Ngày đặt hàng</p>
+                            <p className="font-medium">{formatDate(order.createdAt)}</p>
+                          </div>
+                          
+                          <div>
+                            <p className="text-sm text-gray-500 mb-1">Tổng giá</p>
+                            <p className="text-lg font-bold text-[#1dbf73]">{formatPrice(order.price)}</p>
                           </div>
                         </div>
                         
-                        <div className="w-full md:w-3/4 md:pl-6 flex flex-col">
-                          <div className="flex flex-col md:flex-row md:justify-between mb-4">
-                            <div>
-                              <p className="text-sm text-gray-500 mb-1">Người bán</p>
-                              <p className="font-medium">{order.seller}</p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-sm text-gray-500 mb-1">Ngày đặt hàng</p>
-                              <p className="font-medium">{formatDate(order.date)}</p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-sm text-gray-500 mb-1">Tổng giá</p>
-                              <p className="text-lg font-bold text-[#1dbf73]">{formatPrice(order.price)}</p>
-                            </div>
-                          </div>
+                        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-3">
+                          <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Chi tiết
+                          </button>
                           
-                          <div className="mt-auto pt-4 border-t border-gray-200 flex justify-end space-x-3">
-                            <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                              Chi tiết
+                          {order.status === "pending" && (
+                            <button className="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-100">
+                              Hủy đơn hàng
                             </button>
-                            
-                            {order.status === "processing" && (
-                              <button className="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-100">
-                                Hủy đơn hàng
-                              </button>
-                            )}
-                            
-                            {order.status === "completed" && (
-                              <button className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100">
-                                Đánh giá
-                              </button>
-                            )}
-                          </div>
+                          )}
+                          
+                          {order.status === "completed" && (
+                            <button className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100">
+                              Đánh giá
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
                   );
                 })
+              )}
+              
+              {/* Phân trang */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="flex justify-center mt-6">
+                  <div className="flex space-x-1">
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-4 py-2 rounded-md text-sm font-medium ${
+                          page === pagination.currentPage
+                            ? "bg-[#1dbf73] text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>

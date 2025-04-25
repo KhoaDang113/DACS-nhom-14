@@ -1,5 +1,22 @@
 import { useState } from 'react';
 import ProfileGigs from './ProfileGigs';
+import ProfileStatistical from './ProfileStatistical';
+
+interface Gig {
+  _id: string;
+  freelancerId: string;
+  title: string;
+  description: string;
+  price: number;
+  media: Array<{
+    url: string;
+    type: string;
+    thumbnailUrl?: string;
+  }>;
+  duration: number;
+  keywords: string[];
+  status: 'approved' | 'pending' | 'hidden';
+}
 
 interface ProfileTabsProps {
   gigs: Gig[];
@@ -11,7 +28,7 @@ const ProfileTabs = ({ gigs }: ProfileTabsProps) => {
   const tabs = [
     { id: 'gigs', label: 'Dịch vụ' },
     { id: 'reviews', label: 'Đánh giá' },
-    { id: 'portfolio', label: 'Portfolio' }
+    { id: 'statistical', label: 'Thống kê' }
   ];
 
   return (
@@ -39,7 +56,7 @@ const ProfileTabs = ({ gigs }: ProfileTabsProps) => {
       <div className="mt-6">
         {activeTab === 'gigs' && <ProfileGigs gigs={gigs} />}
         {activeTab === 'reviews' && <div>Reviews content</div>}
-        {activeTab === 'portfolio' && <div>Portfolio content</div>}
+        {activeTab === 'statistical' && <ProfileStatistical />}
       </div>
     </div>
   );

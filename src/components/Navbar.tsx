@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Search, Bell, Mail, Heart, ShoppingCart } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  Bell,
+  Mail,
+  Heart,
+  ShoppingCart,
+} from "lucide-react";
 import {
   useUser,
   UserButton,
   SignInButton,
   SignUpButton,
 } from "@clerk/clerk-react";
-import axios from "axios"; // Thêm import axios
+import SearchBar from "./Search/SearchBar";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,15 +36,6 @@ export default function Navbar() {
 
   const handleSignInSuccess = () => {
     navigate("/jobs");
-  };
-
-  // Trong function Navbar, cập nhật hàm handleSearch
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      // Chuyển hướng đến trang tìm kiếm nâng cao với từ khóa trong query params
-      navigate(`/advanced-search?keyword=${encodeURIComponent(searchTerm.trim())}`);
-    }
   };
 
   // Tạm bỏ phần xử lý ẩn hiện thanh tìm kiếm theo scroll
@@ -68,33 +68,22 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
         {/* Logo */}
         <div className="font-bold text-2xl sm:text-3xl flex-shrink-0">
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <img 
-              src="/Logo_jopViet.png" 
+          <a
+            href="/dash-board"
+            className="flex items-center gap-2 font-bold text-xl"
+          >
+            <img
+              src="/Logo_jopViet.png"
               alt="JopViet Logo"
               className="h-8 w-8"
             />
             <span>JopViet</span>
-          </Link>
+          </a>
         </div>
 
         {/* Thanh tìm kiếm - Luôn hiển thị */}
         <div className="hidden md:block flex-grow max-w-xl mx-4">
-          <form onSubmit={handleSearch} className="flex items-center border border-gray-300 rounded-md overflow-hidden w-full">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Bạn đang tìm kiếm dịch vụ gì hôm nay?"
-              className="w-full px-3 py-2 text-gray-500 bg-white outline-none text-sm"
-            />
-            <button 
-              type="submit"
-              className="h-full px-4 bg-gray-300 text-white flex items-center justify-center hover:bg-gray-400 transition-colors"
-            >
-              <Search size={18} className="text-gray-700" />
-            </button>
-          </form>
+          <SearchBar />
         </div>
 
         {/* Navigation */}
@@ -138,9 +127,7 @@ export default function Navbar() {
           {/* Authentication */}
           {isSignedIn ? (
             <div className="relative">
-              <div 
-                className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md cursor-pointer"
-              >
+              <div className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md cursor-pointer">
                 <UserButton afterSignOutUrl="/" />
               </div>
             </div>
@@ -180,21 +167,7 @@ export default function Navbar() {
         <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
           {/* Mobile Search */}
           <div className="px-4 py-3 border-b">
-            <form onSubmit={handleSearch} className="flex items-center border border-gray-300 rounded-md overflow-hidden w-full">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Tìm kiếm dịch vụ..."
-                className="w-full px-3 py-2 text-gray-500 bg-white outline-none text-sm"
-              />
-              <button 
-                type="submit"
-                className="h-full px-3 bg-gray-300 text-white flex items-center justify-center"
-              >
-                <Search size={16} className="text-gray-700" />
-              </button>
-            </form>
+            <SearchBar />
           </div>
 
           {/* Mobile Navigation */}

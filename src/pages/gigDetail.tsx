@@ -1,31 +1,128 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Heart, Star, Clock, MessageSquare, CheckCircle, RefreshCw, FileText } from "lucide-react";
-import { sampleGigs, Gig } from "../data/jobs";
+import axios from "axios"; // Thêm import axios
+import {
+  Heart,
+  Star,
+  Clock,
+  MessageSquare,
+  CheckCircle,
+  FileText,
+} from "lucide-react";
+import { Gig } from "../data/jobs"; // Vẫn giữ lại type Gig
 import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
 
+// Định nghĩa loại MediaItem cho mảng media
+interface MediaItem {
+  url: string;
+  type: string;
+  thumbnailUrl?: string;
+}
+
+// Cập nhật interface Gig để phản ánh cấu trúc dữ liệu từ API
+interface GigDetail {
+  _id: string;
+  freelancerId: string;
+  category_id: string;
+  views: number;
+  status: string;
+  ordersCompleted: number;
+  title: string;
+  description: string;
+  price: number;
+  media: MediaItem[];
+  rating?: {
+    average: number;
+    count: number;
+  };
+  duration?: number; // Thêm các trường tùy chọn nếu cần
+}
+
+// Định nghĩa interface cho dữ liệu freelancer
+interface Freelancer {
+  _id: string;
+  name: string;
+  avatar?: string;
+  level?: number;
+  rating?: number;
+  reviewCount?: number;
+}
+
 const GigDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [gig, setGig] = useState<Gig | null>(null);
+  const [gig, setGig] = useState<GigDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
 
   useEffect(() => {
-    // Trong thực tế, bạn sẽ gọi API ở đây
-    // Tạm thời dùng dữ liệu mẫu
-    const fetchedGig = sampleGigs.find(g => g._id === id);
-    
-    if (fetchedGig) {
-      setGig(fetchedGig);
-      // Đặt ảnh đầu tiên làm ảnh được chọn
-      if (fetchedGig.media && fetchedGig.media.length > 0) {
-        setSelectedImage(fetchedGig.media[0].url);
+    const fetchGigDetails = async () => {
+      try {
+        setIsLoading(true);
+        
+        const response = await axios.get(`http://localhost:5000/api/${id}/get-gig-detail`, {
+          withCredentials: true
+        });
+        
+        if (response.data && !response.data.error) {
+          const gigData = response.data.gig;
+          // Xử lý giá từ Decimal128
+          if (gigData.price && typeof gigData.price === 'object' && gigData.price.$numberDecimal) {
+            gigData.price = parseFloat(gigData.price.$numberDecimal);
+          } else if (typeof gigData.price === 'string') {
+            gigData.price = parseFloat(gigData.price);
+          }
+          setGig(gigData);
+          
+          if (response.data.gig.media && response.data.gig.media.length > 0) {
+            setSelectedImage(response.data.gig.media[0].url);
+          }
+          
+          // Luôn gọi API user nếu có freelancerId
+          if (response.data.freelancerId) {
+            try {
+              const userResponse = await axios.get(`http://localhost:5000/api/user/${response.data.freelancerId}`, {
+                withCredentials: true
+              });
+              
+              if (userResponse.data && !userResponse.data.error) {
+                const userData = userResponse.data.data || userResponse.data;
+                
+                setFreelancer({
+                  _id: userData._id,
+                  name: userData.name || "Freelancer", // Đặt giá trị mặc định
+                  avatar: userData.avatar || "/default-avatar.png", // Đặt giá trị mặc định
+                  level: userData.level || 1,
+                  rating: userData.rating || 5.0,
+                  reviewCount: userData.reviewCount || 0
+                });
+              }
+            } catch (error) {
+              console.error("Lỗi khi tải thông tin người bán:", error);
+              // Đặt giá trị mặc định nếu API user thất bại
+              setFreelancer({
+                _id: response.data.freelancerId,
+                name: "Không tìm thấy người bán",
+                avatar: "/default-avatar.png",
+                level: 1,
+                rating: 5.0,
+                reviewCount: 0
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chi tiết gig:", error);
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    if (id) {
+      fetchGigDetails();
     }
-    
-    setIsLoading(false);
   }, [id]);
 
   useEffect(() => {
@@ -65,9 +162,11 @@ const GigDetailPage = () => {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Không tìm thấy dịch vụ</h1>
-        <p className="mb-8">Dịch vụ bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.</p>
-        <Link 
-          to="/dashboard" 
+        <p className="mb-8">
+          Dịch vụ bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.
+        </p>
+        <Link
+          to="/dash-board"
           className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"
         >
           Quay lại trang chính
@@ -87,51 +186,68 @@ const GigDetailPage = () => {
 
           {/* Seller Info - Top */}
           <div className="flex items-center mb-6 gap-3">
-            {gig.freelancer && (
+            {freelancer ? (
               <>
-                <img 
-                  src={gig.freelancer.avatar} 
-                  alt={gig.freelancer.name}
-                  className="w-10 h-10 rounded-full object-cover" 
+                <img
+                  src={freelancer.avatar || "https://via.placeholder.com/40"}
+                  alt={freelancer.name}
+                  className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
-                  <p className="font-medium">{gig.freelancer.name}</p>
+                  <p className="font-medium">{freelancer.name}</p>
                   <div className="flex items-center">
-                    <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                    <Star
+                      size={14}
+                      className="text-yellow-400 fill-yellow-400"
+                    />
                     <span className="text-sm font-medium ml-1">
-                      {gig.rating?.average || "5.0"}
+                      {freelancer.rating || "5.0"}
                     </span>
                     <span className="text-sm text-gray-500 ml-1">
-                      ({gig.rating?.count || "0"})
+                      ({freelancer.reviewCount || "0"})
                     </span>
                   </div>
                 </div>
               </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                <div>
+                  <div className="h-4 bg-gray-200 rounded w-20 mb-2 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                </div>
+              </div>
             )}
           </div>
 
           {/* Main Image Gallery */}
           <div className="mb-6">
             <div className="mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <img 
-                src={selectedImage || (gig.media[0]?.url || "")} 
+              <img
+                src={selectedImage || gig.media[0]?.url || ""}
                 alt={gig.title}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover"
               />
             </div>
-            
+
             {/* Thumbnails */}
             <div className="grid grid-cols-5 gap-2">
               {gig.media.map((mediaItem, index) => (
-                <div 
+                <div
                   key={index}
                   className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
-                    selectedImage === mediaItem.url ? "border-green-500" : "border-transparent"
+                    selectedImage === mediaItem.url
+                      ? "border-green-500"
+                      : "border-transparent"
                   }`}
                   onClick={() => setSelectedImage(mediaItem.url)}
                 >
-                  <img 
-                    src={mediaItem.type === "image" ? mediaItem.url : (mediaItem.thumbnailUrl || "")} 
+                  <img
+                    src={
+                      mediaItem.type === "image"
+                        ? mediaItem.url
+                        : mediaItem.thumbnailUrl || ""
+                    }
                     alt={`${gig.title} - ảnh ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -151,32 +267,48 @@ const GigDetailPage = () => {
           {/* About The Seller */}
           <div className="bg-gray-50 p-6 rounded-lg mb-10">
             <h2 className="text-xl font-bold mb-4">Về người bán</h2>
-            
+
             <div className="flex items-center gap-4 mb-6">
-              {gig.freelancer && (
+              {freelancer ? (
                 <>
-                  <img 
-                    src={gig.freelancer.avatar} 
-                    alt={gig.freelancer.name}
-                    className="w-16 h-16 rounded-full object-cover" 
+                  <img
+                    src={freelancer.avatar || "https://via.placeholder.com/40"}
+                    alt={freelancer.name}
+                    className="w-16 h-16 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-medium text-lg">{gig.freelancer.name}</p>
-                    <p className="text-gray-500">{gig.freelancer.level === 1 ? "Người bán mới" : `Cấp độ ${gig.freelancer.level}`}</p>
+                    <p className="font-medium text-lg">{freelancer.name}</p>
+                    <p className="text-gray-500">
+                      {freelancer.level === 1
+                        ? "Người bán mới"
+                        : `Cấp độ ${freelancer.level}`}
+                    </p>
                     <div className="flex items-center mt-1">
-                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                      <Star
+                        size={16}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
                       <span className="font-medium ml-1">
-                        {gig.rating?.average || "5.0"}
+                        {freelancer.rating || "5.0"}
                       </span>
                       <span className="text-gray-500 ml-1">
-                        ({gig.rating?.count || "0"})
+                        ({freelancer.reviewCount || "0"})
                       </span>
                     </div>
                   </div>
                 </>
+              ) : (
+                <div className="flex items-center gap-4 w-full">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="w-full">
+                    <div className="h-5 bg-gray-200 rounded w-32 mb-2 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+                  </div>
+                </div>
               )}
             </div>
-            
+
             <button className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
               Liên hệ với tôi
             </button>
@@ -185,12 +317,12 @@ const GigDetailPage = () => {
           {/* Reviews */}
           <div className="mb-10">
             <h2 className="text-xl font-bold mb-4">
-              Đánh giá 
+              Đánh giá
               <span className="text-gray-500 font-normal ml-2">
                 ({gig.rating?.count || "0"})
               </span>
             </h2>
-            
+
             {/* Placeholder for reviews */}
             <div className="text-gray-500 italic text-center py-8">
               Chưa có đánh giá nào cho dịch vụ này.
@@ -214,25 +346,30 @@ const GigDetailPage = () => {
               </button>
               
             </div>
-            
+
             {/* Package Content */}
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold">Gói cơ bản</h3>
-                <span className="font-bold text-xl">${gig.price.toString()}</span>
+                <span className="font-bold text-xl">
+                  {new Intl.NumberFormat('vi-VN', { 
+                    style: 'currency', 
+                    currency: 'VND' 
+                  }).format(gig.price)}
+                </span>
               </div>
-              
+
               <p className="text-gray-700 mb-4 text-sm">
                 {gig.description.substring(0, 100)}...
               </p>
-              
+
               {/* Details */}
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-gray-500" />
-                  <span className="text-sm">{gig.duration} ngày giao hàng</span>
+                  <span className="text-sm">{gig.duration || 3} ngày giao hàng</span>
                 </div>
-                
+
                 {/* More features can be added here */}
                 <div className="flex items-center gap-2">
                   <MessageSquare size={16} className="text-gray-500" />
@@ -243,7 +380,7 @@ const GigDetailPage = () => {
                   <span className="text-sm">Bàn giao đầy đủ mã nguồn</span>
                 </div>
               </div>
-              
+
               {/* Order Button */}
               <Link
                 to={`/payment?gig=${gig._id}&price=${gig.price}`}
@@ -251,11 +388,8 @@ const GigDetailPage = () => {
               >
                 Đặt dịch vụ ngay
               </Link>
-              
-              {/* Compare Packages */}
-              
             </div>
-            
+
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
               <button 
@@ -265,8 +399,8 @@ const GigDetailPage = () => {
                 <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
                 <span>{isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}</span>
               </button>
-              
-              <Link 
+
+              <Link
                 to={`/custom-order/${gig._id}`}
                 className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
               >

@@ -15,12 +15,25 @@ import ProLanding from "../components/HomePage/ProLandding";
 import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-
+import { useUser, useAuth } from "@clerk/clerk-react";
 export default function HomePage() {
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
-
+  const { getToken } = useAuth();
+  const fectToken = async () => {
+    try {
+      const token = await getToken({ template: "TemplateClaim" });
+      console.log("Token:", token);
+      // Bạn có thể sử dụng token này sau khi lấy được
+    } catch (error) {
+      console.error("Lỗi khi lấy token:", error);
+    }
+  };
+  useEffect(() => {
+    if (isSignedIn) {
+      fectToken();
+    }
+  }, [isSignedIn, location]);
   useEffect(() => {
     if (isSignedIn) {
       navigate("/dash-board");
@@ -60,7 +73,8 @@ export default function HomePage() {
                   Dịch vụ phổ biến
                 </h2>
                 <p className="text-gray-500 text-sm sm:text-base hidden sm:block mb-5">
-                  Khám phá những dịch vụ được săn đón nhất từ các freelancer hàng đầu
+                  Khám phá những dịch vụ được săn đón nhất từ các freelancer
+                  hàng đầu
                 </p>
               </div>
               {/* Loại bỏ các lớp wrapper không cần thiết */}
@@ -91,7 +105,8 @@ export default function HomePage() {
             </h2>
 
             <span className="text-base sm:text-lg text-[#62646a] mb-4 sm:mb-6 md:mb-8 lg:mb-10 max-w-3xl">
-              Vontélle Eyewear tìm đến các freelancer trên Fiverr để biến tầm nhìn của họ thành hiện thực.
+              Vontélle Eyewear tìm đến các freelancer trên Fiverr để biến tầm
+              nhìn của họ thành hiện thực.
             </span>
 
             {/* Updated video container */}
@@ -106,10 +121,7 @@ export default function HomePage() {
                   playsInline
                   controls
                 >
-                  <source
-                    src="/your-video-source.mp4"
-                    type="video/mp4"
-                  />
+                  <source src="/your-video-source.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>

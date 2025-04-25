@@ -1,100 +1,171 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Heart, Play, Star } from "lucide-react"
-import { GrFormNext, GrFormPrevious } from "react-icons/gr"
-import { Link } from "react-router-dom"
-import * as Tooltip from "@radix-ui/react-tooltip"
+import { useState, useRef, useEffect } from "react";
+import { Heart, Play, Pause } from "lucide-react";
+import { GrFormNext, GrFormPrevious } from "react-icons/gr";
+import { Link } from "react-router-dom";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import axios from "axios"; // Thêm import axios ở đầu file
+import { useFavoritesContext } from '../../context/FavoritesContext';
 
 interface User {
-  _id: string
-  name: string
-  avatar: string
-  level: number
+  _id: string;
+  name: string;
+  avatar: string;
+  level: number;
 }
 
 interface MediaItem {
-  url: string
-  type: "image" | "video"
-  thumbnailUrl?: string
+  url: string;
+  type: "image" | "video";
+  thumbnailUrl?: string;
 }
 
 interface Gig {
-  _id: string
-  title: string
+  _id: string;
+  title: string;
   price: {
-    toString: () => string
-  }
-  media: MediaItem[]
-  freelancer?: User
+    toString: () => string;
+  };
+  media: MediaItem[];
+  freelancer?: User;
   rating?: {
-    average: number
-    count: number
-  }
+    average: number;
+    count: number;
+  };
 }
 
+// Cập nhật interface GigCardProps để bổ sung prop isFavorited
 interface GigCardProps {
-  gig: Gig
-  videoUrl?: string
-  onFavorite: (id: string) => void
-  onPlayVideo: (videoUrl: string) => void
+  gig: Gig;
+  onFavorite?: (id: string) => void;
+  onPlayVideo?: (videoUrl: string) => void;
+  isFavorited?: boolean; // Thêm prop này
 }
 
-const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVideo }) => {
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [showVideoModal, setShowVideoModal] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const slideInterval = useRef<NodeJS.Timeout | null>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-
-  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2)
-  const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video"
-
-  const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/)?.[1]
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url
+// Hàm format giá trong Card.tsx
+const formatPrice = (price: any) => {
+  let numericalPrice = price;
+  
+  // Xử lý nếu là object Decimal128
+  if (price && typeof price === 'object' && price.$numberDecimal) {
+    numericalPrice = parseFloat(price.$numberDecimal);
+  } 
+  // Xử lý nếu là string
+  else if (typeof price === 'string') {
+    numericalPrice = parseFloat(price);
   }
+  
+  // Kiểm tra nếu giá trị không hợp lệ
+  if (isNaN(numericalPrice)) {
+    return 'Liên hệ';
+  }
+  
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(numericalPrice);
+}
+
+const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavorited = false }) => {
+  // Lấy trạng thái từ context
+  const { isGigFavorited, toggleFavorite: toggleFavoriteContext } = useFavoritesContext();
+  
+  // Ưu tiên prop từ parent, nếu không có thì lấy từ context
+  const [isFavorite, setIsFavorite] = useState(isFavorited || isGigFavorited(gig._id));
+
+  // Cập nhật state khi prop hoặc context thay đổi
+  useEffect(() => {
+    setIsFavorite(isFavorited || isGigFavorited(gig._id));
+  }, [isFavorited, isGigFavorited, gig._id]);
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const slideInterval = useRef<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const formattedPrice = Number.parseFloat(gig.price.toString()).toFixed(2);
+  const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
 
   useEffect(() => {
     if (!isCurrentMediaVideo && isHovered) {
       slideInterval.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1))
-      }, 1000)
+        setCurrentSlide((prev) =>
+          prev === gig.media.length - 1 ? 0 : prev + 1
+        );
+      }, 2000);
     }
     return () => {
       if (slideInterval.current) {
-        clearInterval(slideInterval.current)
+        clearInterval(slideInterval.current);
       }
+    };
+  }, [isCurrentMediaVideo, gig.media.length, isHovered]);
+
+  useEffect(() => {
+    if (isCurrentMediaVideo && videoRef.current) {
+      videoRef.current.play();
+      setIsPlaying(true);
+
+      const handleVideoEnd = () => {
+        setCurrentSlide((prev) =>
+          prev === gig.media.length - 1 ? 0 : prev + 1
+        );
+        setIsPlaying(false);
+      };
+
+      videoRef.current.addEventListener("ended", handleVideoEnd);
+
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener("ended", handleVideoEnd);
+        }
+      };
     }
-  }, [isCurrentMediaVideo, gig.media.length, isHovered])
+  }, [currentSlide, isCurrentMediaVideo, gig.media.length]);
 
   const nextSlide = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1))
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentSlide((prev) => (prev === gig.media.length - 1 ? 0 : prev + 1));
+  };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1))
-  }
+    setCurrentSlide((prev) => (prev === 0 ? gig.media.length - 1 : prev - 1));
+  };
 
-  const handlePlayVideo = () => {
-    const currentMedia = gig.media[currentSlide]
-    if (currentMedia.type === "video") {
-      setShowVideoModal(true)
-      onPlayVideo?.(currentMedia.url)
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      const result = await toggleFavoriteContext(gig._id);
+      
+      // Cập nhật state local
+      setIsFavorite(result.isFavorite);
+      
+      // Gọi callback từ parent nếu có
+      if (onFavorite) {
+        onFavorite(gig._id);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
     }
-  }
+  };
 
-  const toggleFavorite = () => {
-    setIsFavorite((prev) => !prev)
-    onFavorite?.(gig._id)
-  }
-
-  const formatRatingCount = (count: number) => {
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count.toString()
-  }
+  const togglePlayPause = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <Tooltip.Provider>
@@ -113,22 +184,44 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
                   index === currentSlide ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <img
-                  src={media.type === "image" ? media.url : media.thumbnailUrl || "/placeholder.svg"}
-                  alt={`${gig.title} - image ${index + 1}`}
-                  className="object-cover w-full h-full"
-                />
-                {media.type === "video" && index === currentSlide && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <button
-                      onClick={handlePlayVideo}
-                      className="w h-6 rounded-full bg-white/80 flex items-center justify-center text-black hover:bg-white transition-colors"
-                      aria-label="Play video"
-                    >
-                      <Play size={10} />
-                    </button>
+                {media.type === "image" ? (
+                  <img
+                    src={media.url}
+                    alt={`${gig.title} - image ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                ) : media.type === "video" ? (
+                  <div className="relative w-full h-full">
+                    {index === currentSlide ? (
+                      <>
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                          loop={false}
+                        >
+                          <source src={media.url} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                        <button
+                          onClick={togglePlayPause}
+                          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white hover:bg-black/70 transition-all duration-300 z-30 ${
+                            isHovered ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                        </button>
+                      </>
+                    ) : (
+                      <img
+                        src={media.thumbnailUrl || "/placeholder.svg"}
+                        alt={`${gig.title} - video thumbnail ${index + 1}`}
+                        className="object-cover w-full h-full"
+                      />
+                    )}
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
 
@@ -144,29 +237,19 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               />
             </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-              {gig.media.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    index === currentSlide ? "bg-white w-3" : "bg-white/60 hover:bg-white/80"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-
             {/* Favorite Button */}
             <button
-              onClick={toggleFavorite}
+              onClick={toggleFavorite} // Sử dụng hàm toggleFavorite mới
               className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
             >
               <Heart
                 size={20}
-                className={`transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"}`}
+                className={`transition-colors ${
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
+                }`}
               />
             </button>
           </div>
@@ -204,7 +287,7 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
             {/* Title with Tooltip */}
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 mb-2 hover:text-blue-600 transition-colors cursor-default">
+                <h3 className="text-xs sm:text-sm font-medium line-clamp-2 min-h-[40px] mb-2 hover:text-blue-600 transition-colors cursor-default">
                   {gig.title}
                 </h3>
               </Tooltip.Trigger>
@@ -220,64 +303,15 @@ const GigCard: React.FC<GigCardProps> = ({ gig, videoUrl, onFavorite, onPlayVide
               </Tooltip.Portal>
             </Tooltip.Root>
 
-            {/* Rating */}
-            <div className="flex items-center gap-1 mb-2">
-              <Star size={12} className="fill-yellow-400 text-yellow-400" />
-              <span className="font-bold text-xs sm:text-sm">{gig.rating?.average || 4.9}</span>
-              <span className="text-gray-500 text-[10px] sm:text-xs">
-                ({gig.rating?.count ? formatRatingCount(gig.rating.count) : "1k+"})
-              </span>
-            </div>
-
             {/* Price */}
             <div className="font-bold text-sm sm:text-lg text-blue-600">
-              From US${formattedPrice}
+              {formatPrice(gig.price)}
             </div>
-
-            {/* Inline video (optional) */}
-            {videoUrl && (
-              <video className="mt-4 rounded-md" controls src={videoUrl}>
-                Your browser does not support the video tag.
-              </video>
-            )}
           </div>
         </div>
       </Link>
-
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-4xl">
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
-            >
-              Đóng
-            </button>
-            {gig.media[currentSlide].url.includes("youtube.com") || gig.media[currentSlide].url.includes("youtu.be") ? (
-              <iframe
-                src={getYouTubeEmbedUrl(gig.media[currentSlide].url)}
-                className="w-full aspect-video rounded-lg"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                className="absolute top-0 left-0 w-full h-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-              >
-                <source src={gig.media[currentSlide].url} type="video/mp4" />
-              </video>
-            )}
-          </div>
-        </div>
-      )}
     </Tooltip.Provider>
-  )
-}
+  );
+};
 
-export default GigCard
+export default GigCard;

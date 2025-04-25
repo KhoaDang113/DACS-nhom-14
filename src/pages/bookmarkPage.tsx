@@ -1,76 +1,106 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
-import { Gig, sampleGigs } from "../data/jobs";
+import { Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
+import axios from "axios";
+import { useFavoritesContext } from '../context/FavoritesContext';
 
 const BookmarkPage = () => {
   const [savedGigs, setSavedGigs] = useState<Gig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Lấy toggleFavorite từ context
+  const { toggleFavorite, refreshFavorites } = useFavoritesContext();
 
   useEffect(() => {
-    // Trong thực tế, bạn sẽ gọi API để lấy danh sách bookmark của người dùng
-    // Hiện tại sử dụng dữ liệu mẫu và giả lập việc lấy bookmark từ localStorage
-    
-    const fetchBookmarks = () => {
-      setIsLoading(true);
-      
-      try {
-        // Thêm một số dữ liệu mẫu vào localStorage nếu chưa có bookmarks
-        const savedIds = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-        console.log("Saved IDs in bookmarks:", savedIds);
-        console.log("Available gig IDs:", sampleGigs.map(g => g._id));
-        
-        // Nếu chưa có bookmarks, tự động thêm một vài mẫu
-        if (savedIds.length === 0) {
-          // Thêm 3 gig đầu tiên từ dữ liệu mẫu làm bookmark mẫu
-          const sampleBookmarkIds = sampleGigs.slice(0, 3).map(gig => gig._id);
-          localStorage.setItem("bookmarks", JSON.stringify(sampleBookmarkIds));
-          
-          // Lấy dữ liệu mẫu đã lưu
-          const bookmarkedGigs = sampleGigs.filter(gig => sampleBookmarkIds.includes(gig._id));
-          
-          setTimeout(() => {
-            setSavedGigs(bookmarkedGigs);
-            setIsLoading(false);
-          }, 800);
-        } else {
-          // Nếu đã có bookmarks trong localStorage thì sử dụng bình thường
-          const bookmarkedGigs = sampleGigs.filter(gig => savedIds.includes(gig._id));
-          
-          setTimeout(() => {
-            setSavedGigs(bookmarkedGigs);
-            setIsLoading(false);
-          }, 800);
-        }
-      } catch (error) {
-        console.error("Error loading bookmarks:", error);
-        setIsLoading(false);
-      }
-    };
-
     fetchBookmarks();
   }, []);
 
-  const removeBookmark = (gigId: string) => {
-    // Xóa khỏi state
-    setSavedGigs(prev => prev.filter(gig => gig._id !== gigId));
+  const fetchBookmarks = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.get('http://localhost:5000/api/favorite/get-list', {
+        withCredentials: true // Đảm bảo cookies được gửi kèm để xác thực người dùng
+      });
+      
+      if (response.data && !response.data.error) {
+        // API trả về danh sách favorites có chứa gigId được populate
+        const bookmarkedGigs = response.data.favorites.map((fav: any) => fav.gigId);
+        console.log("Bookmarked gigs:", bookmarkedGigs); // Thêm log để debug
+        setSavedGigs(bookmarkedGigs.filter((gig: any) => gig !== null)); // Lọc ra các gig không null
+      } else {
+        setError(response.data?.message || "Không thể lấy dịch vụ đã lưu");
+      }
+    } catch (error: any) {
+      console.error("Error loading bookmarks:", error);
+      // Hiển thị thông tin lỗi chi tiết hơn để debug
+      setError(`Đã xảy ra lỗi khi tải dịch vụ đã lưu: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Cập nhật localStorage
-    const savedIds = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    const updatedIds = savedIds.filter((id: string) => id !== gigId);
-    localStorage.setItem("bookmarks", JSON.stringify(updatedIds));
+  const removeAllBookmarks = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Xóa từng bookmark một
+      const promises = savedGigs.map(gig => 
+        axios.post(`http://localhost:5000/api/favorite/${gig._id}`, {}, {
+          withCredentials: true
+        })
+      );
+      
+      await Promise.all(promises);
+      setSavedGigs([]);
+    } catch (error) {
+      console.error("Error removing all bookmarks:", error);
+      setError("Không thể xóa tất cả dịch vụ đã lưu");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePlayVideo = (videoUrl: string) => {
-    // Implement video playing logic if needed
     console.log("Play video:", videoUrl);
+  };
+
+  const handleFavoriteToggle = async (gigId: string) => {
+    try {
+      const result = await toggleFavorite(gigId);
+      // Nếu đã xóa khỏi favorites
+      if (!result.isFavorite) {
+        setSavedGigs(prev => prev.filter(gig => gig._id !== gigId));
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
   };
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="text-center py-12 bg-red-50 rounded-lg">
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={fetchBookmarks}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }
@@ -84,11 +114,8 @@ const BookmarkPage = () => {
 
       {savedGigs.length > 0 && (
         <button 
-          onClick={() => {
-            localStorage.removeItem("bookmarks");
-            setSavedGigs([]);
-          }}
-          className="px-4 py-2 bg-red-500 text-white rounded-md mb-6"
+          onClick={removeAllBookmarks}
+          className="px-4 py-2 bg-red-500 text-white rounded-md mb-6 hover:bg-red-600"
         >
           Xóa tất cả dịch vụ đã lưu
         </button>
@@ -102,7 +129,7 @@ const BookmarkPage = () => {
             Bạn chưa lưu bất kỳ dịch vụ nào. Hãy khám phá danh sách dịch vụ và lưu những dịch vụ bạn quan tâm.
           </p>
           <Link
-            to="/jobs"
+            to="/dash-board"
             className="inline-block bg-green-500 hover:bg-green-600 text-white font-medium px-6 py-2 rounded-md transition-colors"
           >
             Khám phá dịch vụ
@@ -114,8 +141,9 @@ const BookmarkPage = () => {
             <div key={gig._id} className="max-w-[240px] w-full mx-auto">
               <GigCard
                 gig={gig}
-                onFavorite={removeBookmark}
+                onFavorite={handleFavoriteToggle}
                 onPlayVideo={handlePlayVideo}
+                isFavorited={true} // Đã được lưu trong danh sách bookmark
               />
             </div>
           ))}

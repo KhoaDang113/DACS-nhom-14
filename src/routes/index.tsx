@@ -10,7 +10,7 @@ import ProfilePage from "../pages/profile";
 import GigDetailPage from "../pages/gigDetail";
 import CustomOrderPage from "../pages/customOrderPage";
 import BuyerOrdersPage from "../pages/buyerOrders";
-import AdvancedSearchPage from '../pages/advancedSearchPage';
+import AdvancedSearchPage from "../pages/advancedSearchPage";
 import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
 import OrderManagement from "../pages/orderManagement";
@@ -42,11 +42,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/gig/:id", element: <GigDetailPage /> },
-      { 
-        path: "/custom-order/:id", 
+      {
+        path: "/custom-order/:id",
         element: (
           <>
             <SignedIn>
@@ -56,10 +56,10 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
-      { 
-        path: "/orders", 
+      {
+        path: "/orders",
         element: (
           <>
             <SignedIn>
@@ -69,7 +69,7 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
       { path: "/bookmarks", element: (
