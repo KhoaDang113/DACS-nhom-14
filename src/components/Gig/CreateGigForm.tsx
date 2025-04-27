@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Trash2, Upload, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const formSchema = z.object({
   title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(100, "Tiêu đề không được vượt quá 100 ký tự"),
@@ -40,6 +41,7 @@ export default function CreateGigForm() {
   const [errorSteps, setErrorSteps] = useState<number[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   const {
     register,
@@ -145,6 +147,7 @@ export default function CreateGigForm() {
 
     if (invalidSteps.length > 0) {
       setCurrentStep(invalidSteps[0]);
+      showNotification("Vui lòng kiểm tra lại các thông tin", "error");
       return;
     }
 
@@ -161,11 +164,14 @@ export default function CreateGigForm() {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-      alert("Đăng dịch vụ thành công!");
+      showNotification("Đăng dịch vụ thành công!", "success");
       navigate("/seller-gigs");
     } catch (error: unknown) {
       console.log("Đăng dịch vụ thất bại:", error);
-      alert(error instanceof Error ? error.message : "Đăng dịch vụ thất bại.");
+      showNotification(
+        error instanceof Error ? error.message : "Đăng dịch vụ thất bại",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }

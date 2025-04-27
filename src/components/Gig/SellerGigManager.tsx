@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import { Eye, Package, Edit, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNotification } from '../../contexts/NotificationContext';
 
 interface Gig {
   _id: string;
@@ -21,6 +22,7 @@ const ITEMS_PER_PAGE = 10;
 
 const SellerGigManager: React.FC = () => {
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -65,7 +67,6 @@ const SellerGigManager: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm('Bạn có chắc muốn xóa dịch vụ này?');
-    console.log(id);
     if (confirmDelete) {
       try {
         const response = await axios.delete(`http://localhost:5000/api/gigs/delete/${id}`, {
@@ -73,14 +74,15 @@ const SellerGigManager: React.FC = () => {
         });
         
         if (response.data.error) {
-          setError(response.data.message);
+          showNotification(response.data.message, 'error');
         } else {
           // Cập nhật danh sách gigs sau khi xóa thành công
           setGigs(gigs.filter((gig) => gig._id !== id));
+          showNotification('Xóa dịch vụ thành công!', 'success');
         }
       } catch (err) {
         const error = err as AxiosError<ErrorResponse>;
-        setError(error.response?.data?.message || 'Lỗi khi xóa dịch vụ');
+        showNotification(error.response?.data?.message || 'Lỗi khi xóa dịch vụ', 'error');
       }
     }
   };
@@ -180,7 +182,7 @@ const SellerGigManager: React.FC = () => {
   return (
     <div className="w-full">
       {/* Desktop/Tablet View */}
-      <div className="hidden md:block overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+      <div className="hidden md:block overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -229,7 +231,7 @@ const SellerGigManager: React.FC = () => {
                       />
                     </div>
                     <div className="ml-4">
-                      <div className="font-medium text-gray-900 line-clamp-1 max-w-[180px]" title={gig.title}>
+                      <div className="font-medium text-gray-900 line-clamp-1 truncate max-w-[180px]" title={gig.title}>
                         {gig.title}
                       </div>
                     </div>
@@ -274,11 +276,10 @@ const SellerGigManager: React.FC = () => {
       </div>
 
       {/* Mobile View */}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {gigs.map((gig, index) => (
-          <div key={gig._id} className="bg-white p-4 rounded-lg shadow space-y-3">
+      <div className="grid grid-cols-1 gap-4 md:hidden w-full">
+        {gigs.map((gig) => (
+          <div key={gig._id} className="bg-white p-4 rounded-lg shadow space-y-3 w-full">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">STT: {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</span>
               <div className="flex items-center space-x-3">
                 <div className="h-20 w-20 flex-shrink-0">
                   <img
@@ -288,7 +289,7 @@ const SellerGigManager: React.FC = () => {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 line-clamp-1">
                     {gig.title}
                   </p>
                   <p className="text-sm text-gray-500 line-clamp-2">
