@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ReviewButton from "../components/Review/ReviewButton";
+import { sampleCompletedOrders } from "../lib/reviewData";
 
 export interface Order {
   id: string;
@@ -8,6 +10,7 @@ export interface Order {
   price: number;
   orderDate: string;
   status: "pending" | "approved" | "completed" | "canceled" | "rejected";
+  isReviewed?: boolean;
 }
 
 const OrderManagement: React.FC = () => {
@@ -27,20 +30,80 @@ const OrderManagement: React.FC = () => {
           }
         );
 
+        // Lấy trạng thái đánh giá từ dữ liệu mẫu (trong môi trường thực tế, trạng thái này sẽ đến từ API)
+        const reviewStatusMap = sampleCompletedOrders.reduce((acc, order) => {
+          acc[order.id] = order.isReviewed;
+          return acc;
+        }, {} as Record<string, boolean>);
+
         const mappedOrders: Order[] = response.data.orders.map(
-          (order: any) => ({
-            id: order._id,
-            customerName: order.customerId?.name || "Không rõ",
-            gigName: order.title,
-            price: parseFloat(order.gigId?.price?.$numberDecimal || "0"),
-            orderDate: new Date(order.createdAt).toLocaleDateString("vi-VN"),
-            status: order.status,
-          })
+          (order: any) => {
+            const orderId = order._id;
+            return {
+              id: orderId,
+              customerName: order.customerId?.name || "Không rõ",
+              gigName: order.title,
+              price: parseFloat(order.gigId?.price?.$numberDecimal || "0"),
+              orderDate: new Date(order.createdAt).toLocaleDateString("vi-VN"),
+              status: order.status,
+              isReviewed: reviewStatusMap[orderId] || false,
+            };
+          }
         );
 
         setOrders(mappedOrders);
       } catch (error) {
         console.error("Lỗi khi tải danh sách đơn hàng:", error);
+        
+        // Dữ liệu mẫu cho môi trường phát triển
+        const mockOrders: Order[] = [
+          {
+            id: "order1",
+            customerName: "Nguyễn Văn A",
+            gigName: "Thiết kế logo chuyên nghiệp",
+            price: 650000,
+            orderDate: "25/04/2025",
+            status: "completed",
+            isReviewed: false
+          },
+          {
+            id: "order2",
+            customerName: "Trần Thị B",
+            gigName: "Thiết kế website cá nhân",
+            price: 2200000,
+            orderDate: "22/04/2025",
+            status: "completed",
+            isReviewed: false
+          },
+          {
+            id: "order3",
+            customerName: "Lê Văn C",
+            gigName: "Viết content marketing",
+            price: 550000,
+            orderDate: "19/04/2025",
+            status: "completed",
+            isReviewed: true
+          },
+          {
+            id: "order4",
+            customerName: "Phạm Thị D",
+            gigName: "Chỉnh sửa video",
+            price: 800000,
+            orderDate: "15/04/2025",
+            status: "pending",
+            isReviewed: false
+          },
+          {
+            id: "order5",
+            customerName: "Hoàng Văn E",
+            gigName: "Dịch thuật tài liệu",
+            price: 350000,
+            orderDate: "12/04/2025",
+            status: "approved",
+            isReviewed: false
+          }
+        ];
+        setOrders(mockOrders);
       } finally {
         setLoading(false);
       }
@@ -235,6 +298,7 @@ const OrderManagement: React.FC = () => {
                     <th className="p-4 text-left font-semibold">Giá</th>
                     <th className="p-4 text-left font-semibold">Ngày Đặt</th>
                     <th className="p-4 text-left font-semibold">Trạng Thái</th>
+                    <th className="p-4 text-left font-semibold">Đánh Giá</th>
                     <th className="p-4 text-left font-semibold rounded-tr-xl">
                       Hành Động
                     </th>
@@ -274,6 +338,14 @@ const OrderManagement: React.FC = () => {
                             {getStatusIcon(order.status)}{" "}
                             {renderStatusText(order.status)}
                           </span>
+                        </td>
+                        <td className="p-4 border-t">
+                          {order.status === "completed" && (
+                            <ReviewButton 
+                              orderId={order.id} 
+                              isReviewed={order.isReviewed || false} 
+                            />
+                          )}
                         </td>
                         <td className="p-4 border-t">
                           {order.status === "pending" && (
@@ -349,7 +421,7 @@ const OrderManagement: React.FC = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-500">
+                      <td colSpan={7} className="p-8 text-center text-gray-500">
                         <div className="flex flex-col items-center justify-center">
                           <svg
                             className="w-16 h-16 text-gray-300 mb-2"

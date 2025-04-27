@@ -15,6 +15,7 @@ import {
   Receipt,
   Search,
   X,
+  Zap,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -47,6 +48,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       title: "Gig Approval",
       href: "/admin/gig-approval",
       icon: <CheckCircle className="h-5 w-5" />,
+    },
+    {
+      title: "Hot Job Ads",
+      href: "/admin/hot-job-ads",
+      icon: <Zap className="h-5 w-5" />,
     },
     {
       title: "User Feedback",

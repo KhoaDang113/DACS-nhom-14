@@ -81,7 +81,7 @@ const GigApproval: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 overflow-hidden">
+    <div className="space-y-6 overflow-visible w-full overflow-x-hidden overflow-y-auto">
       <div>
         <h1 className="text-2xl font-bold">Gig Approval</h1>
         <p className="text-gray-500 mt-1">

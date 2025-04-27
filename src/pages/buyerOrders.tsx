@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { Clock, CheckCircle, ShoppingBag, AlertCircle, Search, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // Định nghĩa type cho đơn hàng
@@ -21,6 +22,7 @@ interface Pagination {
 }
 
 export default function BuyerOrdersPage() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
@@ -117,6 +119,11 @@ export default function BuyerOrdersPage() {
   // Chuyển đến trang khác
   const handlePageChange = (page: number) => {
     setPagination(prev => prev ? {...prev, currentPage: page} : null);
+  };
+
+  // Hàm điều hướng đến trang đánh giá khi người dùng nhấn nút đánh giá
+  const handleReviewClick = (orderId: string) => {
+    navigate(`/review-gig/${orderId}`);
   };
 
   return (
@@ -254,7 +261,10 @@ export default function BuyerOrdersPage() {
                           )}
                           
                           {order.status === "completed" && (
-                            <button className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100">
+                            <button 
+                              onClick={() => handleReviewClick(order._id)}
+                              className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100"
+                            >
                               Đánh giá
                             </button>
                           )}

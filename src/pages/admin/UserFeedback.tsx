@@ -128,8 +128,8 @@ const UserFeedback: React.FC = () => {
     return "danger";
   };
 
-  return (
-    <div className="space-y-6 overflow-hidden">
+  return (  
+    <div className="space-y-6 w-full max-w-full">
       <div>
         <h1 className="text-2xl font-bold">User Feedback</h1>
         <p className="text-gray-500 mt-1">

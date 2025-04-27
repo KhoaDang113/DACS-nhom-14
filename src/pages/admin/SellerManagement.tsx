@@ -99,7 +99,7 @@ const SellerManagement: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 overflow-hidden">
+    <div className="space-y-6 overflow-visible w-full">
       <div>
         <h1 className="text-2xl font-bold">Seller Management</h1>
         <p className="text-gray-500 mt-1">

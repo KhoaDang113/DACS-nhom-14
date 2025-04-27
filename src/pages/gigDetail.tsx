@@ -12,6 +12,8 @@ import {
 import { Gig } from "../data/jobs"; // Vẫn giữ lại type Gig
 import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
+import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
+import { sampleCustomerReviews } from "../lib/reviewData"; // Import dữ liệu mẫu cho đánh giá
 
 // Định nghĩa loại MediaItem cho mảng media
 interface MediaItem {
@@ -316,17 +318,12 @@ const GigDetailPage = () => {
 
           {/* Reviews */}
           <div className="mb-10">
-            <h2 className="text-xl font-bold mb-4">
-              Đánh giá
-              <span className="text-gray-500 font-normal ml-2">
-                ({gig.rating?.count || "0"})
-              </span>
-            </h2>
-
-            {/* Placeholder for reviews */}
-            <div className="text-gray-500 italic text-center py-8">
-              Chưa có đánh giá nào cho dịch vụ này.
-            </div>
+            {/* Sử dụng component CustomerReviews mới */}
+            <CustomerReviews 
+              reviews={sampleCustomerReviews.filter(review => review.gigId === "gig1")} 
+              showGigTitle={false}
+              initialDisplayCount={5}
+            />
           </div>
 
           {/* Phần hiển thị đánh giá seller */}

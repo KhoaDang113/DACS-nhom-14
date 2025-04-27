@@ -158,3 +158,118 @@ export const trustedCompanies = [
     logo: "https://fiverr-res.cloudinary.com/npm-assets/@fiverr/logged_out_homepage_perseus/apps/paypal2x.22728be.png",
   },
 ];
+
+// Dữ liệu mẫu cho banner công việc hot
+export const hotJobs = [
+  {
+    id: 1,
+    title: "Thiết kế logo chuyên nghiệp, hiện đại và độc đáo",
+    price: 1500000,
+    category: "Thiết kế đồ họa",
+    freelancer: {
+      name: "Hoàng Minh",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 4.9,
+      totalReviews: 432
+    },
+    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["logo", "thiết kế", "sáng tạo"],
+    description: "Tôi sẽ thiết kế logo chuyên nghiệp, hiện đại và độc quyền cho doanh nghiệp của bạn với nhiều lần chỉnh sửa.",
+    ordersCompleted: 289,
+    isPromoted: true
+  },
+  {
+    id: 2,
+    title: "Phát triển website WordPress theo yêu cầu",
+    price: 3500000,
+    category: "Lập trình & Công nghệ",
+    freelancer: {
+      name: "Nguyễn Thị Hoa",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 4.8,
+      totalReviews: 215
+    },
+    image: "https://images.unsplash.com/photo-1561736778-92e52a7769ef?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["wordpress", "web", "responsive"],
+    description: "Tôi sẽ thiết kế và phát triển website WordPress chuyên nghiệp, tương thích mobile với tốc độ tải nhanh.",
+    ordersCompleted: 178,
+    isPromoted: false
+  },
+  {
+    id: 3,
+    title: "Dịch vụ SEO toàn diện - Tăng thứ hạng Google",
+    price: 7500000,
+    category: "Tiếp thị số",
+    freelancer: {
+      name: "Trần Đức",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 5.0,
+      totalReviews: 189
+    },
+    image: "https://images.unsplash.com/photo-1587614387466-0a72ca909e16?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["seo", "marketing", "website"],
+    description: "Tôi sẽ giúp website của bạn lên top Google với chiến lược SEO toàn diện, phân tích đối thủ và tối ưu hóa từ khóa.",
+    ordersCompleted: 126,
+    isPromoted: true
+  },
+  {
+    id: 4,
+    title: "Viết bài content chuẩn SEO cho website",
+    price: 800000,
+    category: "Viết & Dịch thuật",
+    freelancer: {
+      name: "Lê Mai Anh",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 4.7,
+      totalReviews: 256
+    },
+    image: "https://images.unsplash.com/photo-1591376689946-7f6d8dd502b7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["content", "copywriting", "blog"],
+    description: "Tôi sẽ viết bài content chất lượng cao, chuẩn SEO cho website và blog của bạn với giọng văn cuốn hút độc giả.",
+    ordersCompleted: 312,
+    isPromoted: false
+  },
+  {
+    id: 5,
+    title: "Thiết kế và chỉnh sửa video quảng cáo sản phẩm",
+    price: 2500000,
+    category: "Video & Hoạt hình",
+    freelancer: {
+      name: "Phạm Văn Tuấn",
+      avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 4.9,
+      totalReviews: 198
+    },
+    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["video", "editing", "quảng cáo"],
+    description: "Tôi sẽ thiết kế và chỉnh sửa video quảng cáo sản phẩm chuyên nghiệp với hiệu ứng đẹp mắt và thu hút khách hàng.",
+    ordersCompleted: 167,
+    isPromoted: true
+  },
+  {
+    id: 6,
+    title: "Tạo chatbot AI trả lời tự động cho website",
+    price: 4500000,
+    category: "Dịch vụ AI",
+    freelancer: {
+      name: "Võ Quang Minh",
+      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      rating: 4.8,
+      totalReviews: 142
+    },
+    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80",
+    tags: ["AI", "chatbot", "automation"],
+    description: "Tôi sẽ tạo chatbot AI thông minh cho website của bạn, giúp trả lời khách hàng tự động và tăng tỷ lệ chuyển đổi.",
+    ordersCompleted: 98,
+    isPromoted: false
+  }
+];
+
+// Dữ liệu mẫu cho banner hiển thị
+export const hotJobsBanner = {
+  title: "Khám phá những công việc đang hot nhất tháng này",
+  subtitle: "Hàng nghìn cơ hội việc làm với mức lương hấp dẫn đang chờ đợi bạn. Tham gia ngay để không bỏ lỡ cơ hội tuyệt vời!",
+  background: "linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%)",
+  callToAction: "Xem tất cả job hot",
+  image: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80"
+};

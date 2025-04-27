@@ -69,17 +69,6 @@ const BookmarkPage = () => {
     console.log("Play video:", videoUrl);
   };
 
-  const handleFavoriteToggle = async (gigId: string) => {
-    try {
-      const result = await toggleFavorite(gigId);
-      // Nếu đã xóa khỏi favorites
-      if (!result.isFavorite) {
-        setSavedGigs(prev => prev.filter(gig => gig._id !== gigId));
-      }
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -129,7 +118,7 @@ const BookmarkPage = () => {
             Bạn chưa lưu bất kỳ dịch vụ nào. Hãy khám phá danh sách dịch vụ và lưu những dịch vụ bạn quan tâm.
           </p>
           <Link
-            to="/dash-board"
+            to="/dashboard"
             className="inline-block bg-green-500 hover:bg-green-600 text-white font-medium px-6 py-2 rounded-md transition-colors"
           >
             Khám phá dịch vụ
@@ -141,7 +130,7 @@ const BookmarkPage = () => {
             <div key={gig._id} className="max-w-[240px] w-full mx-auto">
               <GigCard
                 gig={gig}
-                onFavorite={handleFavoriteToggle}
+               
                 onPlayVideo={handlePlayVideo}
                 isFavorited={true} // Đã được lưu trong danh sách bookmark
               />
