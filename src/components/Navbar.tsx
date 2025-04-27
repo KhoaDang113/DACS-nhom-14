@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   Bell,
   Mail,
   Heart,
-  ShoppingCart,
+  
 } from "lucide-react";
 import {
   useUser,
@@ -53,15 +53,31 @@ export default function Navbar() {
 
   // Thay đổi navLinks thành conditional rendering
   const navLinks = isSignedIn ? [
-    { title: "", path: "#", icon: <Bell size={20} /> },
+    // { title: "", path: "#", icon: <Bell size={20} /> },
     { title: "", path: "#", icon: <Mail size={20} /> },
     { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
-    { title: "", path: "/orders", icon: <ShoppingCart size={20} /> }
+   
   ] : [
     { title: "Khám phá", path: "#", hasDropdown: true },
     { title: "Trở thành người bán", path: "#" },
     { title: "Danh sách công việc", path: "/jobs" },
   ];
+
+  // State để quản lý trạng thái đóng mở của dropdown chức năng
+  const [functionsDropdownOpen, setFunctionsDropdownOpen] = useState(false);
+  const functionsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Xử lý đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (functionsDropdownRef.current && !functionsDropdownRef.current.contains(event.target as Node)) {
+        setFunctionsDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="sticky left-0 top-0 z-50 w-full border-b bg-white md:pl-[30px] md:pr-[30px]">
@@ -116,14 +132,106 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Link Xem Profile */}
-          {isSignedIn && location.pathname !== "/profile" && (
-            <Link
-              to="/profile"
-              className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base"
-            >
-              Xem Profile
-            </Link>
+          {/* Dropdown Chức năng */}
+          {isSignedIn && (
+            <div className="relative" ref={functionsDropdownRef}>
+              <button
+                onClick={() => setFunctionsDropdownOpen(!functionsDropdownOpen)}
+                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base flex items-center"
+              >
+                Chức năng <ChevronDown className="ml-1" size={16} />
+              </button>
+              {functionsDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10 py-1">
+                  {/* Mục người dùng */}
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Hồ sơ của tôi
+                  </Link>
+                  
+                  {/* Mục đơn hàng */}
+                  <Link
+                    to="/orders"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    Quản lý đơn hàng
+                  </Link>
+                  
+                  <hr className="my-1 border-gray-200" />
+                  
+                  {/* Mục người bán */}
+                  <div className="px-3 py-2 text-xs font-semibold text-gray-400">NGƯỜI BÁN</div>
+                  
+                  <Link
+                    to="/seller-dashboard"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                    Tổng quan kinh doanh
+                  </Link>
+                  
+                  <Link
+                    to="/seller-gigs"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                      <polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    Quản lý dịch vụ
+                  </Link>
+                  
+                  <Link
+                    to="/order-management"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"></line>
+                      <line x1="8" y1="12" x2="21" y2="12"></line>
+                      <line x1="8" y1="18" x2="21" y2="18"></line>
+                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    Quản lý bán hàng
+                  </Link>
+
+                  <hr className="my-1 border-gray-200" />
+                  
+                  <Link
+                    to="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => setFunctionsDropdownOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    Cài đặt tài khoản
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
 
           {/* Authentication */}

@@ -14,6 +14,7 @@ import PopularCard from "../components/HomePage/PopularCard";
 import ProLanding from "../components/HomePage/ProLandding";
 import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
+
 import { useNavigate } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
 
@@ -76,6 +77,8 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Hot Jobs Banner */}
+        
         {/*list popular services*/}
         <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
           <div className="mt-4 sm:mt-6 md:mt-10 relative">

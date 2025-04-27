@@ -6,7 +6,7 @@ import { GrFormNext, GrFormPrevious } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import axios from "axios"; // Thêm import axios ở đầu file
-import { useFavoritesContext } from '../../context/FavoritesContext';
+import { useFavoritesContext } from '../../contexts/FavoritesContext';
 
 interface User {
   _id: string;

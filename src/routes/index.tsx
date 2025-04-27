@@ -19,6 +19,7 @@ import SellerDashboard from "../pages/sellerDashboard";
 import EditGig from "../pages/editGig";
 import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
+import ReviewGigPage from "../pages/reviewGig";
 import OrderComplaintPage from "../pages/orderComplaint";
 import RequireAdmin from "../middleware/RequireAdmin";
 //admin
@@ -33,6 +34,9 @@ import AdminTransactionHistory from "../pages/admin/TransactionHistory";
 import AdminUserFeedback from "../pages/admin/UserFeedback";
 import AdminUserPermission from "../pages/admin/UserPermissions";
 import AdminViolationReport from "../pages/admin/ViolationReports";
+// Quảng cáo Job Hot
+import AdminHotJobAds from "../pages/admin/HotJobAds";
+import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
 
 const router: RouteObject[] = [
   {path: "/", element: <Layout />,
@@ -41,6 +45,24 @@ const router: RouteObject[] = [
       { path: "/sign-in", element: <SignInPage /> },
       { path: "/sign-up", element: <SignUpPage /> },
       { path: "/payment", element: <PaymentPage /> },
+      { path: "/dashboard", element: <Dashboard /> },
+      { path: "/create-gig", element: <CreateGigForm /> },
+      { path: "/seller-gigs", element: <SellerGigsPage />},
+      { path: "/order-management", element: <OrderManagement />},
+      { path: "/seller-dashboard", element: <SellerDashboard/>},
+      { path: "/edit-gigs", element: <EditGig/>}, 
+      { 
+        path: "/review-gig/:orderId", 
+        element: (
+          <>
+            <SignedIn>
+              <ReviewGigPage />
+              </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </> ),
+      },
       { path: "/dashboard", element: (
           <>
             <SignedIn>
@@ -175,6 +197,9 @@ const router: RouteObject[] = [
       { path: "user-feedback", element: <AdminUserFeedback /> },
       { path: "user-permission", element: <AdminUserPermission /> },
       { path: "violation-report", element: <AdminViolationReport /> },
+      // Quảng cáo Job Hot
+      { path: "hot-job-ads", element: <AdminHotJobAds /> },
+      { path: "hot-job-ads/create", element: <AdminCreateHotJobAd /> },
     ],
   },
 ];
