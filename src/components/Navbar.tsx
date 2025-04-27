@@ -18,6 +18,7 @@ import {
   SignInButton,
   SignUpButton,
 } from "@clerk/clerk-react";
+import NotificationBell from './NotificationBell';
 import SearchBar from "./Search/SearchBar";
 
 export default function Navbar() {
@@ -87,13 +88,15 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
+          {isSignedIn && <NotificationBell unreadCount={2} />}
           {navLinks.map((link, index) => (
             <div key={index} className="flex items-center">
               <Link
                 to={link.path}
-                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center"
+                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2"
               >
-                {link.icon ? link.icon : link.title}
+                {link.icon}
+                <span>{link.title}</span>
               </Link>
               {!isSignedIn && link.hasDropdown && (
                 <ChevronDown className="text-black ml-1" size={16} />
