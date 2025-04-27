@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import { Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
 import axios from "axios";
-import { useFavoritesContext } from '../context/FavoritesContext';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
 
 const BookmarkPage = () => {
   const [savedGigs, setSavedGigs] = useState<Gig[]>([]);

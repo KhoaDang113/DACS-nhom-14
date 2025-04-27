@@ -1,3 +1,4 @@
+//user
 import { createBrowserRouter, RouteObject } from "react-router-dom";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import SignInPage from "../pages/signIn";
@@ -19,6 +20,7 @@ import EditGig from "../pages/editGig";
 import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
+import OrderComplaintPage from "../pages/orderComplaint";
 import RequireAdmin from "../middleware/RequireAdmin";
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
@@ -37,9 +39,7 @@ import AdminHotJobAds from "../pages/admin/HotJobAds";
 import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
 
 const router: RouteObject[] = [
-  {
-    path: "/",
-    element: <Layout />,
+  {path: "/", element: <Layout />,
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/sign-in", element: <SignInPage /> },
@@ -57,12 +57,77 @@ const router: RouteObject[] = [
           <>
             <SignedIn>
               <ReviewGigPage />
+              </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </> ),
+      },
+      { path: "/dashboard", element: (
+          <>
+            <SignedIn>
+              <Dashboard />
             </SignedIn>
             <SignedOut>
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ), 
+      },
+      { path: "/create-gig", element: (
+          <>
+            <SignedIn>
+              <CreateGigForm />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ), 
+      },
+      { path: "/seller-gigs", element: (
+          <>
+            <SignedIn>
+              <SellerGigsPage />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ), 
+      },
+      { path: "/order-management", element: (
+          <>
+            <SignedIn>
+              <OrderManagement />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ), 
+      },
+      { path: "/seller-dashboard", element: (
+          <>
+            <SignedIn>
+              <SellerDashboard />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ), 
+      },
+      { path: "/edit-gig/:id", element: (
+          <>
+            <SignedIn>
+              <EditGig />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+            </>
+        ), 
       },
       { path: "/profile", element: (
           <>
@@ -76,9 +141,7 @@ const router: RouteObject[] = [
         ),
       },
       { path: "/gig/:id", element: <GigDetailPage /> },
-      {
-        path: "/custom-order/:id",
-        element: (
+      { path: "/custom-order/:id", element: (
           <>
             <SignedIn>
               <CustomOrderPage />
@@ -89,9 +152,7 @@ const router: RouteObject[] = [
           </>
         ),
       },
-      {
-        path: "/orders",
-        element: (
+      { path: "/orders", element: (
           <>
             <SignedIn>
               <BuyerOrdersPage />
@@ -115,13 +176,12 @@ const router: RouteObject[] = [
         ) 
       },
       { path: "/redirect-dashboard", element: <RedirectDashboard /> },
+      { path: "/orders-complaint", element: <OrderComplaintPage /> },
     ],
   },
 
   //admin path
-  {
-    path: "/admin",
-    element: (
+  { path: "/admin", element: (
       <RequireAdmin>
         <AdminLayout />
       </RequireAdmin>
