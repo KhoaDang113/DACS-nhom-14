@@ -14,6 +14,7 @@ import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
 import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
 import { sampleCustomerReviews } from "../lib/reviewData"; // Import dữ liệu mẫu cho đánh giá
+import { useFavoritesContext } from '../contexts/FavoritesContext'; // Thêm import FavoritesContext
 
 // Định nghĩa loại MediaItem cho mảng media
 interface MediaItem {
@@ -56,6 +57,7 @@ const GigDetailPage = () => {
   const [gig, setGig] = useState<GigDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { isGigFavorited, toggleFavorite } = useFavoritesContext(); // Sử dụng context
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
 
@@ -128,28 +130,20 @@ const GigDetailPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (gig) {
-      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-      setIsFavorite(bookmarks.includes(gig._id));
+    if (gig && id) {
+      setIsFavorite(isGigFavorited(id));
     }
-  }, [gig]);
+  }, [gig, id, isGigFavorited]);
 
-  const toggleFavorite = () => {
-    if (!gig) return;
+  const handleToggleFavorite = async () => {
+    if (!gig || !id) return;
     
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    let newBookmarks;
-    
-    if (isFavorite) {
-      // Xóa khỏi bookmarks
-      newBookmarks = bookmarks.filter((id: string) => id !== gig._id);
-    } else {
-      // Thêm vào bookmarks
-      newBookmarks = [...bookmarks, gig._id];
+    try {
+      const result = await toggleFavorite(id);
+      setIsFavorite(result.isFavorite);
+    } catch (error) {
+      console.error("Lỗi khi thay đổi trạng thái yêu thích:", error);
     }
-    
-    localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
-    setIsFavorite(!isFavorite);
   };
 
   if (isLoading) {
@@ -390,7 +384,7 @@ const GigDetailPage = () => {
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
               <button 
-                onClick={toggleFavorite} 
+                onClick={handleToggleFavorite} 
                 className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
               >
                 <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
