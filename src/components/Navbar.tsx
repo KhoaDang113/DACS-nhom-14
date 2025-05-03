@@ -20,12 +20,14 @@ import {
 } from "@clerk/clerk-react";
 import NotificationBell from './NotificationBell';
 import SearchBar from "./Search/SearchBar";
+import useUserRole from '../hooks/useUserRole';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showSearch, setShowSearch] = useState(true); // Luôn hiện thanh tìm kiếm
-  const [searchTerm, setSearchTerm] = useState(""); // Thêm state cho giá trị tìm kiếm
-  const { isSignedIn } = useUser();
+  const [showSearch, setShowSearch] = useState(true); 
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const { isSignedIn, user } = useUser();
+  const { isFreelancer, isAdmin, isLoading } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -37,31 +39,6 @@ export default function Navbar() {
   const handleSignInSuccess = () => {
     navigate("/jobs");
   };
-
-  // Tạm bỏ phần xử lý ẩn hiện thanh tìm kiếm theo scroll
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     const heroSection = document.querySelector(".h-screen");
-  //     if (heroSection) {
-  //       const heroBottom = heroSection.getBoundingClientRect().bottom;
-  //       setShowSearch(heroBottom < 0);
-  //     }
-  //   };
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
-
-  // Thay đổi navLinks thành conditional rendering
-  const navLinks = isSignedIn ? [
-    // { title: "", path: "#", icon: <Bell size={20} /> },
-    { title: "", path: "#", icon: <Mail size={20} /> },
-    { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
-   
-  ] : [
-    { title: "Khám phá", path: "#", hasDropdown: true },
-    { title: "Trở thành người bán", path: "#" },
-    { title: "Danh sách công việc", path: "/jobs" },
-  ];
 
   // State để quản lý trạng thái đóng mở của dropdown chức năng
   const [functionsDropdownOpen, setFunctionsDropdownOpen] = useState(false);
@@ -78,6 +55,20 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Tạo navLinks tương ứng với trạng thái đăng nhập
+  const navLinks = isSignedIn ? [
+    // Người dùng đã đăng nhập
+    { title: "", path: "#", icon: <Mail size={20} /> },
+    { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
+    // Hiển thị nút "Trở thành Freelancer" nếu người dùng chưa là freelancer
+    ...(!isFreelancer ? [{ title: "Trở thành Freelancer", path: "/become-freelancer" }] : []),
+  ] : [
+    // Người dùng chưa đăng nhập
+    { title: "Khám phá", path: "#", hasDropdown: true },
+    { title: "Trở thành người bán", path: "#" },
+    { title: "Danh sách công việc", path: "/jobs" },
+  ];
 
   return (
     <header className="sticky left-0 top-0 z-50 w-full border-b bg-white md:pl-[30px] md:pr-[30px]">

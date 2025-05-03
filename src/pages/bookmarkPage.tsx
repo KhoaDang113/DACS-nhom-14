@@ -11,8 +11,8 @@ const BookmarkPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Lấy toggleFavorite từ context
-  const { toggleFavorite, refreshFavorites } = useFavoritesContext();
+  // Sử dụng context
+  const { refreshFavorites } = useFavoritesContext();
 
   useEffect(() => {
     fetchBookmarks();
@@ -24,20 +24,18 @@ const BookmarkPage = () => {
     
     try {
       const response = await axios.get('http://localhost:5000/api/favorite/get-list', {
-        withCredentials: true // Đảm bảo cookies được gửi kèm để xác thực người dùng
+        withCredentials: true
       });
       
       if (response.data && !response.data.error) {
-        // API trả về danh sách favorites có chứa gigId được populate
         const bookmarkedGigs = response.data.favorites.map((fav: any) => fav.gigId);
-        console.log("Bookmarked gigs:", bookmarkedGigs); // Thêm log để debug
-        setSavedGigs(bookmarkedGigs.filter((gig: any) => gig !== null)); // Lọc ra các gig không null
+        console.log("Bookmarked gigs:", bookmarkedGigs);
+        setSavedGigs(bookmarkedGigs.filter((gig: any) => gig !== null));
       } else {
         setError(response.data?.message || "Không thể lấy dịch vụ đã lưu");
       }
     } catch (error: any) {
       console.error("Error loading bookmarks:", error);
-      // Hiển thị thông tin lỗi chi tiết hơn để debug
       setError(`Đã xảy ra lỗi khi tải dịch vụ đã lưu: ${error.message || "Unknown error"}`);
     } finally {
       setIsLoading(false);
@@ -57,6 +55,8 @@ const BookmarkPage = () => {
       
       await Promise.all(promises);
       setSavedGigs([]);
+      // Cập nhật lại context sau khi xóa tất cả
+      await refreshFavorites();
     } catch (error) {
       console.error("Error removing all bookmarks:", error);
       setError("Không thể xóa tất cả dịch vụ đã lưu");
@@ -65,10 +65,14 @@ const BookmarkPage = () => {
     }
   };
 
+  // Hàm này sẽ được gọi khi người dùng bỏ yêu thích một gig từ Card
+  const handleGigUnfavorited = (gigId: string) => {
+    setSavedGigs(prevGigs => prevGigs.filter(gig => gig._id !== gigId));
+  };
+
   const handlePlayVideo = (videoUrl: string) => {
     console.log("Play video:", videoUrl);
   };
-
 
   if (isLoading) {
     return (
@@ -130,7 +134,7 @@ const BookmarkPage = () => {
             <div key={gig._id} className="max-w-[240px] w-full mx-auto">
               <GigCard
                 gig={gig}
-               
+                onFavorite={handleGigUnfavorited}
                 onPlayVideo={handlePlayVideo}
                 isFavorited={true} // Đã được lưu trong danh sách bookmark
               />

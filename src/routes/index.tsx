@@ -21,6 +21,7 @@ import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
 import OrderComplaintPage from "../pages/orderComplaint";
+import BecomeFreelancer from "../pages/becomeFreelancer";
 import RequireAdmin from "../middleware/RequireAdmin";
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
@@ -177,6 +178,19 @@ const router: RouteObject[] = [
       },
       { path: "/redirect-dashboard", element: <RedirectDashboard /> },
       { path: "/orders-complaint", element: <OrderComplaintPage /> },
+      { 
+        path: "/become-freelancer", 
+        element: (
+          <>
+            <SignedIn>
+              <BecomeFreelancer />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ),
+      },
     ],
   },
 
