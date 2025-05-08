@@ -5,11 +5,12 @@ import { z } from "zod";
 import { Trash2, Upload, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useNotification } from "../../contexts/NotificationContext";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const formSchema = z.object({
-  title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(100, "Tiêu đề không được vượt quá 100 ký tự"),
-  description: z.string().min(50, "Mô tả phải có ít nhất 50 ký tự").max(1000, "Mô tả không được vượt quá 1000 ký tự"),
+  title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(1000, "Tiêu đề không được vượt quá 1000 ký tự"),
+  description: z.string().min(50, "Mô tả phải có ít nhất 50 ký tự").max(10000, "Mô tả không được vượt quá 10000 ký tự"),
   price: z.coerce.number().min(1, "Giá phải lớn hơn 0"),
   category: z.string().nonempty("Vui lòng chọn danh mục"),
   deliveryTime: z.coerce.number().min(1, "Thời gian giao hàng phải ít nhất 1 ngày"),
@@ -41,7 +42,7 @@ export default function CreateGigForm() {
   const [errorSteps, setErrorSteps] = useState<number[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { showNotification } = useNotification();
+  
 
   const {
     register,
@@ -129,7 +130,7 @@ export default function CreateGigForm() {
       case 6:
         isValid = images.length > 0;
         if (!isValid) {
-          setImageError("Vui lòng tải lên ít nhất một ảnh");
+          setImageError("Vui lòng tải lên ít nhất 1 ảnh");
         }
         break;
     }
@@ -147,7 +148,10 @@ export default function CreateGigForm() {
 
     if (invalidSteps.length > 0) {
       setCurrentStep(invalidSteps[0]);
-      showNotification("Vui lòng kiểm tra lại các thông tin", "error");
+      toast.error("Vui lòng kiểm tra lại các thông tin", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       return;
     }
 
@@ -164,14 +168,19 @@ export default function CreateGigForm() {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
-      showNotification("Đăng dịch vụ thành công!", "success");
-      navigate("/seller-gigs");
+      toast.success("Đăng dịch vụ thành công!", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      setTimeout(() => {
+        navigate("/seller-gigs");
+      }, 2000);
     } catch (error: unknown) {
       console.log("Đăng dịch vụ thất bại:", error);
-      showNotification(
-        error instanceof Error ? error.message : "Đăng dịch vụ thất bại",
-        "error"
-      );
+      toast.error("Đăng dịch vụ thất bại", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -239,6 +248,7 @@ export default function CreateGigForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
+      <ToastContainer />
       {/* Steps Navigation */}
       <div className="mb-8">
         <div className="overflow-x-auto">
@@ -276,12 +286,7 @@ export default function CreateGigForm() {
                   {step.title}
                 </span>
                 {step.id < 6 && (
-                  <div className="w-9 h-1 mx-7 bg-gray-300">
-                    <div 
-                      className={visitedSteps.includes(step.id + 1) ? "h-full bg-blue-500" : ""} 
-                      style={{ width: "100%" }}
-                    ></div>
-                  </div>
+                  <div className="w-9 h-1 mx-7 bg-gray-300"></div>
                 )}
               </div>
             ))}

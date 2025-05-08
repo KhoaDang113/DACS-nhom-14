@@ -4,13 +4,17 @@ import { Clock, CheckCircle, ShoppingBag, AlertCircle, Search, Filter } from "lu
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+// Định nghĩa các trạng thái có thể có của đơn hàng
+type OrderStatus = "pending" | "approved" | "completed" | "cancelled";
+
 // Định nghĩa type cho đơn hàng
 interface Order {
   _id: string;
   title: string;
   price: number;
-  status: string;
+  status: OrderStatus;
   createdAt: string;
+  cancelRequestId?: string;
 }
 
 // Định nghĩa type cho dữ liệu phân trang
@@ -29,6 +33,10 @@ export default function BuyerOrdersPage() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   // Fetch đơn hàng từ API
   useEffect(() => {
@@ -59,11 +67,24 @@ export default function BuyerOrdersPage() {
 
   // Lọc đơn hàng theo trạng thái và từ khóa tìm kiếm
   const filteredOrders = orders.filter(order => {
-    const matchesFilter = filter === "all" || order.status === filter;
+    // Kiểm tra trạng thái đơn hàng
+    let statusMatch = filter === "all";
+    
+    if (filter === "pending") {
+      statusMatch = order.status === "pending";
+    } else if (filter === "approved") {
+      statusMatch = order.status === "approved";
+    } else if (filter === "completed") {
+      statusMatch = order.status === "completed";
+    } else if (filter === "cancelled") {
+      statusMatch = order.status === "cancelled";
+    }
+    
+    // Kiểm tra từ khóa tìm kiếm
     const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           order._id.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesFilter && matchesSearch;
+    return statusMatch && matchesSearch;
   });
 
   // Format date
@@ -95,6 +116,12 @@ export default function BuyerOrdersPage() {
           text: "Đang xử lý", 
           color: "bg-yellow-100 text-yellow-800"
         };
+      case "approved":
+        return {
+          icon: <CheckCircle className="h-5 w-5" />,
+          text: "Đã xác nhận",
+          color: "bg-blue-100 text-blue-800"
+        };
       case "completed":
         return { 
           icon: <CheckCircle className="h-5 w-5" />, 
@@ -124,6 +151,89 @@ export default function BuyerOrdersPage() {
   // Hàm điều hướng đến trang đánh giá khi người dùng nhấn nút đánh giá
   const handleReviewClick = (orderId: string) => {
     navigate(`/review-gig/${orderId}`);
+  };
+
+  // Hàm mở modal hủy đơn hàng
+  const openCancelModal = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setShowCancelModal(true);
+    setCancelReason("");
+  };
+
+  // Hàm đóng modal
+  const closeCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedOrderId(null);
+    setCancelReason("");
+  };
+
+  // Hàm xử lý hủy đơn hàng
+  const handleCancelOrder = async () => {
+    if (!selectedOrderId || !cancelReason.trim()) {
+      alert("Vui lòng nhập lý do hủy đơn hàng");
+      return;
+    }
+
+    try {
+      // Kiểm tra xem đơn hàng đã có yêu cầu hủy chưa
+      const orderToCancel = orders.find(order => order._id === selectedOrderId);
+      if (orderToCancel?.cancelRequestId) {
+        alert("Đơn hàng này đã có yêu cầu hủy");
+        closeCancelModal();
+        return;
+      }
+
+      setCancelLoading(selectedOrderId);
+      const response = await axios.post(
+        `http://localhost:5000/api/order/request-cancel/${selectedOrderId}`,
+        {
+          reason: cancelReason.trim()
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.data.error) {
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order._id === selectedOrderId
+              ? { 
+                  ...order, 
+                  status: response.data.order.status,
+                  cancelRequestId: response.data.order.cancelRequestId 
+                }
+              : order
+          )
+        );
+        alert(response.data.message);
+        closeCancelModal();
+      }
+    } catch (err: unknown) {
+      const error = err as { 
+        response?: { 
+          data?: { 
+            message?: string; 
+            error?: boolean 
+          }; 
+          status?: number 
+        } 
+      };
+      console.error('Error canceling order:', error);
+      
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        alert("Không thể hủy đơn hàng. Vui lòng kiểm tra lại trạng thái đơn hàng.");
+      } else {
+        alert("Có lỗi xảy ra khi hủy đơn hàng. Vui lòng thử lại sau.");
+      }
+    } finally {
+      setCancelLoading(null);
+    }
   };
 
   return (
@@ -166,14 +276,24 @@ export default function BuyerOrdersPage() {
                       Tất cả
                     </button>
                     <button
-                      onClick={() => setFilter("processing")}
+                      onClick={() => setFilter("pending")}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        filter === "processing"
+                        filter === "pending"
                           ? "bg-[#1dbf73] text-white"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       Đang xử lý
+                    </button>
+                    <button
+                      onClick={() => setFilter("approved")}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                        filter === "approved"
+                          ? "bg-[#1dbf73] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Đã xác nhận
                     </button>
                     <button
                       onClick={() => setFilter("completed")}
@@ -254,10 +374,21 @@ export default function BuyerOrdersPage() {
                             Chi tiết
                           </button>
                           
-                          {order.status === "pending" && (
-                            <button className="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-100">
-                              Hủy đơn hàng
-                            </button>
+                          {(order.status === "pending" || order.status === "approved") && (
+                            <div className="flex items-center space-x-2">
+                              {order.cancelRequestId ? (
+                                <div className="px-4 py-2 bg-orange-50 border border-orange-300 rounded-md text-sm font-medium text-orange-700">
+                                  Đã gửi yêu cầu hủy
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={() => openCancelModal(order._id)}
+                                  className="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-100 flex items-center"
+                                >
+                                  Hủy đơn hàng
+                                </button>
+                              )}
+                            </div>
                           )}
                           
                           {order.status === "completed" && (
@@ -298,6 +429,49 @@ export default function BuyerOrdersPage() {
             </div>
           </div>
         </div>
+
+        {/* Modal hủy đơn hàng */}
+        {showCancelModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium mb-4">Xác nhận hủy đơn hàng</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lý do hủy đơn hàng
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  rows={3}
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeCancelModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={handleCancelOrder}
+                  disabled={cancelLoading === selectedOrderId}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {cancelLoading === selectedOrderId ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    "Xác nhận hủy"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </SignedIn>
       <SignedOut>
         <RedirectToSignIn />

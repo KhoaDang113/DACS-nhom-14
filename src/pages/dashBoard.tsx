@@ -55,26 +55,6 @@ function Dashboard() {
                   Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc,
                   tạo sản phẩm mang dấu ấn cá nhân!
                 </p>
-                <div className="mt-5">
-                  <button
-                    onClick={() => navigate("/seller-gigs")}
-                    className="inline-block rounded-xl bg-white text-blue-700 font-semibold px-5 py-2 text-sm shadow-md hover:bg-blue-50 transition mr-4"
-                  >
-                    Danh sách dịch vụ của bạn
-                  </button>
-                  <button
-                    onClick={() => navigate("/seller-dashboard")}
-                    className="inline-block rounded-xl bg-white text-blue-700 font-semibold px-5 py-2 text-sm shadow-md hover:bg-blue-50 transition mr-4"
-                  >
-                    Dashboard tổng quan
-                  </button>
-                  <button
-                    onClick={() => navigate("/order-management")}
-                    className="inline-block rounded-xl bg-white text-blue-700 font-semibold px-5 py-2 text-sm shadow-md hover:bg-blue-50 transition"
-                  >
-                    Đơn hàng từ khách
-                  </button>
-                </div>
               </div>
 
               {/* All Gigs Grid Section */}

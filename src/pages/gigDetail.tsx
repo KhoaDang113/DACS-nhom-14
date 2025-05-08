@@ -1,15 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios"; // Thêm import axios
-import {
-  Heart,
-  Star,
-  Clock,
-  MessageSquare,
-  CheckCircle,
-  FileText,
-} from "lucide-react";
-import { Gig } from "../data/jobs"; // Vẫn giữ lại type Gig
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical } from "lucide-react";
 import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
 import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
@@ -51,6 +45,14 @@ interface Freelancer {
   reviewCount?: number;
 }
 
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
 const GigDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [gig, setGig] = useState<GigDetail | null>(null);
@@ -58,6 +60,10 @@ const GigDetailPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     const fetchGigDetails = async () => {
@@ -152,6 +158,57 @@ const GigDetailPage = () => {
     setIsFavorite(!isFavorite);
   };
 
+  const handleReport = async () => {
+    try {
+      setReportError("");
+
+      // Kiểm tra độ dài của description
+      if (reportDescription.length > 255) {
+        setReportError("Mô tả chi tiết không được vượt quá 255 ký tự");
+        return;
+      }
+
+      // Lấy ID từ URL và làm sạch
+      const gigId = id?.split('/').pop()?.trim();
+      console.log("Gửi báo cáo với id:", gigId);
+      
+      const response = await axios.post(
+        `http://localhost:5000/api/complaint/${gigId}/create`,
+        {
+          reason: reportReason,
+          description: reportDescription,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log("Response:", response.data);
+
+      if (response.data && !response.data.error) {
+        setIsReportModalOpen(false);
+        setReportReason("");
+        setReportDescription("");
+        toast.success("Báo cáo đã được gửi thành công!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      }
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error("Lỗi khi gửi báo cáo:", error);
+      const errorMessage = apiError.response?.data?.message || "Có lỗi xảy ra khi báo cáo";
+      setReportError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -179,12 +236,116 @@ const GigDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <ToastContainer />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Content Column - Takes 2/3 on large screens */}
         <div className="lg:col-span-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-            {gig.title}
-          </h1>
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              {gig.title}
+            </h1>
+            <button
+              onClick={() => setIsReportModalOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <MoreVertical className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Report Modal */}
+          {isReportModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Báo cáo dịch vụ</h2>
+                  <button
+                    onClick={() => setIsReportModalOpen(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {reportError && (
+                  <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                    {reportError}
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lý do
+                  </label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">Chọn lý do</option>
+                    <option value="dịch vụ bị cấm">Dịch vụ bị cấm</option>
+                    <option value="nội dung không phù hợp">
+                      Nội dung không phù hợp
+                    </option>
+                    <option value="không nguyên bản">Không nguyên bản</option>
+                    <option value="vi phạm quyền sở hữu trí tuệ">
+                      Vi phạm quyền sở hữu trí tuệ
+                    </option>
+                    <option value="khác">Khác</option>
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mô tả chi tiết
+                  </label>
+                  <textarea
+                    value={reportDescription}
+                    onChange={(e) => {
+                      // Giới hạn input không quá 255 ký tự
+                      if (e.target.value.length <= 255) {
+                        setReportDescription(e.target.value);
+                      }
+                    }}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    rows={4}
+                    maxLength={255}
+                    placeholder="Vui lòng mô tả chi tiết vấn đề bạn gặp phải (tối đa 255 ký tự)..."
+                  ></textarea>
+                  <div className="text-sm text-gray-500 mt-1">
+                    {reportDescription.length}/255 ký tự
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setIsReportModalOpen(false)}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleReport}
+                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+                    disabled={!reportReason || !reportDescription}
+                  >
+                    Báo cáo
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Seller Info - Top */}
           <div className="flex items-center mb-6 gap-3">
@@ -322,7 +483,6 @@ const GigDetailPage = () => {
             <CustomerReviews 
               reviews={sampleCustomerReviews.filter(review => review.gigId === "gig1")} 
               showGigTitle={false}
-              initialDisplayCount={5}
             />
           </div>
 
@@ -338,9 +498,9 @@ const GigDetailPage = () => {
           <div className="bg-white border border-gray-200 rounded-lg shadow-md sticky top-24">
             {/* Package Options (Tabs) */}
             <div className="flex border-b overflow-auto scrollbar-hide">
-              <button className="px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1 whitespace-nowrap">
-                Cơ bản
-              </button>
+              <div className="item-center px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1">
+                CƠ BẢN
+              </div>
               
             </div>
 

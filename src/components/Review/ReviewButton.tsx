@@ -12,7 +12,7 @@ const ReviewButton: React.FC<ReviewButtonProps> = ({ orderId, isReviewed }) => {
   
   if (isReviewed) {
     return (
-      <div className="flex items-center text-green-600">
+      <div className="inline-flex items-center justify-center w-32 h-9 bg-green-100 text-green-600 rounded-lg">
         <FaStar className="mr-1" />
         <span className="text-sm">Đã đánh giá</span>
       </div>
@@ -22,7 +22,7 @@ const ReviewButton: React.FC<ReviewButtonProps> = ({ orderId, isReviewed }) => {
   return (
     <Link
       to={`/review-gig/${orderId}`}
-      className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-3 py-1.5 rounded-lg hover:from-yellow-500 hover:to-yellow-600 transition duration-200 text-sm flex items-center"
+      className="inline-flex items-center justify-center w-32 h-9 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-lg hover:from-yellow-500 hover:to-yellow-600 transition duration-200 text-sm"
       onClick={() => console.log("Review button clicked for orderId:", orderId)}
     >
       <FaStar className="mr-1" />

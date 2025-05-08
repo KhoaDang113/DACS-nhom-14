@@ -1,34 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ChevronDown, MessageCircle, ThumbsUp } from 'lucide-react';
+import { Star, MessageCircle, ThumbsUp, Send } from 'lucide-react';
 import { CustomerReview, formatRelativeTime, calculateAverageRating } from '../../lib/reviewData';
 
 interface CustomerReviewsProps {
   reviews: CustomerReview[];
   showGigTitle?: boolean;
-  initialDisplayCount?: number;
 }
 
 const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   reviews,
   showGigTitle = true,
-  initialDisplayCount = 3
 }) => {
-  const [displayCount, setDisplayCount] = useState(initialDisplayCount);
-  const [expandedComments, setExpandedComments] = useState<string[]>([]);
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
   
   const averageRating = calculateAverageRating(reviews);
 
-  const toggleExpandComment = (reviewId: string) => {
-    setExpandedComments(prev => 
-      prev.includes(reviewId) 
-        ? prev.filter(id => id !== reviewId) 
-        : [...prev, reviewId]
-    );
+  const handleReplyClick = (reviewId: string) => {
+    setActiveReplyId(activeReplyId === reviewId ? null : reviewId);
+    setReplyText('');
   };
 
-  const showMoreReviews = () => {
-    setDisplayCount(prev => prev + 3);
+  const handleSubmitReply = (reviewId: string) => {
+    if (replyText.trim()) {
+      // Xử lý logic gửi phản hồi ở đây
+      console.log('Gửi phản hồi:', { reviewId, replyText });
+      setReplyText('');
+      setActiveReplyId(null);
+    }
   };
 
   // Tạo JSX render cho số sao
@@ -78,7 +78,7 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       {/* Danh sách đánh giá */}
       <div className="divide-y divide-gray-100">
         {reviews.length > 0 ? (
-          reviews.slice(0, displayCount).map((review) => (
+          reviews.map((review) => (
             <div key={review.id} className="p-6 hover:bg-gray-50 transition-colors">
               <div className="flex gap-4">
                 {/* Phần avatar */}
@@ -117,31 +117,50 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
                   
                   {/* Nội dung comment */}
                   <div className="mt-2">
-                    <p className={`text-gray-700 text-sm leading-relaxed ${!expandedComments.includes(review.id) && review.comment.length > 180 ? 'line-clamp-3' : ''}`}>
+                    <p className="text-gray-700 text-sm leading-relaxed">
                       {review.comment}
                     </p>
-                    
-                    {review.comment.length > 180 && (
-                      <button 
-                        onClick={() => toggleExpandComment(review.id)}
-                        className="mt-1 text-xs font-medium text-gray-600 hover:text-blue-600"
-                      >
-                        {expandedComments.includes(review.id) ? 'Thu gọn' : 'Xem thêm'}
-                      </button>
-                    )}
                   </div>
                   
                   {/* Tương tác */}
                   <div className="flex items-center mt-4 text-sm text-gray-500">
                     <button className="flex items-center mr-4 hover:text-blue-600 transition-colors">
                       <ThumbsUp size={14} className="mr-1" />
-                      Hữu ích
+                      Yes
                     </button>
-                    <button className="flex items-center hover:text-blue-600 transition-colors">
+                    <button className="flex items-center mr-4 hover:text-blue-600 transition-colors">
+                      <ThumbsUp size={14} className="mr-1" />
+                      No
+                    </button>
+                    <button 
+                      className="flex items-center hover:text-blue-600 transition-colors"
+                      onClick={() => handleReplyClick(review.id)}
+                    >
                       <MessageCircle size={14} className="mr-1" />
                       Phản hồi
                     </button>
                   </div>
+
+                  {/* Form phản hồi */}
+                  {activeReplyId === review.id && (
+                    <div className="mt-4">
+                      <div className="flex items-start space-x-2">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Viết phản hồi của bạn..."
+                          className="flex-1 min-h-[80px] p-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                        />
+                        <button
+                          onClick={() => handleSubmitReply(review.id)}
+                          disabled={!replyText.trim()}
+                          className="px-3 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Send size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -152,19 +171,6 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
           </div>
         )}
       </div>
-
-      {/* Nút xem thêm */}
-      {reviews.length > displayCount && (
-        <div className="p-4 text-center border-t border-gray-100">
-          <button
-            onClick={showMoreReviews}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            <span>Xem thêm đánh giá</span>
-            <ChevronDown size={16} className="ml-2" />
-          </button>
-        </div>
-      )}
     </div>
   );
 };
