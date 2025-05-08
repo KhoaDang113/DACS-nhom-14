@@ -14,6 +14,7 @@ import SellerReviews from "../components/Review/SellerReview";
 import { formattedReviews } from "../data/reviews";
 import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
 import { sampleCustomerReviews } from "../lib/reviewData"; // Import dữ liệu mẫu cho đánh giá
+import { useNavigate } from "react-router-dom";
 
 // Định nghĩa loại MediaItem cho mảng media
 interface MediaItem {
@@ -58,47 +59,65 @@ const GigDetailPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
+  const navigate = useNavigate();
 
+  const naviagteToConversation = () => {
+    if (freelancer && freelancer._id) {
+      navigate(`/inbox/${freelancer._id}`);
+    } else {
+      alert("Không tìm thấy thông tin người bán để liên hệ.");
+    }
+  };
   useEffect(() => {
     const fetchGigDetails = async () => {
       try {
         setIsLoading(true);
-        
-        const response = await axios.get(`http://localhost:5000/api/${id}/get-gig-detail`, {
-          withCredentials: true
-        });
-        
+
+        const response = await axios.get(
+          `http://localhost:5000/api/${id}/get-gig-detail`,
+          {
+            withCredentials: true,
+          }
+        );
+
         if (response.data && !response.data.error) {
           const gigData = response.data.gig;
           // Xử lý giá từ Decimal128
-          if (gigData.price && typeof gigData.price === 'object' && gigData.price.$numberDecimal) {
+          if (
+            gigData.price &&
+            typeof gigData.price === "object" &&
+            gigData.price.$numberDecimal
+          ) {
             gigData.price = parseFloat(gigData.price.$numberDecimal);
-          } else if (typeof gigData.price === 'string') {
+          } else if (typeof gigData.price === "string") {
             gigData.price = parseFloat(gigData.price);
           }
           setGig(gigData);
-          
+
           if (response.data.gig.media && response.data.gig.media.length > 0) {
             setSelectedImage(response.data.gig.media[0].url);
           }
-          
+
           // Luôn gọi API user nếu có freelancerId
           if (response.data.freelancerId) {
             try {
-              const userResponse = await axios.get(`http://localhost:5000/api/user/${response.data.freelancerId}`, {
-                withCredentials: true
-              });
-              
+              const userResponse = await axios.get(
+                `http://localhost:5000/api/user/${response.data.freelancerId}`,
+                {
+                  withCredentials: true,
+                }
+              );
+
               if (userResponse.data && !userResponse.data.error) {
                 const userData = userResponse.data.data || userResponse.data;
-                
+
                 setFreelancer({
                   _id: userData._id,
                   name: userData.name || "Freelancer", // Đặt giá trị mặc định
                   avatar: userData.avatar || "/default-avatar.png", // Đặt giá trị mặc định
                   level: userData.level || 1,
                   rating: userData.rating || 5.0,
-                  reviewCount: userData.reviewCount || 0
+                  reviewCount: userData.reviewCount || 0,
                 });
               }
             } catch (error) {
@@ -110,7 +129,7 @@ const GigDetailPage = () => {
                 avatar: "/default-avatar.png",
                 level: 1,
                 rating: 5.0,
-                reviewCount: 0
+                reviewCount: 0,
               });
             }
           }
@@ -136,10 +155,10 @@ const GigDetailPage = () => {
 
   const toggleFavorite = () => {
     if (!gig) return;
-    
+
     const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
     let newBookmarks;
-    
+
     if (isFavorite) {
       // Xóa khỏi bookmarks
       newBookmarks = bookmarks.filter((id: string) => id !== gig._id);
@@ -147,7 +166,7 @@ const GigDetailPage = () => {
       // Thêm vào bookmarks
       newBookmarks = [...bookmarks, gig._id];
     }
-    
+
     localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
     setIsFavorite(!isFavorite);
   };
@@ -311,7 +330,10 @@ const GigDetailPage = () => {
               )}
             </div>
 
-            <button className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+            <button
+              onClick={naviagteToConversation}
+              className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+            >
               Liên hệ với tôi
             </button>
           </div>
@@ -319,8 +341,10 @@ const GigDetailPage = () => {
           {/* Reviews */}
           <div className="mb-10">
             {/* Sử dụng component CustomerReviews mới */}
-            <CustomerReviews 
-              reviews={sampleCustomerReviews.filter(review => review.gigId === "gig1")} 
+            <CustomerReviews
+              reviews={sampleCustomerReviews.filter(
+                (review) => review.gigId === "gig1"
+              )}
               showGigTitle={false}
               initialDisplayCount={5}
             />
@@ -341,7 +365,6 @@ const GigDetailPage = () => {
               <button className="px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1 whitespace-nowrap">
                 Cơ bản
               </button>
-              
             </div>
 
             {/* Package Content */}
@@ -349,9 +372,9 @@ const GigDetailPage = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold">Gói cơ bản</h3>
                 <span className="font-bold text-xl">
-                  {new Intl.NumberFormat('vi-VN', { 
-                    style: 'currency', 
-                    currency: 'VND' 
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
                   }).format(gig.price)}
                 </span>
               </div>
@@ -364,7 +387,9 @@ const GigDetailPage = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-gray-500" />
-                  <span className="text-sm">{gig.duration || 3} ngày giao hàng</span>
+                  <span className="text-sm">
+                    {gig.duration || 3} ngày giao hàng
+                  </span>
                 </div>
 
                 {/* More features can be added here */}
@@ -389,12 +414,17 @@ const GigDetailPage = () => {
 
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
-              <button 
-                onClick={toggleFavorite} 
+              <button
+                onClick={toggleFavorite}
                 className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
               >
-                <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
-                <span>{isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}</span>
+                <Heart
+                  size={18}
+                  className={isFavorite ? "fill-red-500 text-red-500" : ""}
+                />
+                <span>
+                  {isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}
+                </span>
               </button>
 
               <Link

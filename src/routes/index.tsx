@@ -22,6 +22,7 @@ import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
 import OrderComplaintPage from "../pages/orderComplaint";
 import RequireAdmin from "../middleware/RequireAdmin";
+import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -37,9 +38,12 @@ import AdminViolationReport from "../pages/admin/ViolationReports";
 // Quảng cáo Job Hot
 import AdminHotJobAds from "../pages/admin/HotJobAds";
 import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
+import ChatBoxLayout from "../components/layouts/ChatBoxLayout";
 
 const router: RouteObject[] = [
-  {path: "/", element: <Layout />,
+  {
+    path: "/",
+    element: <Layout />,
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/sign-in", element: <SignInPage /> },
@@ -47,23 +51,26 @@ const router: RouteObject[] = [
       { path: "/payment", element: <PaymentPage /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/create-gig", element: <CreateGigForm /> },
-      { path: "/seller-gigs", element: <SellerGigsPage />},
-      { path: "/order-management", element: <OrderManagement />},
-      { path: "/seller-dashboard", element: <SellerDashboard/>},
-      { path: "/edit-gigs", element: <EditGig/>}, 
-      { 
-        path: "/review-gig/:orderId", 
+      { path: "/seller-gigs", element: <SellerGigsPage /> },
+      { path: "/order-management", element: <OrderManagement /> },
+      { path: "/seller-dashboard", element: <SellerDashboard /> },
+      { path: "/edit-gigs", element: <EditGig /> },
+      {
+        path: "/review-gig/:orderId",
         element: (
           <>
             <SignedIn>
               <ReviewGigPage />
-              </SignedIn>
+            </SignedIn>
             <SignedOut>
               <RedirectToSignIn />
             </SignedOut>
-          </> ),
+          </>
+        ),
       },
-      { path: "/dashboard", element: (
+      {
+        path: "/dashboard",
+        element: (
           <>
             <SignedIn>
               <Dashboard />
@@ -72,9 +79,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ), 
+        ),
       },
-      { path: "/create-gig", element: (
+      {
+        path: "/create-gig",
+        element: (
           <>
             <SignedIn>
               <CreateGigForm />
@@ -83,9 +92,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ), 
+        ),
       },
-      { path: "/seller-gigs", element: (
+      {
+        path: "/seller-gigs",
+        element: (
           <>
             <SignedIn>
               <SellerGigsPage />
@@ -94,9 +105,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ), 
+        ),
       },
-      { path: "/order-management", element: (
+      {
+        path: "/order-management",
+        element: (
           <>
             <SignedIn>
               <OrderManagement />
@@ -105,9 +118,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ), 
+        ),
       },
-      { path: "/seller-dashboard", element: (
+      {
+        path: "/seller-dashboard",
+        element: (
           <>
             <SignedIn>
               <SellerDashboard />
@@ -116,9 +131,11 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ), 
+        ),
       },
-      { path: "/edit-gig/:id", element: (
+      {
+        path: "/edit-gig/:id",
+        element: (
           <>
             <SignedIn>
               <EditGig />
@@ -126,10 +143,12 @@ const router: RouteObject[] = [
             <SignedOut>
               <RedirectToSignIn />
             </SignedOut>
-            </>
-        ), 
+          </>
+        ),
       },
-      { path: "/profile", element: (
+      {
+        path: "/profile",
+        element: (
           <>
             <SignedIn>
               <ProfilePage />
@@ -141,7 +160,9 @@ const router: RouteObject[] = [
         ),
       },
       { path: "/gig/:id", element: <GigDetailPage /> },
-      { path: "/custom-order/:id", element: (
+      {
+        path: "/custom-order/:id",
+        element: (
           <>
             <SignedIn>
               <CustomOrderPage />
@@ -152,7 +173,9 @@ const router: RouteObject[] = [
           </>
         ),
       },
-      { path: "/orders", element: (
+      {
+        path: "/orders",
+        element: (
           <>
             <SignedIn>
               <BuyerOrdersPage />
@@ -164,7 +187,9 @@ const router: RouteObject[] = [
         ),
       },
       { path: "/advanced-search", element: <AdvancedSearchPage /> },
-      { path: "/bookmarks", element: (
+      {
+        path: "/bookmarks",
+        element: (
           <>
             <SignedIn>
               <BookmarkPage />
@@ -173,7 +198,7 @@ const router: RouteObject[] = [
               <RedirectToSignIn />
             </SignedOut>
           </>
-        ) 
+        ),
       },
       { path: "/redirect-dashboard", element: <RedirectDashboard /> },
       { path: "/orders-complaint", element: <OrderComplaintPage /> },
@@ -181,7 +206,9 @@ const router: RouteObject[] = [
   },
 
   //admin path
-  { path: "/admin", element: (
+  {
+    path: "/admin",
+    element: (
       <RequireAdmin>
         <AdminLayout />
       </RequireAdmin>
@@ -200,6 +227,25 @@ const router: RouteObject[] = [
       // Quảng cáo Job Hot
       { path: "hot-job-ads", element: <AdminHotJobAds /> },
       { path: "hot-job-ads/create", element: <AdminCreateHotJobAd /> },
+    ],
+  },
+  {
+    path: "/inbox",
+    element: <ChatBoxLayout />,
+    children: [
+      {
+        path: "/inbox/:id",
+        element: (
+          <>
+            <SignedIn>
+              <Inbox />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ),
+      },
     ],
   },
 ];

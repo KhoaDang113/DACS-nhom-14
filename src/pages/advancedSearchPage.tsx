@@ -26,6 +26,12 @@ interface SearchResult {
   };
 }
 
+type Category = {
+  _id: string;
+  name: string;
+  subcategories?: Category[];
+};
+
 interface SearchResponse {
   error: boolean;
   message: string;
@@ -50,9 +56,7 @@ export default function AdvancedSearchPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
-    []
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Lấy từ khóa từ URL
   const queryParams = new URLSearchParams(location.search);
@@ -192,13 +196,21 @@ export default function AdvancedSearchPage() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3 py-2 border rounded-md text-sm scrollbar-hidden"
                 >
                   <option value="">Tất cả danh mục</option>
                   {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
+                    <optgroup key={cat._id} label={cat.name}>
+                      {cat.subcategories?.length ? (
+                        cat.subcategories.map((child) => (
+                          <option key={child._id} value={child._id}>
+                            {child.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value={cat._id}>{cat.name}</option>
+                      )}
+                    </optgroup>
                   ))}
                 </select>
               </div>

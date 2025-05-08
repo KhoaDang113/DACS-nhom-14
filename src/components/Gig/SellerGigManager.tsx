@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios, { AxiosError } from 'axios';
-import { Eye, Package, Edit, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNotification } from '../../contexts/NotificationContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios, { AxiosError } from "axios";
+import {
+  Eye,
+  Package,
+  Edit,
+  Trash2,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { useNotification } from "../../contexts/NotificationContext";
 
 interface Gig {
   _id: string;
@@ -25,10 +33,10 @@ const SellerGigManager: React.FC = () => {
   const { showNotification } = useNotification();
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  
+
   const handleEdit = async (id: string) => {
     try {
       navigate(`/edit-gig/${id}`);
@@ -36,27 +44,32 @@ const SellerGigManager: React.FC = () => {
       setError(err as string);
     }
   };
-  
+
   useEffect(() => {
     const fetchGigs = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:5000/api/gigs/get-list', {
-          withCredentials: true,
-          params: {
-            page: currentPage,
-            limit: ITEMS_PER_PAGE,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:5000/api/gigs/get-list",
+          {
+            withCredentials: true,
+            params: {
+              page: currentPage,
+              limit: ITEMS_PER_PAGE,
+            },
+          }
+        );
         if (response.data.error) {
           setError(response.data.message);
         } else {
           setGigs(response.data.gigs);
-          setTotalPages(Math.max(1, Math.ceil(response.data.total / ITEMS_PER_PAGE)));
+          setTotalPages(
+            Math.max(1, Math.ceil(response.data.total / ITEMS_PER_PAGE))
+          );
         }
       } catch (err) {
         console.error(err);
-        setError('Lỗi khi tải dữ liệu');
+        setError("Lỗi khi tải dữ liệu");
       } finally {
         setLoading(false);
       }
@@ -66,23 +79,29 @@ const SellerGigManager: React.FC = () => {
   }, [currentPage]);
 
   const handleDelete = async (id: string) => {
-    const confirmDelete = window.confirm('Bạn có chắc muốn xóa dịch vụ này?');
+    const confirmDelete = window.confirm("Bạn có chắc muốn xóa dịch vụ này?");
     if (confirmDelete) {
       try {
-        const response = await axios.delete(`http://localhost:5000/api/gigs/delete/${id}`, {
-          withCredentials: true
-        });
-        
+        const response = await axios.delete(
+          `http://localhost:5000/api/gigs/delete/${id}`,
+          {
+            withCredentials: true,
+          }
+        );
+
         if (response.data.error) {
-          showNotification(response.data.message, 'error');
+          showNotification(response.data.message, "error");
         } else {
           // Cập nhật danh sách gigs sau khi xóa thành công
           setGigs(gigs.filter((gig) => gig._id !== id));
-          showNotification('Xóa dịch vụ thành công!', 'success');
+          showNotification("Xóa dịch vụ thành công!", "success");
         }
       } catch (err) {
         const error = err as AxiosError<ErrorResponse>;
-        showNotification(error.response?.data?.message || 'Lỗi khi xóa dịch vụ', 'error');
+        showNotification(
+          error.response?.data?.message || "Lỗi khi xóa dịch vụ",
+          "error"
+        );
       }
     }
   };
@@ -130,8 +149,8 @@ const SellerGigManager: React.FC = () => {
           onClick={() => handlePageChange(i)}
           className={`px-3 py-1 rounded-md ${
             currentPage === i
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? "bg-indigo-600 text-white"
+              : "bg-white text-gray-700 hover:bg-gray-50"
           }`}
         >
           {i}
@@ -186,31 +205,52 @@ const SellerGigManager: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 STT
               </th>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Dịch vụ
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Mô tả
               </th>
-              <th scope="col" className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 <div className="flex items-center justify-center">
                   <Eye className="w-4 h-4 mr-1" />
                   Lượt xem
                 </div>
               </th>
-              <th scope="col" className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 <div className="flex items-center justify-center">
                   <Package className="w-4 h-4 mr-1" />
                   Đơn hàng
                 </div>
               </th>
-              <th scope="col" className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Trạng thái
               </th>
-              <th scope="col" className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Hành động
               </th>
             </tr>
@@ -226,19 +266,25 @@ const SellerGigManager: React.FC = () => {
                     <div className="h-14 w-14 flex-shrink-0">
                       <img
                         className="h-14 w-14 rounded-md object-cover shadow-sm"
-                        src={gig.media[0].url}
+                        src={gig.media[0]?.url}
                         alt={gig.title}
                       />
                     </div>
                     <div className="ml-4">
-                      <div className="font-medium text-gray-900 line-clamp-1 truncate max-w-[180px]" title={gig.title}>
+                      <div
+                        className="font-medium text-gray-900 line-clamp-1 truncate max-w-[180px]"
+                        title={gig.title}
+                      >
                         {gig.title}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-3 py-4">
-                  <div className="text-sm text-gray-500 line-clamp-2 max-w-[250px]" title={gig.description}>
+                  <div
+                    className="text-sm text-gray-500 line-clamp-2 max-w-[250px]"
+                    title={gig.description}
+                  >
                     {gig.description}
                   </div>
                 </td>
@@ -278,13 +324,16 @@ const SellerGigManager: React.FC = () => {
       {/* Mobile View */}
       <div className="grid grid-cols-1 gap-4 md:hidden w-full">
         {gigs.map((gig) => (
-          <div key={gig._id} className="bg-white p-4 rounded-lg shadow space-y-3 w-full">
+          <div
+            key={gig._id}
+            className="bg-white p-4 rounded-lg shadow space-y-3 w-full"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="h-20 w-20 flex-shrink-0">
                   <img
                     className="h-20 w-20 rounded-md object-cover"
-                    src={gig.media[0].url}
+                    src={gig.media[0]?.url}
                     alt={gig.title}
                   />
                 </div>

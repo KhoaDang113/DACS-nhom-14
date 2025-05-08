@@ -6,7 +6,7 @@ import { GrFormNext, GrFormPrevious } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import axios from "axios"; // Thêm import axios ở đầu file
-import { useFavoritesContext } from '../../contexts/FavoritesContext';
+import { useFavoritesContext } from "../../contexts/FavoritesContext";
 
 interface User {
   _id: string;
@@ -41,39 +41,48 @@ interface GigCardProps {
   onFavorite?: (id: string) => void;
   onPlayVideo?: (videoUrl: string) => void;
   isFavorited?: boolean;
-  viewMode?: "grid" | "list" // Thêm prop này
+  viewMode?: "grid" | "list"; // Thêm prop này
 }
 
 // Hàm format giá trong Card.tsx
 const formatPrice = (price: any) => {
   let numericalPrice = price;
-  
+
   // Xử lý nếu là object Decimal128
-  if (price && typeof price === 'object' && price.$numberDecimal) {
+  if (price && typeof price === "object" && price.$numberDecimal) {
     numericalPrice = parseFloat(price.$numberDecimal);
-  } 
+  }
   // Xử lý nếu là string
-  else if (typeof price === 'string') {
+  else if (typeof price === "string") {
     numericalPrice = parseFloat(price);
   }
-  
+
   // Kiểm tra nếu giá trị không hợp lệ
   if (isNaN(numericalPrice)) {
-    return 'Liên hệ';
+    return "Liên hệ";
   }
-  
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(numericalPrice);
-}
 
-const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavorited = false, viewMode }) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(numericalPrice);
+};
+
+const GigCard: React.FC<GigCardProps> = ({
+  gig,
+  onFavorite,
+  onPlayVideo,
+  isFavorited = false,
+  viewMode,
+}) => {
   // Lấy trạng thái từ context
-  const { isGigFavorited, toggleFavorite: toggleFavoriteContext } = useFavoritesContext();
-  
+  const { isGigFavorited, toggleFavorite: toggleFavoriteContext } =
+    useFavoritesContext();
+
   // Ưu tiên prop từ parent, nếu không có thì lấy từ context
-  const [isFavorite, setIsFavorite] = useState(isFavorited || isGigFavorited(gig._id));
+  const [isFavorite, setIsFavorite] = useState(
+    isFavorited || isGigFavorited(gig._id)
+  );
 
   // Cập nhật state khi prop hoặc context thay đổi
   useEffect(() => {
@@ -142,10 +151,10 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
 
     try {
       const result = await toggleFavoriteContext(gig._id);
-      
+
       // Cập nhật state local
       setIsFavorite(result.isFavorite);
-      
+
       // Gọi callback từ parent nếu có
       if (onFavorite) {
         onFavorite(gig._id);
@@ -184,8 +193,8 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
           {/* Media Slider */}
           <div
             className={`relative ${
-              viewMode === "list" 
-                ? "w-60 h-40 flex-shrink-0 rounded-lg overflow-hidden ml-4" 
+              viewMode === "list"
+                ? "w-60 h-40 flex-shrink-0 rounded-lg overflow-hidden ml-4"
                 : "aspect-[4/3]"
             } group`}
           >
@@ -238,7 +247,16 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
             ))}
 
             {/* Controls */}
-
+            <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+              <GrFormPrevious
+                className="bg-white border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 ml-2 hover:bg-gray-50 transition-colors"
+                onClick={prevSlide}
+              />
+              <GrFormNext
+                className="bg-white border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 mr-2 hover:bg-gray-50 transition-colors"
+                onClick={nextSlide}
+              />
+            </div>
             {/* Favorite Button */}
             <button
               onClick={toggleFavorite} // Sử dụng hàm toggleFavorite mới
@@ -260,7 +278,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
           <div className={`p-3 sm:p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
             {/* Freelancer */}
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <div className={`${viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"} rounded-full overflow-hidden relative`}>
+              <div
+                className={`${
+                  viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"
+                } rounded-full overflow-hidden relative`}
+              >
                 <img
                   src={gig.freelancer?.avatar || "/placeholder.svg"}
                   alt={gig.freelancer?.name || "Freelancer"}
@@ -269,7 +291,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
               </div>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
-                  <span className={`font-medium ${viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"} cursor-default`}>
+                  <span
+                    className={`font-medium ${
+                      viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"
+                    } cursor-default`}
+                  >
                     {gig.freelancer?.name || "Freelancer"}
                   </span>
                 </Tooltip.Trigger>
@@ -289,9 +315,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
             {/* Title with Tooltip */}
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <h3 className={`font-medium line-clamp-2 mb-3 hover:text-blue-600 transition-colors cursor-default ${
-                  viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
-                }`}>
+                <h3
+                  className={`font-medium line-clamp-2 min-h-[25px] sm:min-h-[40px] hover:text-blue-600 transition-colors cursor-default ${
+                    viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
+                  }`}
+                >
                   {gig.title}
                 </h3>
               </Tooltip.Trigger>
@@ -308,7 +336,11 @@ const GigCard: React.FC<GigCardProps> = ({ gig, onFavorite, onPlayVideo, isFavor
             </Tooltip.Root>
 
             {/* Price */}
-            <div className={`font-bold text-blue-600 ${viewMode === "list" ? "text-xl" : "text-sm sm:text-lg"}`}>
+            <div
+              className={`font-bold text-blue-600 ${
+                viewMode === "list" ? "text-xl" : "text-sm sm:text-lg"
+              }`}
+            >
               Giá: {formatPrice(gig.price)}
             </div>
           </div>
