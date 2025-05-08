@@ -104,9 +104,9 @@ const AdminAccounts: React.FC = () => {
   return (
     <div className="space-y-6 overflow-hidden">
       <div>
-        <h1 className="text-2xl font-bold">Admin Accounts</h1>
+        <h1 className="text-2xl font-bold">Tài khoản quản trị</h1>
         <p className="text-gray-500 mt-1">
-          Manage administrator accounts for your platform.
+          Quản lý tài khoản quản trị viên cho nền tảng của bạn.
         </p>
       </div>
 
@@ -117,7 +117,7 @@ const AdminAccounts: React.FC = () => {
           </div>
           <Input
             type="search"
-            placeholder="Search admins..."
+            placeholder="Tìm kiếm quản trị viên..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -128,7 +128,7 @@ const AdminAccounts: React.FC = () => {
           onClick={() => setIsModalOpen(true)}
           icon={<Plus className="h-4 w-4" />}
         >
-          Add Admin
+          Thêm quản trị viên
         </Button>
       </div>
 
@@ -137,12 +137,12 @@ const AdminAccounts: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Admin</TableHead>
+              <TableHead>Quản trị viên</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Vai trò</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Đăng nhập gần đây</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -174,7 +174,7 @@ const AdminAccounts: React.FC = () => {
                     }
                     className="capitalize"
                   >
-                    {admin.status}
+                    {admin.status === "Active" ? "Hoạt động" : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell>{admin.lastLogin}</TableCell>
@@ -186,7 +186,7 @@ const AdminAccounts: React.FC = () => {
                         size="sm"
                         icon={<MoreHorizontal className="h-4 w-4" />}
                       >
-                        <span className="sr-only">Actions</span>
+                        <span className="sr-only">Hành động</span>
                       </Button>
                     }
                     align="right"
@@ -194,26 +194,26 @@ const AdminAccounts: React.FC = () => {
                     <DropdownItem>
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-2" />
-                        Edit profile
+                        Sửa hồ sơ
                       </div>
                     </DropdownItem>
                     <DropdownItem>
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2" />
-                        Send email
+                        Gửi email
                       </div>
                     </DropdownItem>
                     <DropdownItem>
                       <div className="flex items-center">
                         <Key className="h-4 w-4 mr-2" />
-                        Reset password
+                        Đặt lại mật khẩu
                       </div>
                     </DropdownItem>
                     <DropdownDivider />
                     <DropdownItem className="text-red-600">
                       <div className="flex items-center">
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete account
+                        Xóa tài khoản
                       </div>
                     </DropdownItem>
                   </Dropdown>
@@ -226,10 +226,10 @@ const AdminAccounts: React.FC = () => {
 
       <div className="flex items-center justify-end space-x-2">
         <Button variant="outline" size="sm">
-          Previous
+          Trước
         </Button>
         <Button variant="outline" size="sm">
-          Next
+          Sau
         </Button>
       </div>
 
@@ -237,7 +237,7 @@ const AdminAccounts: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Add New Admin"
+        title="Thêm quản trị viên mới"
       >
         <div className="space-y-4">
           <div>
@@ -245,9 +245,9 @@ const AdminAccounts: React.FC = () => {
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Full Name
+              Họ và tên
             </label>
-            <Input id="name" placeholder="John Smith" />
+            <Input id="name" placeholder="Nguyễn Văn A" />
           </div>
           <div>
             <label
@@ -259,7 +259,7 @@ const AdminAccounts: React.FC = () => {
             <Input
               id="email"
               type="email"
-              placeholder="john.smith@example.com"
+              placeholder="nguyenvana@example.com"
             />
           </div>
           <div>
@@ -267,7 +267,7 @@ const AdminAccounts: React.FC = () => {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              Mật khẩu
             </label>
             <Input id="password" type="password" />
           </div>
@@ -276,16 +276,16 @@ const AdminAccounts: React.FC = () => {
               htmlFor="role"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Admin Role
+              Vai trò
             </label>
-            <Input id="role" placeholder="e.g. Content Moderator" />
+            <Input id="role" placeholder="VD: Quản lý nội dung" />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-              Cancel
+              Hủy
             </Button>
-            <Button>Create Admin</Button>
+            <Button>Tạo quản trị viên</Button>
           </div>
         </div>
       </Modal>

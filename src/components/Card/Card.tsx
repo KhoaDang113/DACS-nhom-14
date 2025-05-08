@@ -351,3 +351,5 @@ const GigCard: React.FC<GigCardProps> = ({
 };
 
 export default GigCard;
+
+

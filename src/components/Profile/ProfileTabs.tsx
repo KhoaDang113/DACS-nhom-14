@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import ProfileGigs from './ProfileGigs';
 import ProfileStatistical from './ProfileStatistical';
+import ProfileApplications from './ProfileApplications';
+import useUserRole from '../../hooks/useUserRole';
 
 interface Gig {
   _id: string;
@@ -20,16 +22,24 @@ interface Gig {
 
 interface ProfileTabsProps {
   gigs: Gig[];
+  isFreelancer?: boolean;
 }
 
-const ProfileTabs = ({ gigs }: ProfileTabsProps) => {
+const ProfileTabs = ({ gigs, isFreelancer = true }: ProfileTabsProps) => {
   const [activeTab, setActiveTab] = useState('gigs');
 
+  // Định nghĩa các tab dành cho freelancer
   const tabs = [
     { id: 'gigs', label: 'Dịch vụ' },
-    { id: 'reviews', label: 'Đánh giá' },
+    // { id: 'applications', label: 'Ứng tuyển' },
+    // { id: 'reviews', label: 'Đánh giá' },
     { id: 'statistical', label: 'Thống kê' }
   ];
+
+  // Nếu không phải là freelancer, không hiển thị các tab
+  if (!isFreelancer) {
+    return null;
+  }
 
   return (
     <div>
@@ -55,6 +65,7 @@ const ProfileTabs = ({ gigs }: ProfileTabsProps) => {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === 'gigs' && <ProfileGigs gigs={gigs} />}
+        {activeTab === 'applications' && <ProfileApplications />}
         {activeTab === 'reviews' && <div>Reviews content</div>}
         {activeTab === 'statistical' && <ProfileStatistical />}
       </div>

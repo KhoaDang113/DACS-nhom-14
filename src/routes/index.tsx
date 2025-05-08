@@ -1,5 +1,5 @@
 //user
-import { createBrowserRouter, RouteObject } from "react-router-dom";
+import { createBrowserRouter, RouteObject, Outlet } from "react-router-dom";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import SignInPage from "../pages/signIn";
 import SignUpPage from "../pages/signUp";
@@ -21,8 +21,12 @@ import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
 import OrderComplaintPage from "../pages/orderComplaint";
+import BecomeFreelancer from "../pages/becomeFreelancer";
 import RequireAdmin from "../middleware/RequireAdmin";
 import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
+import ProtectedRoute from "../middleware/ProtectedRoute";
+import LockedAccountRoute from "../middleware/LockedAccountRoute"; // Import LockedAccountRoute
+import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout";
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -40,168 +44,222 @@ import AdminHotJobAds from "../pages/admin/HotJobAds";
 import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
 import ChatBoxLayout from "../components/layouts/ChatBoxLayout";
 
+// Routes không cần đăng nhập
+const publicRoutes: RouteObject[] = [
+  { path: "/", element: <HomePage /> },
+  { path: "/sign-in", element: <SignInPage /> },
+  { path: "/sign-up", element: <SignUpPage /> },
+  { path: "/payment", element: <PaymentPage /> },
+  { path: "/gig/:id", element: <GigDetailPage /> },
+  { path: "/advanced-search", element: <AdvancedSearchPage /> },
+];
+
+// Routes cần đăng nhập và được bảo vệ
+const protectedRoutes: RouteObject[] = [
+  {
+    path: "/redirect-dashboard",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <RedirectDashboard />
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/profile/:userId",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/create-gig",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <CreateGigForm />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/seller-gigs",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <SellerGigsPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/order-management",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <OrderManagement />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/seller-dashboard",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <SellerDashboard />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/edit-gig/:id",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <EditGig />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/custom-order/:id",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <CustomOrderPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/orders",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <BuyerOrdersPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/bookmarks",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <BookmarkPage />
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/orders-complaint",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <OrderComplaintPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/become-freelancer",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <BecomeFreelancer />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/review-gig/:orderId",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <ReviewGigPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+];
+
 const router: RouteObject[] = [
   {
     path: "/",
     element: <Layout />,
     children: [
-      { path: "/", element: <HomePage /> },
-      { path: "/sign-in", element: <SignInPage /> },
-      { path: "/sign-up", element: <SignUpPage /> },
-      { path: "/payment", element: <PaymentPage /> },
-      { path: "/dashboard", element: <Dashboard /> },
-      { path: "/create-gig", element: <CreateGigForm /> },
-      { path: "/seller-gigs", element: <SellerGigsPage /> },
-      { path: "/order-management", element: <OrderManagement /> },
-      { path: "/seller-dashboard", element: <SellerDashboard /> },
-      { path: "/edit-gigs", element: <EditGig /> },
+      // Public routes
+      ...publicRoutes,
+
+      // Protected routes
       {
-        path: "/review-gig/:orderId",
         element: (
-          <>
-            <SignedIn>
-              <ReviewGigPage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
+          <SignedIn>
+            <AuthenticatedLayout>
+              <Outlet />
+            </AuthenticatedLayout>
+          </SignedIn>
+        ),
+        children: protectedRoutes.map((route) => ({
+          path: route.path?.toString().replace(/^\//, ""),
+          element: route.element,
+        })),
+      },
+
+      // Fallback for routes that need sign in
+      {
+        path: "*",
+        element: (
+          <SignedOut>
+            <RedirectToSignIn />
+          </SignedOut>
         ),
       },
-      {
-        path: "/dashboard",
-        element: (
-          <>
-            <SignedIn>
-              <Dashboard />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/create-gig",
-        element: (
-          <>
-            <SignedIn>
-              <CreateGigForm />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/seller-gigs",
-        element: (
-          <>
-            <SignedIn>
-              <SellerGigsPage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/order-management",
-        element: (
-          <>
-            <SignedIn>
-              <OrderManagement />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/seller-dashboard",
-        element: (
-          <>
-            <SignedIn>
-              <SellerDashboard />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/edit-gig/:id",
-        element: (
-          <>
-            <SignedIn>
-              <EditGig />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/profile",
-        element: (
-          <>
-            <SignedIn>
-              <ProfilePage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      { path: "/gig/:id", element: <GigDetailPage /> },
-      {
-        path: "/custom-order/:id",
-        element: (
-          <>
-            <SignedIn>
-              <CustomOrderPage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      {
-        path: "/orders",
-        element: (
-          <>
-            <SignedIn>
-              <BuyerOrdersPage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      { path: "/advanced-search", element: <AdvancedSearchPage /> },
-      {
-        path: "/bookmarks",
-        element: (
-          <>
-            <SignedIn>
-              <BookmarkPage />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        ),
-      },
-      { path: "/redirect-dashboard", element: <RedirectDashboard /> },
-      { path: "/orders-complaint", element: <OrderComplaintPage /> },
     ],
   },
 
@@ -209,9 +267,13 @@ const router: RouteObject[] = [
   {
     path: "/admin",
     element: (
-      <RequireAdmin>
-        <AdminLayout />
-      </RequireAdmin>
+      <SignedIn>
+        <AuthenticatedLayout>
+          <RequireAdmin>
+            <AdminLayout />
+          </RequireAdmin>
+        </AuthenticatedLayout>
+      </SignedIn>
     ),
     children: [
       { path: "dashboard", element: <AdminDashboard /> },

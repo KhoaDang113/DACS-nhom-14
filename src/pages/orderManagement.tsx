@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Thêm import useNavigate
+import { Eye } from 'lucide-react'; // Thêm import Eye icon
 import ReviewButton from "../components/Review/ReviewButton";
-import { sampleCompletedOrders } from "../lib/reviewData";
+import { parseMongoDecimal } from "../lib/utils";
 
 export interface Order {
   id: string;
@@ -11,6 +13,8 @@ export interface Order {
   orderDate: string;
   status: "pending" | "approved" | "completed" | "canceled" | "rejected";
   isReviewed?: boolean;
+  gigId?: string; // ID để xác định gig cụ thể khi xem đánh giá
+  reviewId?: string; // ID để xác định đánh giá cụ thể khi xem đánh giá
 }
 
 const OrderManagement: React.FC = () => {
@@ -18,35 +22,111 @@ const OrderManagement: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate(); // Sử dụng useNavigate
 
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
+        // Lấy danh sách đơn hàng
         const response = await axios.get(
           "http://localhost:5000/api/order/get-list-freelancer",
           {
             withCredentials: true,
           }
         );
+        
+        // Debug: In ra dữ liệu đơn hàng từ API
+        console.log("Orders API Response:", response.data);
 
-        // Lấy trạng thái đánh giá từ dữ liệu mẫu (trong môi trường thực tế, trạng thái này sẽ đến từ API)
-        const reviewStatusMap = sampleCompletedOrders.reduce((acc, order) => {
-          acc[order.id] = order.isReviewed;
-          return acc;
-        }, {} as Record<string, boolean>);
+        // Tạo một map từ gigId đến orderId cho các đơn hàng đã hoàn thành
+        // để sau này có thể dễ dàng tra cứu orderId khi có thông tin đánh giá
+        const gigToOrderMap: Record<string, string> = {};
+        response.data.orders.forEach((order: any) => {
+          if (order.status === "completed" && order.gigId && order.gigId._id) {
+            gigToOrderMap[order.gigId._id] = order._id;
+          }
+        });
+        
+        console.log("Gig to Order mapping:", gigToOrderMap);
+
+        // Lấy danh sách đánh giá để kiểm tra những đơn hàng đã được đánh giá
+        const reviewsResponse = await axios.get(
+          "http://localhost:5000/api/review/freelancer",
+          {
+            withCredentials: true,
+          }
+        );
+
+        // Debug: In ra dữ liệu reviews từ API
+        console.log("Reviews API Response:", reviewsResponse.data);
+
+        // Tạo map đánh dấu các đơn hàng đã được đánh giá và lưu reviewId
+        const reviewedOrdersMap: Record<string, {isReviewed: boolean, reviewId?: string, gigId?: string}> = {};
+        
+        if (reviewsResponse.data && reviewsResponse.data.reviews) {
+          reviewsResponse.data.reviews.forEach((review: any) => {
+            console.log("Processing review:", review);
+            
+            let orderId = null;
+            
+            // Kiểm tra nếu review trực tiếp có orderId
+            if (review.orderId && typeof review.orderId === 'string') {
+              orderId = review.orderId;
+            } 
+            // Kiểm tra nếu review.orderId là object và có _id
+            else if (review.orderId && typeof review.orderId === 'object' && review.orderId._id) {
+              orderId = review.orderId._id;
+            }
+            // Thử tìm orderId dựa vào gigId
+            else if (review.gigId) {
+              const gigId = typeof review.gigId === 'string' ? review.gigId : 
+                           (review.gigId._id ? review.gigId._id : null);
+              
+              if (gigId && gigToOrderMap[gigId]) {
+                orderId = gigToOrderMap[gigId];
+              }
+            }
+            
+            if (orderId) {
+              // Lấy reviewId từ review
+              const reviewId = review._id || review.id;
+              
+              // Lấy gigId từ review
+              const gigId = review.gigId && (typeof review.gigId === 'object' ? 
+                (review.gigId._id || review.gigId.id) : review.gigId);
+              
+              reviewedOrdersMap[orderId] = {
+                isReviewed: true,
+                reviewId: reviewId,
+                gigId: gigId
+              };
+              
+              console.log(`Mapped review: orderId=${orderId}, reviewId=${reviewId}, gigId=${gigId}`);
+            }
+          });
+        }
 
         const mappedOrders: Order[] = response.data.orders.map(
           (order: any) => {
             const orderId = order._id;
+            const reviewInfo = reviewedOrdersMap[orderId] || { isReviewed: false };
+            
+            // Đảm bảo gigId luôn có giá trị, lấy từ order.gigId hoặc từ reviewInfo
+            const gigId = order.gigId && order.gigId._id ? 
+                         order.gigId._id : 
+                         (reviewInfo.gigId || undefined);
+            
             return {
               id: orderId,
               customerName: order.customerId?.name || "Không rõ",
               gigName: order.title,
-              price: parseFloat(order.gigId?.price?.$numberDecimal || "0"),
+              price: parseMongoDecimal(order.gigId?.price),
               orderDate: new Date(order.createdAt).toLocaleDateString("vi-VN"),
               status: order.status,
-              isReviewed: reviewStatusMap[orderId] || false,
+              gigId: gigId,
+              isReviewed: reviewInfo.isReviewed,
+              reviewId: reviewInfo.reviewId
             };
           }
         );
@@ -112,6 +192,53 @@ const OrderManagement: React.FC = () => {
     fetchOrders();
   }, []);
 
+  // Xử lý thay đổi trạng thái đơn hàng thông qua API
+  const handleAction = async (
+    id: string,
+    action: "approve" | "reject" | "complete"
+  ) => {
+    try {
+      // Xác định endpoint và status dựa trên action
+      let endpoint = '';
+      let newStatus = '';
+
+      switch(action) {
+        case "approve":
+          endpoint = `http://localhost:5000/api/order/${id}/approve`;
+          newStatus = "approved";
+          break;
+        case "reject":
+          endpoint = `http://localhost:5000/api/order/${id}/reject`;
+          newStatus = "rejected";
+          break;
+        case "complete":
+          endpoint = `http://localhost:5000/api/order/${id}/complete`;
+          newStatus = "completed";
+          break;
+      }
+
+      // Gọi API cập nhật trạng thái đơn hàng
+      const response = await axios.put(endpoint, {}, {
+        withCredentials: true
+      });
+
+      if (response.data && !response.data.error) {
+        // Cập nhật trạng thái đơn hàng trong state
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === id
+              ? { ...order, status: newStatus }
+              : order
+          )
+        );
+      } else {
+        console.error("Lỗi cập nhật đơn hàng:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+    }
+  };
+
   const handleFilterChange = (status: string) => setFilterStatus(status);
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setSearchTerm(e.target.value);
@@ -124,29 +251,6 @@ const OrderManagement: React.FC = () => {
           order.gigName.toLowerCase().includes(searchTerm.toLowerCase())
         : true)
   );
-
-  const handleAction = (
-    id: string,
-    action: "approve" | "reject" | "complete"
-  ) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === id
-          ? {
-              ...order,
-              status:
-                action === "approve"
-                  ? "approved"
-                  : action === "reject"
-                  ? "rejected"
-                  : action === "complete"
-                  ? "completed"
-                  : order.status,
-            }
-          : order
-      )
-    );
-  };
 
   const getStatusClass = (status: string) => {
     switch (status) {
@@ -199,11 +303,21 @@ const OrderManagement: React.FC = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | any) => {
+    // Xử lý giá trị MongoDB Decimal128
+    const parsedPrice = parseMongoDecimal(price);
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
-    }).format(price);
+    }).format(parsedPrice);
+  };
+
+  // Thêm hàm xử lý click vào nút xem đánh giá
+  const handleViewReview = (order: Order) => {
+    if (order.isReviewed && order.reviewId && order.gigId) {
+      // Điều hướng đến trang chi tiết gig với reviewId là param để highlight đánh giá đó
+      navigate(`/gig/${order.gigId}?reviewId=${order.reviewId}`);
+    }
   };
 
   return (
@@ -341,10 +455,24 @@ const OrderManagement: React.FC = () => {
                         </td>
                         <td className="p-4 border-t">
                           {order.status === "completed" && (
-                            <ReviewButton 
-                              orderId={order.id} 
-                              isReviewed={order.isReviewed || false} 
-                            />
+                            <>
+                              {console.log("Order with completed status:", order)}
+                              <ReviewButton 
+                                orderId={order.id} 
+                                isReviewed={order.isReviewed || false}
+                                gigId={order.gigId}
+                                reviewId={order.reviewId}
+                              />
+                              {order.isReviewed && (
+                                <button
+                                  onClick={() => handleViewReview(order)}
+                                  className="px-3 py-1.5 bg-green-50 border border-green-300 text-green-700 text-xs rounded-md flex items-center"
+                                >
+                                  <Eye size={14} className="mr-1" />
+                                  Xem đánh giá
+                                </button>
+                              )}
+                            </>
                           )}
                         </td>
                         <td className="p-4 border-t">

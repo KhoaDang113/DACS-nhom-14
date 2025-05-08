@@ -3,15 +3,14 @@ import axios from 'axios';
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { parseMongoDecimal } from '../../lib/utils'; // Thêm import hàm xử lý Decimal128
 
 // Định nghĩa interface cho dữ liệu
 interface Order {
   _id: string;
   gigId: {
     _id: string;
-    price: {
-      $numberDecimal: string;
-    };
+    price: any; // Đổi kiểu dữ liệu thành any để hỗ trợ mọi định dạng giá
   };
   customerId: {
     _id: string;
@@ -106,9 +105,9 @@ const ProfileStatistical: React.FC = () => {
       else if (order.status === 'completed') acc.completed += 1;
       else if (order.status === 'cancelled') acc.cancelled += 1;
       
-      // Tính doanh thu chỉ từ đơn hàng đã hoàn thành
+      // Tính doanh thu chỉ từ đơn hàng đã hoàn thành và xử lý giá trị Decimal128
       if (order.status === 'completed') {
-        acc.revenue += parseFloat(order.gigId.price.$numberDecimal || '0');
+        acc.revenue += parseMongoDecimal(order.gigId.price);
       }
       
       return acc;
@@ -123,6 +122,15 @@ const ProfileStatistical: React.FC = () => {
 
     return { chartData, summary };
   }, [orders, filterType, selectedMonth, selectedDate]);
+
+  // Hàm định dạng giá trị tiền
+  const formatPrice = (price: any): string => {
+    const parsedPrice = parseMongoDecimal(price);
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(parsedPrice);
+  };
 
   if (loading) {
     return (
@@ -271,9 +279,7 @@ const ProfileStatistical: React.FC = () => {
                       {order.customerId.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                        parseFloat(order.gigId.price.$numberDecimal)
-                      )}
+                      {formatPrice(order.gigId.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full

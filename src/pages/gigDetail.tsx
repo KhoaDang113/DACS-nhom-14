@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import axios from "axios"; // Thêm import axios
+import { useState, useEffect, useRef } from "react";
+import { useParams, useLocation, Link } from "react-router-dom";
+import axios from "axios";
 import {
   Heart,
   Star,
@@ -8,12 +8,14 @@ import {
   MessageSquare,
   CheckCircle,
   FileText,
+  Lock,
 } from "lucide-react";
-import { Gig } from "../data/jobs"; // Vẫn giữ lại type Gig
-import SellerReviews from "../components/Review/SellerReview";
-import { formattedReviews } from "../data/reviews";
-import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
-import { sampleCustomerReviews } from "../lib/reviewData"; // Import dữ liệu mẫu cho đánh giá
+import { Gig } from "../data/jobs";
+import CustomerReviews from "../components/Review/CustomerReviews";
+import { CustomerReview, sampleCustomerReviews } from "../lib/reviewData";
+import { useFavoritesContext } from "../contexts/FavoritesContext";
+import useRestrictedAccess from "../hooks/useRestrictedAccess";
+import { useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
 // Định nghĩa loại MediaItem cho mảng media
@@ -54,12 +56,207 @@ interface Freelancer {
 
 const GigDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const reviewListRef = useRef<HTMLDivElement>(null);
+  const [highlightedReviewId, setHighlightedReviewId] = useState<string | null>(
+    null
+  );
   const [gig, setGig] = useState<GigDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { isGigFavorited, toggleFavorite } = useFavoritesContext();
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
   const navigate = useNavigate();
+  const [selectedMediaType, setSelectedMediaType] = useState<string>("image");
+  const [processedMedia, setProcessedMedia] = useState<MediaItem[]>([]);
+  const [videoThumbnails, setVideoThumbnails] = useState<
+    Record<string, string>
+  >({});
+  const [processingThumbnails, setProcessingThumbnails] =
+    useState<boolean>(false);
+  const { isLocked, canAccessOrderFunctions } = useRestrictedAccess();
+  const { isSignedIn } = useAuth();
+  const [reviews, setReviews] = useState<CustomerReview[]>([]);
+
+  // Xử lý query parameter reviewId
+  useEffect(() => {
+    // Lấy reviewId từ query parameters nếu có
+    const queryParams = new URLSearchParams(location.search);
+    const reviewId = queryParams.get("reviewId");
+
+    if (reviewId) {
+      setHighlightedReviewId(reviewId);
+
+      // Đợi reviews được load xong trước khi cuộn
+      const checkReviewsLoaded = setInterval(() => {
+        if (reviews.length > 0 && reviewListRef.current) {
+          clearInterval(checkReviewsLoaded);
+
+          // Tìm review element cần scroll đến
+          const reviewElement = document.getElementById(`review-${reviewId}`);
+          if (reviewElement) {
+            // Cuộn đến review
+            setTimeout(() => {
+              reviewElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+
+              // Thêm hiệu ứng highlight
+              reviewElement.classList.add("bg-yellow-50");
+              setTimeout(() => {
+                reviewElement.classList.add("transition-all", "duration-1000");
+                reviewElement.classList.remove("bg-yellow-50");
+              }, 2000);
+            }, 500);
+          }
+        }
+      }, 300);
+
+      // Dọn dẹp timeout nếu component unmount
+      return () => clearInterval(checkReviewsLoaded);
+    }
+  }, [location.search, reviews]);
+
+  // Hàm trích xuất frame đầu tiên từ video làm thumbnail
+  const extractVideoThumbnail = async (videoUrl: string): Promise<string> => {
+    return new Promise<string>((resolve) => {
+      console.log("Đang trích xuất thumbnail từ:", videoUrl);
+
+      const video = document.createElement("video");
+      video.crossOrigin = "anonymous";
+      video.src = videoUrl;
+      video.muted = true;
+
+      // Đặt thời gian ở giây thứ 1 (tránh màn hình đen ở frame 0)
+      video.currentTime = 1;
+
+      // Xử lý sự kiện khi dữ liệu video đã sẵn sàng
+      const handleLoadedData = () => {
+        console.log("Video đã tải xong, bắt đầu tạo thumbnail");
+
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+
+          if (ctx) {
+            // Vẽ frame hiện tại của video lên canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Chuyển đổi canvas thành dạng dữ liệu URL (base64)
+            const thumbnailUrl = canvas.toDataURL("image/jpeg");
+            console.log("Đã tạo thumbnail thành công");
+
+            // Giải phóng bộ nhớ
+            video.removeEventListener("loadeddata", handleLoadedData);
+            video.src = "";
+
+            resolve(thumbnailUrl);
+          } else {
+            console.error("Không thể lấy context từ canvas");
+            resolve("/placeholder.jpg");
+          }
+        } catch (error) {
+          console.error("Lỗi khi tạo thumbnail:", error);
+          resolve("/placeholder.jpg");
+        }
+      };
+
+      // Xử lý lỗi khi tải video
+      const handleError = () => {
+        console.error("Lỗi khi tải video:", videoUrl);
+        video.removeEventListener("loadeddata", handleLoadedData);
+        video.removeEventListener("error", handleError);
+        resolve("/placeholder.jpg");
+      };
+
+      video.addEventListener("loadeddata", handleLoadedData);
+      video.addEventListener("error", handleError);
+
+      // Đặt timeout để đảm bảo không bị treo nếu video không tải được
+      setTimeout(() => {
+        if (!video.videoWidth) {
+          console.warn("Timeout khi tải video:", videoUrl);
+          video.removeEventListener("loadeddata", handleLoadedData);
+          video.removeEventListener("error", handleError);
+          resolve("/placeholder.jpg");
+        }
+      }, 5000); // 5 giây timeout
+    });
+  };
+
+  // Xử lý chọn media để hiển thị
+  const handleSelectMedia = (mediaItem: MediaItem) => {
+    setSelectedImage(mediaItem.url);
+    setSelectedMediaType(mediaItem.type);
+  };
+
+  // Xử lý media khi dữ liệu được tải
+  useEffect(() => {
+    if (!gig || !gig.media || gig.media.length === 0) return;
+
+    const setupMedia = async () => {
+      try {
+        // Xác định video cần trích xuất thumbnail
+        const videoItems = gig.media.filter(
+          (item) => item.type === "video" && !item.thumbnailUrl
+        );
+
+        if (videoItems.length > 0) {
+          setProcessingThumbnails(true);
+
+          // Xử lý media ban đầu với thumbnail mặc định
+          const initialProcessed = gig.media.map((item) => {
+            if (item.type === "video" && !item.thumbnailUrl) {
+              return {
+                ...item,
+                thumbnailUrl: "/placeholder.jpg",
+              };
+            }
+            return item;
+          });
+
+          setProcessedMedia(initialProcessed);
+
+          // Trích xuất thumbnails cho tất cả video
+          const thumbnails: Record<string, string> = {};
+
+          for (const videoItem of videoItems) {
+            try {
+              const thumbnail = await extractVideoThumbnail(videoItem.url);
+              thumbnails[videoItem.url] = thumbnail;
+
+              // Cập nhật processedMedia với thumbnail mới
+              setProcessedMedia((prev) =>
+                prev.map((item) =>
+                  item.url === videoItem.url
+                    ? { ...item, thumbnailUrl: thumbnail }
+                    : item
+                )
+              );
+            } catch (error) {
+              console.error("Lỗi khi trích xuất thumbnail:", error);
+            }
+          }
+
+          setVideoThumbnails(thumbnails);
+          setProcessingThumbnails(false);
+        } else {
+          // Không có video cần trích xuất thumbnail
+          setProcessedMedia(gig.media);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xử lý media:", error);
+        setProcessingThumbnails(false);
+        setProcessedMedia(gig.media);
+      }
+    };
+
+    setupMedia();
+  }, [gig]);
 
   const naviagteToConversation = () => {
     if (freelancer && freelancer._id) {
@@ -73,11 +270,9 @@ const GigDetailPage = () => {
       try {
         setIsLoading(true);
 
+        // Use the correctly formatted endpoint for public gig detail viewing
         const response = await axios.get(
-          `http://localhost:5000/api/${id}/get-gig-detail`,
-          {
-            withCredentials: true,
-          }
+          `http://localhost:5000/api/${id}/get-gig-detail`
         );
 
         if (response.data && !response.data.error) {
@@ -95,17 +290,16 @@ const GigDetailPage = () => {
           setGig(gigData);
 
           if (response.data.gig.media && response.data.gig.media.length > 0) {
-            setSelectedImage(response.data.gig.media[0].url);
+            const firstMedia = response.data.gig.media[0];
+            setSelectedImage(firstMedia.url);
+            setSelectedMediaType(firstMedia.type);
           }
 
-          // Luôn gọi API user nếu có freelancerId
+          // Get freelancer information if available
           if (response.data.freelancerId) {
             try {
               const userResponse = await axios.get(
-                `http://localhost:5000/api/user/${response.data.freelancerId}`,
-                {
-                  withCredentials: true,
-                }
+                `http://localhost:5000/api/user/${response.data.freelancerId}`
               );
 
               if (userResponse.data && !userResponse.data.error) {
@@ -113,8 +307,8 @@ const GigDetailPage = () => {
 
                 setFreelancer({
                   _id: userData._id,
-                  name: userData.name || "Freelancer", // Đặt giá trị mặc định
-                  avatar: userData.avatar || "/default-avatar.png", // Đặt giá trị mặc định
+                  name: userData.name || "Freelancer",
+                  avatar: userData.avatar || "/default-avatar.png",
                   level: userData.level || 1,
                   rating: userData.rating || 5.0,
                   reviewCount: userData.reviewCount || 0,
@@ -147,29 +341,41 @@ const GigDetailPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (gig) {
-      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-      setIsFavorite(bookmarks.includes(gig._id));
+    if (gig && id) {
+      setIsFavorite(isGigFavorited(id));
     }
-  }, [gig]);
+  }, [gig, id, isGigFavorited]);
 
-  const toggleFavorite = () => {
-    if (!gig) return;
+  const handleToggleFavorite = async () => {
+    if (!gig || !id) return;
 
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    let newBookmarks;
-
-    if (isFavorite) {
-      // Xóa khỏi bookmarks
-      newBookmarks = bookmarks.filter((id: string) => id !== gig._id);
-    } else {
-      // Thêm vào bookmarks
-      newBookmarks = [...bookmarks, gig._id];
+    try {
+      const result = await toggleFavorite(id);
+      setIsFavorite(result.isFavorite);
+    } catch (error) {
+      console.error("Lỗi khi thay đổi trạng thái yêu thích:", error);
     }
-
-    localStorage.setItem("bookmarks", JSON.stringify(newBookmarks));
-    setIsFavorite(!isFavorite);
   };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/review/gig/${id}/frontend`
+      );
+      if (response.data && !response.data.error) {
+        setReviews(response.data.reviews);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải đánh giá:", error);
+    }
+  };
+
+  // Lấy dữ liệu reviews khi component được tải
+  useEffect(() => {
+    if (id) {
+      fetchReviews();
+    }
+  }, [id]);
 
   if (isLoading) {
     return (
@@ -244,32 +450,61 @@ const GigDetailPage = () => {
           {/* Main Image Gallery */}
           <div className="mb-6">
             <div className="mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <img
-                src={selectedImage || gig.media[0]?.url || ""}
-                alt={gig.title}
-                className="w-full h-full object-cover"
-              />
+              {selectedImage && selectedMediaType === "video" ? (
+                <video
+                  src={selectedImage}
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                />
+              ) : (
+                <img
+                  src={selectedImage || gig.media[0]?.url || ""}
+                  alt={gig.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
 
             {/* Thumbnails */}
             <div className="grid grid-cols-5 gap-2">
-              {gig.media.map((mediaItem, index) => (
+              {processedMedia.map((mediaItem, index) => (
                 <div
                   key={index}
-                  className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
+                  className={`aspect-square rounded-md overflow-hidden cursor-pointer border-2 relative ${
                     selectedImage === mediaItem.url
                       ? "border-green-500"
                       : "border-transparent"
                   }`}
-                  onClick={() => setSelectedImage(mediaItem.url)}
+                  onClick={() => handleSelectMedia(mediaItem)}
                 >
+                  {mediaItem.type === "video" && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 z-10">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="white"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                        />
+                      </svg>
+                    </div>
+                  )}
                   <img
                     src={
                       mediaItem.type === "image"
                         ? mediaItem.url
-                        : mediaItem.thumbnailUrl || ""
+                        : mediaItem.thumbnailUrl || mediaItem.url
                     }
-                    alt={`${gig.title} - ảnh ${index + 1}`}
+                    alt={`${gig.title} - ${
+                      mediaItem.type === "video" ? "video" : "ảnh"
+                    } ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -332,28 +567,34 @@ const GigDetailPage = () => {
 
             <button
               onClick={naviagteToConversation}
-              className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+              className={`border border-gray-300 rounded-md px-4 py-2 text-gray-700 ${
+                isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+              } transition-colors`}
+              disabled={isLocked}
             >
-              Liên hệ với tôi
+              {isLocked ? (
+                <span className="flex items-center">
+                  <Lock size={16} className="mr-2" />
+                  Chức năng bị khóa
+                </span>
+              ) : (
+                "Liên hệ với tôi"
+              )}
             </button>
           </div>
 
-          {/* Reviews */}
+          {/* Customer Reviews */}
           <div className="mb-10">
-            {/* Sử dụng component CustomerReviews mới */}
-            <CustomerReviews
-              reviews={sampleCustomerReviews.filter(
-                (review) => review.gigId === "gig1"
-              )}
-              showGigTitle={false}
-              initialDisplayCount={5}
-            />
-          </div>
-
-          {/* Phần hiển thị đánh giá seller */}
-          <div className="mt-10">
-            {/* Lọc đánh giá theo gigId hiện tại nếu cần */}
-            <SellerReviews reviews={formattedReviews} />
+            <h2 className="text-xl font-bold mb-4">Đánh giá của khách hàng</h2>
+            {reviews.length > 0 ? (
+              <CustomerReviews reviews={reviews} />
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                <p className="text-gray-500">
+                  Chưa có đánh giá nào cho dịch vụ này
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -403,38 +644,113 @@ const GigDetailPage = () => {
                 </div>
               </div>
 
-              {/* Order Button */}
-              <Link
-                to={`/payment?gig=${gig._id}&price=${gig.price}`}
-                className="block bg-green-500 hover:bg-green-600 text-white text-center font-medium py-3 rounded-md transition-colors w-full"
-              >
-                Đặt dịch vụ ngay
-              </Link>
+              {/* Order Button - Điều kiện hiển thị dựa trên trạng thái tài khoản */}
+              {!isSignedIn ? (
+                <Link
+                  to="/sign-in"
+                  className="block bg-green-500 hover:bg-green-600 text-white text-center font-medium py-3 rounded-md transition-colors w-full"
+                >
+                  Đăng nhập để đặt dịch vụ
+                </Link>
+              ) : isLocked ? (
+                <div className="block bg-gray-400 text-white text-center font-medium py-3 rounded-md w-full flex items-center justify-center">
+                  <Lock size={16} className="mr-2" />
+                  Tài khoản đã bị khóa
+                </div>
+              ) : (
+                <Link
+                  to={`/payment?gig=${gig._id}&price=${gig.price}`}
+                  className="block bg-green-500 hover:bg-green-600 text-white text-center font-medium py-3 rounded-md transition-colors w-full"
+                >
+                  Đặt dịch vụ ngay
+                </Link>
+              )}
             </div>
 
             {/* Contact Seller */}
             <div className="border-t p-6 space-y-3">
-              <button
-                onClick={toggleFavorite}
-                className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
-              >
-                <Heart
-                  size={18}
-                  className={isFavorite ? "fill-red-500 text-red-500" : ""}
-                />
-                <span>
-                  {isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}
-                </span>
-              </button>
+              {/* Nút Yêu thích - vẫn hiển thị nhưng sẽ chuyển hướng đến đăng nhập nếu chưa đăng nhập */}
+              {!isSignedIn ? (
+                <Link
+                  to="/sign-in"
+                  className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full"
+                >
+                  <Heart size={18} />
+                  <span>Đăng nhập để lưu</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 font-medium w-full ${
+                    isLocked ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isLocked}
+                >
+                  <Heart
+                    size={18}
+                    className={isFavorite ? "fill-red-500 text-red-500" : ""}
+                  />
+                  <span>
+                    {isFavorite ? "Đã lưu vào yêu thích" : "Lưu vào yêu thích"}
+                  </span>
+                </button>
+              )}
 
-              <Link
-                to={`/custom-order/${gig._id}`}
-                className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
-              >
-                <FileText size={18} />
-                <span>Gửi yêu cầu tùy chỉnh</span>
-              </Link>
+              {/* Gửi yêu cầu tùy chỉnh - chỉ cho phép người dùng không bị khóa */}
+              {!isSignedIn ? (
+                <Link
+                  to="/sign-in"
+                  className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
+                >
+                  <FileText size={18} />
+                  <span>Đăng nhập để gửi yêu cầu</span>
+                </Link>
+              ) : isLocked ? (
+                <div className="flex items-center justify-center gap-2 text-gray-400 font-medium w-full cursor-not-allowed">
+                  <Lock size={18} />
+                  <span>Tài khoản đã bị khóa</span>
+                </div>
+              ) : (
+                <Link
+                  to={`/custom-order/${gig._id}`}
+                  className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
+                >
+                  <FileText size={18} />
+                  <span>Gửi yêu cầu tùy chỉnh</span>
+                </Link>
+              )}
             </div>
+
+            {/* Thông báo nếu tài khoản bị khóa */}
+            {isLocked && (
+              <div className="border-t border-orange-200 bg-orange-50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-orange-500 mt-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 3.813-1.874 2.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-orange-700">
+                    <p className="font-medium">Tài khoản của bạn đã bị khóa</p>
+                    <p>
+                      Bạn chỉ có thể xem thông tin dịch vụ. Để sử dụng đầy đủ
+                      các chức năng, vui lòng liên hệ quản trị viên.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
