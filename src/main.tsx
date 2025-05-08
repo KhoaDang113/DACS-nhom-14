@@ -3,6 +3,9 @@ import ReactDom from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { ClerkProvider } from "@clerk/clerk-react";
+// Import axios interceptor để đảm bảo nó được khởi tạo
+import "./lib/axios";
+
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {

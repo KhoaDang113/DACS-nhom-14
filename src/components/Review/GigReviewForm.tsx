@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaInfoCircle, FaStar } from 'react-icons/fa';
+import axios from 'axios';
 import RatingStars from './RatingStars';
-import { CompletedOrder } from '../../lib/reviewData';
+
+// Import interface từ trang ReviewGig
+interface CompletedOrder {
+  id: string;
+  gigId: string;
+  gigTitle: string;
+  sellerId: string;
+  sellerName: string;
+  sellerAvatar: string; 
+  completedDate: Date;
+  price: number;
+  orderDuration: number;
+  isReviewed: boolean;
+}
 
 interface GigReviewFormProps {
   order: CompletedOrder;
@@ -32,51 +46,43 @@ const GigReviewForm: React.FC<GigReviewFormProps> = ({ order, onSubmitSuccess })
     try {
       setIsSubmitting(true);
       
-      // Log dữ liệu đánh giá để debug
-      console.log("Đang gửi đánh giá cho đơn hàng:", order.id, {
-        rating: overallRating,
-        title,
-        comment,
-        speedRating,
-        communicationRating,
-        qualityRating
-      });
+      // Chuẩn bị dữ liệu đánh giá đúng định dạng mà backend yêu cầu
+      const reviewData = {
+        orderId: order.id,
+        star: overallRating,
+        title: title || `Đánh giá dịch vụ ${order.gigTitle}`,
+        description: comment
+        // Chi tiết về tốc độ, giao tiếp, chất lượng có thể được lưu trong mô tả
+        // hoặc mở rộng backend để lưu trữ thêm các thông tin này
+      };
+      
+      console.log("Sending review data:", reviewData);
+      
+      // Gọi API để gửi đánh giá với endpoint đúng
+      const response = await axios.post(
+        `http://localhost:5000/api/review/${order.gigId}/create`,
+        reviewData,
+        { withCredentials: true }
+      );
 
-      // Frontend giả lập gửi đánh giá thành công
-      setTimeout(() => {
-        setIsSubmitting(false);
+      // Kiểm tra kết quả từ API
+      if (response.data && !response.data.error) {
+        // Thông báo thành công
         toast.success('Đánh giá của bạn đã được gửi thành công!', {
           duration: 3000,
           position: 'top-center',
           icon: '👍'
         });
+        
+        // Gọi callback để thông báo đánh giá thành công
         onSubmitSuccess();
-      }, 1500);
-
-      // Trong thực tế, đây là nơi gọi API để gửi đánh giá
-      // const response = await fetch('/api/reviews', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     orderId: order.id,
-      //     gigId: order.gigId,
-      //     sellerId: order.sellerId,
-      //     rating: overallRating,
-      //     title,
-      //     comment,
-      //     speedRating,
-      //     communicationRating,
-      //     qualityRating
-      //   })
-      // });
-      // 
-      // if (!response.ok) throw new Error('Không thể gửi đánh giá');
-      // 
-      // const data = await response.json();
-      // onSubmitSuccess();
-    } catch (error) {
+      } else {
+        // Hiển thị lỗi từ API
+        throw new Error(response.data.message || 'Có lỗi xảy ra khi gửi đánh giá');
+      }
+    } catch (error: any) {
       setIsSubmitting(false);
-      toast.error('Có lỗi xảy ra, vui lòng thử lại sau!');
+      toast.error(error.response?.data?.message || error.message || 'Có lỗi xảy ra, vui lòng thử lại sau!');
       console.error('Lỗi khi gửi đánh giá:', error);
     }
   };
@@ -131,49 +137,6 @@ const GigReviewForm: React.FC<GigReviewFormProps> = ({ order, onSubmitSuccess })
             </p>
           </div>
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
-
-        <div className="mb-6 space-y-4 bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-medium">Đánh giá chi tiết</h3>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-sm font-medium mr-2">Tốc độ giao hàng</span>
-              <div className="tooltip cursor-help relative group">
-                <FaInfoCircle className="text-gray-400" />
-                <div className="tooltip-text invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-md -left-28 bottom-full">
-                  Người bán có giao hàng đúng hẹn không?
-                </div>
-              </div>
-            </div>
-            <RatingStars initialRating={speedRating} onChange={setSpeedRating} size={20} />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-sm font-medium mr-2">Giao tiếp</span>
-              <div className="tooltip cursor-help relative group">
-                <FaInfoCircle className="text-gray-400" />
-                <div className="tooltip-text invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-md -left-28 bottom-full">
-                  Người bán có phản hồi nhanh và rõ ràng không?
-                </div>
-              </div>
-            </div>
-            <RatingStars initialRating={communicationRating} onChange={setCommunicationRating} size={20} />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-sm font-medium mr-2">Chất lượng dịch vụ</span>
-              <div className="tooltip cursor-help relative group">
-                <FaInfoCircle className="text-gray-400" />
-                <div className="tooltip-text invisible group-hover:visible absolute z-10 w-64 p-2 bg-gray-800 text-white text-xs rounded-md -left-28 bottom-full">
-                  Chất lượng kết quả có đáp ứng được kỳ vọng của bạn không?
-                </div>
-              </div>
-            </div>
-            <RatingStars initialRating={qualityRating} onChange={setQualityRating} size={20} />
-          </div>
         </div>
 
         <div className="text-center">

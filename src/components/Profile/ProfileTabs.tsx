@@ -31,8 +31,8 @@ const ProfileTabs = ({ gigs, isFreelancer = true }: ProfileTabsProps) => {
   // Định nghĩa các tab dành cho freelancer
   const tabs = [
     { id: 'gigs', label: 'Dịch vụ' },
-    { id: 'applications', label: 'Ứng tuyển' },
-    { id: 'reviews', label: 'Đánh giá' },
+    // { id: 'applications', label: 'Ứng tuyển' },
+    // { id: 'reviews', label: 'Đánh giá' },
     { id: 'statistical', label: 'Thống kê' }
   ];
 

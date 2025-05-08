@@ -148,7 +148,15 @@ export const sampleCompletedOrders: CompletedOrder[] = [
 ];
 
 // Helper function để định dạng thời gian tương đối
-export const formatRelativeTime = (date: Date): string => {
+export const formatRelativeTime = (dateInput: Date | string): string => {
+  // Đảm bảo dateInput là một đối tượng Date hợp lệ
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  
+  // Kiểm tra xem date có hợp lệ không
+  if (isNaN(date.getTime())) {
+    return "Không xác định";
+  }
+  
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
