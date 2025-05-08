@@ -9,7 +9,6 @@ const SellerGigsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-blue-100 w-full">
       <div className="w-full px-2 sm:max-w-[1400px] sm:mx-auto sm:px-0">
-        {/* Top Navigation Bar */}
         <div className="w-full px-2 sm:px-8 py-4">
           <div className="flex items-center h-10">
             <div className="bg-blue-50 hover:bg-blue-100 rounded-md transition duration-300">
@@ -28,15 +27,10 @@ const SellerGigsPage: React.FC = () => {
                 <div className="bg-indigo-100 p-2 sm:p-3 rounded-full">
                   <Briefcase className="w-5 h-5 sm:w-7 sm:h-7 text-indigo-600" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                  Dịch vụ của bạn
-                </h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Dịch vụ của bạn</h1>
               </div>
               
-              <Link 
-                to="/create-gig" 
-                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto"
-              >
+              <Link to="/create-gig" className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
                 <Plus className="w-5 h-5" />
                 <span>Tạo dịch vụ mới</span>
               </Link>
