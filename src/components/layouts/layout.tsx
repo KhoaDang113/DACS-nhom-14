@@ -4,12 +4,15 @@ import Footer from "../../components/Footer";
 import { ReactNode } from "react";
 import CategoryNav from "../CategoryNav";
 import MobileNavbar from "../MobileNavbar";
+import useRestrictedAccess from "../../hooks/useRestrictedAccess";
 
 interface LayoutProps {
   children?: ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = () => {
+  const { isLocked, isLoading } = useRestrictedAccess();
+
   return (
     <div className="flex flex-col w-full h-full items-center justify-start">
       <Navbar />

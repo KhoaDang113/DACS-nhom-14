@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Play } from 'lucide-react';
-import { GrFormNext, GrFormPrevious } from "react-icons/gr"
+import { GrFormNext, GrFormPrevious } from "react-icons/gr";
+import { parseMongoDecimal } from '../../lib/utils';
+import GigCard from '../Card/Card'; // Import GigCard component
+
 interface MediaItem {
   url: string
   type: "image" | "video"
@@ -12,11 +15,17 @@ interface Gig {
   freelancerId: string;
   title: string;
   description: string;
-  price: number;
+  price: any; // Thay đổi type cho phù hợp với dữ liệu MongoDB
   media: MediaItem[]; // Thay image bằng media array
   duration: number;
   keywords: string[];
   status: 'pending' | 'approved' | 'rejected' | 'hidden' | 'deleted';
+  freelancer?: {
+    _id: string;
+    name: string;
+    avatar: string;
+    level?: number;
+  };
 }
 
 interface ProfileGigsProps {
@@ -25,27 +34,39 @@ interface ProfileGigsProps {
 
 const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
   console.log('Received gigs:', gigs); // Thêm log để debug
+  const navigate = useNavigate(); // Thêm hook navigate
 
   const [filter, setFilter] = useState<'all' | 'approved' | 'pending' | 'hidden'>('all');
-  const [currentSlides, setCurrentSlides] = useState<{ [key: string]: number }>({});
+
+  // Hàm format giá tiền theo định dạng tiền tệ VN
+  const formatPrice = (price: any): string => {
+    // Xử lý giá trị MongoDB Decimal128
+    const parsedPrice = parseMongoDecimal(price);
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(parsedPrice);
+  };
 
   const filteredGigs = gigs.filter(gig => {
     if (filter === 'all') return true;
     return gig.status === filter;
   });
 
-  const nextSlide = (gigId: string, mediaLength: number) => {
-    setCurrentSlides((prev) => ({
-      ...prev,
-      [gigId]: (prev[gigId] || 0) === mediaLength - 1 ? 0 : (prev[gigId] || 0) + 1,
-    }));
+  // Xử lý khi người dùng thêm hoặc xóa khỏi yêu thích
+  const handleFavoriteToggle = (gigId: string) => {
+    console.log(`Toggle favorite for gig: ${gigId}`);
   };
 
-  const prevSlide = (gigId: string, mediaLength: number) => {
-    setCurrentSlides((prev) => ({
-      ...prev,
-      [gigId]: (prev[gigId] || 0) === 0 ? mediaLength - 1 : (prev[gigId] || 0) - 1,
-    }));
+  // Xử lý khi người dùng phát video
+  const handlePlayVideo = (videoUrl: string) => {
+    console.log(`Play video: ${videoUrl}`);
+  };
+
+  // Thêm handler khi người dùng click vào gig
+  const handleGigClick = (gigId: string) => {
+    // Sửa đường dẫn để điều hướng đến đúng trang chi tiết gig
+    navigate(`/gig/${gigId}`);
   };
 
   return (
@@ -111,81 +132,29 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredGigs.map((gig) => (
-              <div
-                key={gig._id}
-                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="relative group">
-                  {gig.media.map((media, index) => (
-                    <div
-                      key={index}
-                      className={`absolute inset-0 transition-opacity duration-500 ${
-                        index === (currentSlides[gig._id] || 0) ? "opacity-100" : "opacity-0"
-                      }`}
-                    >
-                      <img
-                        src={media.type === "image" ? media.url : media.thumbnailUrl || "/placeholder.svg"}
-                        alt={`${gig.title} - image ${index + 1}`}
-                        className="w-full h-48 object-cover"
-                      />
-
-                      {media.type === "video" && index === (currentSlides[gig._id] || 0) && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <button
-                            // onClick={handlePlayVideo}
-                            className="w h-6 rounded-full bg-white/80 flex items-center justify-center text-black hover:bg-white transition-colors"
-                            aria-label="Play video"
-                          >
-                            <Play size={10} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {/* Slider Controls */}
-                  <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                    <GrFormPrevious
-                      className="absolute
-                      bg-white top-[50px] border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 ml-2 hover:bg-gray-50 transition-colors"
-                      onClick={() => prevSlide(gig._id, gig.media.length)}
-                    />
-                    <GrFormNext
-                      className="absolute bg-white top-[50px] right-0 border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 mr-2 hover:bg-gray-50 transition-colors"
-                      onClick={() => nextSlide(gig._id, gig.media.length)}
-                    />
-                  </div>
-                </div>
-
-                <div className="p-4 mt-[200px]">
-                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                    {gig.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                    {gig.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#1dbf73] font-medium">
-                      ${gig.price} • {gig.duration} ngày
-                    </span>
-                  </div>
-                  {/* Status Badge */}
-                  <div className="mt-3">
-                    <span
-                      className={`inline-block px-2 py-1 text-xs rounded-full ${
-                        gig.status === 'approved'
-                          ? 'bg-green-100 text-green-800'
-                          : gig.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {gig.status === 'approved'
-                        ? 'Đã duyệt'
+              <div key={gig._id} className="relative cursor-pointer" onClick={() => handleGigClick(gig._id)}>
+                <GigCard 
+                  gig={gig}
+                  onFavorite={handleFavoriteToggle}
+                  onPlayVideo={handlePlayVideo}
+                />
+                {/* Status Badge overlay */}
+                <div className="absolute top-2 left-2 z-10">
+                  <span
+                    className={`inline-block px-2 py-1 text-xs rounded-full ${
+                      gig.status === 'approved'
+                        ? 'bg-green-100 text-green-800'
                         : gig.status === 'pending'
-                        ? 'Đang chờ duyệt'
-                        : 'Đã ẩn'}
-                    </span>
-                  </div>
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {gig.status === 'approved'
+                      ? 'Đã duyệt'
+                      : gig.status === 'pending'
+                      ? 'Đang chờ duyệt'
+                      : 'Đã ẩn'}
+                  </span>
                 </div>
               </div>
             ))}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 
@@ -10,29 +10,62 @@ interface ProfileInfoProps {
     languages: string;
     education: string;
     certificates: string;
+    fullName?: string;
     _id?: string;
+    freelancerProfile?: {
+      hardSkill?: string;
+      softSkill?: string;
+      languages?: string;
+      education?: string;
+      certificates?: string;
+      description?: string;
+    }
   };
-  isCustomer?: boolean; // Thêm prop isCustomer để xác định role
+  isCustomer?: boolean;
   onUpdateUser?: (updatedUser: any) => void;
-  fetchUserProfile?: () => void; // Thêm prop để gọi API lấy thông tin mới sau khi cập nhật
+  fetchUserProfile?: () => void;
+  isViewMode?: boolean;
 }
 
-const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile }: ProfileInfoProps) => {
+const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile, isViewMode = false }: ProfileInfoProps) => {
   const { getToken } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Lấy dữ liệu từ user hoặc user.freelancerProfile nếu có
+  const getUserData = (field: string) => {
+    if (user.freelancerProfile && user.freelancerProfile[field as keyof typeof user.freelancerProfile]) {
+      return user.freelancerProfile[field as keyof typeof user.freelancerProfile] || '';
+    }
+    return user[field as keyof typeof user] || '';
+  };
+
   const [editData, setEditData] = useState({
-    description: user.description || '',
-    hardSkill: user.hardSkill || '',
-    softSkill: user.softSkill || '',
-    languages: user.languages || '',
-    education: user.education || '',
-    certificates: user.certificates || '',
+    description: getUserData('description'),
+    hardSkill: getUserData('hardSkill'),
+    softSkill: getUserData('softSkill'),
+    languages: getUserData('languages'),
+    education: getUserData('education'),
+    certificates: getUserData('certificates'),
+    fullName: user.fullName || 'User Name',
   });
 
-  const hardSkills = !isEditing && user.hardSkill ? user.hardSkill.split(',').map(skill => skill.trim()).filter(Boolean) : [];
-  const softSkills = !isEditing && user.softSkill ? user.softSkill.split(',').map(skill => skill.trim()).filter(Boolean) : [];
-  const languages = !isEditing && user.languages ? user.languages.split(',').map(lang => lang.trim()).filter(Boolean) : [];
+  // Cập nhật editData khi user thay đổi
+  useEffect(() => {
+    setEditData({
+      description: getUserData('description'),
+      hardSkill: getUserData('hardSkill'),
+      softSkill: getUserData('softSkill'),
+      languages: getUserData('languages'),
+      education: getUserData('education'),
+      certificates: getUserData('certificates'),
+      fullName: user.fullName || 'User Name',
+    });
+  }, [user]);
+
+  const hardSkills = !isEditing && getUserData('hardSkill') ? getUserData('hardSkill').split(',').map(skill => skill.trim()).filter(Boolean) : [];
+  const softSkills = !isEditing && getUserData('softSkill') ? getUserData('softSkill').split(',').map(skill => skill.trim()).filter(Boolean) : [];
+  const languages = !isEditing && getUserData('languages') ? getUserData('languages').split(',').map(lang => lang.trim()).filter(Boolean) : [];
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -46,6 +79,9 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
     try {
       setIsLoading(true);
       
+      // Log dữ liệu trước khi gửi để debug
+      console.log("Dữ liệu sẽ được gửi đi:", editData);
+      
       if (onUpdateUser) {
         // Sử dụng callback từ parent component nếu có
         onUpdateUser(editData);
@@ -56,7 +92,7 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
       // Nếu không có callback, gửi request trực tiếp đến API
       const token = await getToken();
       
-      // Gửi request cập nhật thông tin profile
+      // Gửi request cập nhật thông tin profile với đầy đủ thông tin
       await axios.put(
         'http://localhost:5000/api/profile/update',
         editData,
@@ -73,12 +109,14 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
       }
       
       // Hiển thị thông báo thành công (nếu có context thông báo)
-      // Có thể sử dụng toast library hoặc context thông báo khác ở đây
       
       setIsEditing(false);
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin:', error);
-      // Hiển thị thông báo lỗi
+      // Hiển thị thông báo lỗi chi tiết để debug
+      if (axios.isAxiosError(error)) {
+        console.error('Error response:', error.response?.data);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -87,55 +125,58 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
   const handleCancel = () => {
     // Reset form data to original values
     setEditData({
-      description: user.description || '',
-      hardSkill: user.hardSkill || '',
-      softSkill: user.softSkill || '',
-      languages: user.languages || '',
-      education: user.education || '',
-      certificates: user.certificates || '',
+      description: getUserData('description'),
+      hardSkill: getUserData('hardSkill'),
+      softSkill: getUserData('softSkill'),
+      languages: getUserData('languages'),
+      education: getUserData('education'),
+      certificates: getUserData('certificates'),
+      fullName: user.fullName || 'User Name',
     });
     setIsEditing(false);
   };
   
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 relative">
-      {/* Edit Button */}
-      <div className="absolute top-4 right-4">
-        {isEditing ? (
-          <div className="flex space-x-2">
+      {/* Edit Button - Chỉ hiển thị khi có thể chỉnh sửa và không ở chế độ xem */}
+      {!isViewMode && (
+        <div className="absolute top-6 right-6">
+          {isEditing ? (
+            <div className="flex space-x-2">
+              <button 
+                onClick={handleSave}
+                disabled={isLoading}
+                className="px-4 py-1 bg-[#1dbf73] text-white text-sm rounded hover:bg-[#19a463] transition-colors flex items-center"
+              >
+                {isLoading && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {isLoading ? 'Đang lưu...' : 'Lưu'}
+              </button>
+              <button 
+                onClick={handleCancel}
+                disabled={isLoading}
+                className="px-4 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
+              >
+                Hủy
+              </button>
+            </div>
+          ) : (
             <button 
-              onClick={handleSave}
-              disabled={isLoading}
-              className={`px-4 py-1 ${isLoading ? 'bg-gray-400' : 'bg-[#1dbf73] hover:bg-[#19a463]'} text-white text-sm rounded transition-colors flex items-center`}
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors flex items-center"
             >
-              {isLoading && (
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              {isLoading ? 'Đang lưu...' : 'Lưu'}
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+              Chỉnh sửa
             </button>
-            <button 
-              onClick={handleCancel}
-              disabled={isLoading}
-              className="px-4 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition-colors"
-            >
-              Hủy
-            </button>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors flex items-center"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-            </svg>
-            Chỉnh sửa
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Description */}
       <div className="mb-8">
@@ -150,7 +191,9 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
             placeholder="Nhập thông tin giới thiệu về bản thân bạn..."
           />
         ) : (
-          <pre className="text-gray-600 whitespace-pre-wrap break-words font-sans text-base leading-relaxed">{user.description || 'Chưa có thông tin giới thiệu.'}</pre>
+          <div className="text-gray-600 whitespace-pre-wrap break-words font-sans text-base leading-relaxed">
+            {editData.description ? editData.description : 'Chưa có thông tin giới thiệu.'}
+          </div>
         )}
       </div>
 
@@ -246,7 +289,7 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#1dbf73] focus:border-[#1dbf73] outline-none"
               />
             ) : (
-              <div className="text-gray-700">{user.education || 'Chưa có thông tin học vấn'}</div>
+              <div className="text-gray-700">{editData.education || 'Chưa có thông tin học vấn'}</div>
             )}
           </div>
 
@@ -261,7 +304,7 @@ const ProfileInfo = ({ user, isCustomer = false, onUpdateUser, fetchUserProfile 
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#1dbf73] focus:border-[#1dbf73] outline-none"
               />
             ) : (
-              <div className="text-gray-700">{user.certificates || 'Chưa có thông tin chứng chỉ'}</div>
+              <div className="text-gray-700">{editData.certificates || 'Chưa có thông tin chứng chỉ'}</div>
             )}
           </div>
         </>

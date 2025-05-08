@@ -58,7 +58,6 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       {/* Tiêu đề và thông tin tổng quan */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-bold text-gray-900">Đánh giá từ khách hàng</h2>
           <div className="flex items-center">
             <div className="flex items-center mr-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -79,7 +78,11 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       <div className="divide-y divide-gray-100">
         {reviews.length > 0 ? (
           reviews.slice(0, displayCount).map((review) => (
-            <div key={review.id} className="p-6 hover:bg-gray-50 transition-colors">
+            <div 
+              key={review.id} 
+              id={`review-${review.id}`} 
+              className="p-6 hover:bg-gray-50 transition-colors"
+            >
               <div className="flex gap-4">
                 {/* Phần avatar */}
                 <div className="flex-shrink-0">

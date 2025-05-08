@@ -48,38 +48,38 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 overflow-hidden">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Tổng quan</h1>
         <p className="text-gray-500 mt-1">
-          Overview of your Fiverr-like platform statistics and activities.
+          Tổng quan về thống kê và hoạt động của nền tảng của bạn.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Gig Views"
+          title="Lượt xem dịch vụ"
           value="45,231"
-          change="+20.1% from last month"
+          change="+20.1% so với tháng trước"
           isPositive={true}
           icon={<Eye className="h-6 w-6 text-gray-500" />}
         />
         <StatCard
-          title="Active Gigs"
+          title="Dịch vụ hoạt động"
           value="2,350"
-          change="+15.2% from last month"
+          change="+15.2% so với tháng trước"
           isPositive={true}
           icon={<CheckCircle className="h-6 w-6 text-gray-500" />}
         />
         <StatCard
-          title="Active Sellers"
+          title="Người bán hoạt động"
           value="1,274"
-          change="+4.3% from last month"
+          change="+4.3% so với tháng trước"
           isPositive={true}
           icon={<Users className="h-6 w-6 text-gray-500" />}
         />
         <StatCard
-          title="Pending Approvals"
+          title="Chờ phê duyệt"
           value="24"
-          change="-12% from last month"
+          change="-12% so với tháng trước"
           isPositive={false}
           icon={<AlertTriangle className="h-6 w-6 text-gray-500" />}
         />
@@ -88,18 +88,18 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Gig Views Analytics</CardTitle>
+            <CardTitle>Phân tích lượt xem dịch vụ</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-80 flex items-center justify-center bg-gray-50 rounded-md">
-              <p className="text-gray-500">Chart will be displayed here</p>
+              <p className="text-gray-500">Biểu đồ sẽ được hiển thị tại đây</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
+            <CardTitle>Hoạt động gần đây</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -110,10 +110,10 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      New gig submitted for approval
+                      Dịch vụ mới đang chờ phê duyệt
                     </p>
                     <p className="text-xs text-gray-500">
-                      John Doe • 2 hours ago
+                      John Doe • 2 giờ trước
                     </p>
                   </div>
                 </div>
@@ -126,31 +126,31 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Total Revenue</CardTitle>
+            <CardTitle>Tổng doanh thu</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$45,231.89</div>
-            <p className="text-sm text-green-600">+20.1% from last month</p>
+            <p className="text-sm text-green-600">+20.1% so với tháng trước</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Violation Reports</CardTitle>
+            <CardTitle>Báo cáo vi phạm</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
-            <p className="text-sm text-red-600">+8% from last month</p>
+            <p className="text-sm text-red-600">+8% so với tháng trước</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Conversion Rate</CardTitle>
+            <CardTitle>Tỷ lệ chuyển đổi</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3.2%</div>
-            <p className="text-sm text-green-600">+1.2% from last month</p>
+            <p className="text-sm text-green-600">+1.2% so với tháng trước</p>
           </CardContent>
         </Card>
       </div>

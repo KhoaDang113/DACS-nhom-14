@@ -10,7 +10,7 @@ import {
   Bell,
   Mail,
   Heart,
-  
+  Lock
 } from "lucide-react";
 import {
   useUser,
@@ -21,6 +21,8 @@ import {
 import NotificationBell from './NotificationBell';
 import SearchBar from "./Search/SearchBar";
 import useUserRole from '../hooks/useUserRole';
+import useLockedAccount from '../hooks/useLockedAccount'; // Import hook kiểm tra khóa tài khoản
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,6 +30,7 @@ export default function Navbar() {
   const [searchTerm, setSearchTerm] = useState(""); 
   const { isSignedIn, user } = useUser();
   const { isFreelancer, isAdmin, isLoading } = useUserRole();
+  const { isLocked } = useLockedAccount(); // Sử dụng hook useLockedAccount
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -38,6 +41,17 @@ export default function Navbar() {
 
   const handleSignInSuccess = () => {
     navigate("/jobs");
+  };
+
+  // Xử lý khi người dùng click vào một menu bị khóa
+  const handleLockedFeatureClick = (e: React.MouseEvent, featureName: string) => {
+    if (isLocked) {
+      e.preventDefault();
+      toast.error(`Tính năng "${featureName}" không khả dụng. Tài khoản của bạn đã bị khóa.`, {
+        duration: 3000,
+        position: 'top-center'
+      });
+    }
   };
 
   // State để quản lý trạng thái đóng mở của dropdown chức năng
@@ -61,8 +75,8 @@ export default function Navbar() {
     // Người dùng đã đăng nhập
     { title: "", path: "#", icon: <Mail size={20} /> },
     { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
-    // Hiển thị nút "Trở thành Freelancer" nếu người dùng chưa là freelancer
-    ...(!isFreelancer ? [{ title: "Trở thành Freelancer", path: "/become-freelancer" }] : []),
+    // Hiển thị nút "Trở thành Freelancer" chỉ khi người dùng chưa là freelancer và không bị khóa
+    ...(!isFreelancer && !isLocked ? [{ title: "Trở thành Freelancer", path: "/become-freelancer" }] : []),
   ] : [
     // Người dùng chưa đăng nhập
     { title: "Khám phá", path: "#", hasDropdown: true },
@@ -100,10 +114,16 @@ export default function Navbar() {
             <div key={index} className="flex items-center">
               <Link
                 to={link.path}
-                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2"
+                className={`text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap flex items-center gap-2 ${
+                  (link.path === "/become-freelancer" && isLocked) ? "opacity-50 pointer-events-none" : ""
+                }`}
+                onClick={(e) => link.path === "/become-freelancer" && handleLockedFeatureClick(e, "Trở thành Freelancer")}
               >
                 {link.icon}
                 <span>{link.title}</span>
+                {link.path === "/become-freelancer" && isLocked && (
+                  <Lock size={16} className="ml-1 text-gray-400" />
+                )}
               </Link>
               {!isSignedIn && link.hasDropdown && (
                 <ChevronDown className="text-black ml-1" size={16} />
@@ -149,9 +169,15 @@ export default function Navbar() {
                   
                   {/* Mục đơn hàng */}
                   <Link
-                    to="/orders"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setFunctionsDropdownOpen(false)}
+                    to={isLocked ? "#" : "/orders"}
+                    className={`block px-4 py-2 text-sm ${isLocked ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'} flex items-center`}
+                    onClick={(e) => {
+                      if (isLocked) {
+                        handleLockedFeatureClick(e, "Quản lý đơn hàng");
+                      } else {
+                        setFunctionsDropdownOpen(false);
+                      }
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="9" cy="21" r="1"></circle>
@@ -159,6 +185,7 @@ export default function Navbar() {
                       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                     </svg>
                     Quản lý đơn hàng
+                    {isLocked && <Lock size={14} className="ml-auto" />}
                   </Link>
                   
                   <hr className="my-1 border-gray-200" />
@@ -167,9 +194,15 @@ export default function Navbar() {
                   <div className="px-3 py-2 text-xs font-semibold text-gray-400">NGƯỜI BÁN</div>
                   
                   <Link
-                    to="/seller-dashboard"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setFunctionsDropdownOpen(false)}
+                    to={isLocked ? "#" : "/seller-dashboard"}
+                    className={`block px-4 py-2 text-sm ${isLocked ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'} flex items-center`}
+                    onClick={(e) => {
+                      if (isLocked) {
+                        handleLockedFeatureClick(e, "Tổng quan kinh doanh");
+                      } else {
+                        setFunctionsDropdownOpen(false);
+                      }
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -177,24 +210,38 @@ export default function Navbar() {
                       <line x1="9" y1="21" x2="9" y2="9"></line>
                     </svg>
                     Tổng quan kinh doanh
+                    {isLocked && <Lock size={14} className="ml-auto" />}
                   </Link>
                   
                   <Link
-                    to="/seller-gigs"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setFunctionsDropdownOpen(false)}
+                    to={isLocked ? "#" : "/seller-gigs"}
+                    className={`block px-4 py-2 text-sm ${isLocked ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'} flex items-center`}
+                    onClick={(e) => {
+                      if (isLocked) {
+                        handleLockedFeatureClick(e, "Quản lý dịch vụ");
+                      } else {
+                        setFunctionsDropdownOpen(false);
+                      }
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
                       <polyline points="13 2 13 9 20 9"></polyline>
                     </svg>
                     Quản lý dịch vụ
+                    {isLocked && <Lock size={14} className="ml-auto" />}
                   </Link>
                   
                   <Link
-                    to="/order-management"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={() => setFunctionsDropdownOpen(false)}
+                    to={isLocked ? "#" : "/order-management"}
+                    className={`block px-4 py-2 text-sm ${isLocked ? 'text-gray-400' : 'text-gray-700 hover:bg-gray-100'} flex items-center`}
+                    onClick={(e) => {
+                      if (isLocked) {
+                        handleLockedFeatureClick(e, "Quản lý bán hàng");
+                      } else {
+                        setFunctionsDropdownOpen(false);
+                      }
+                    }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -205,6 +252,7 @@ export default function Navbar() {
                       <line x1="3" y1="18" x2="3.01" y2="18"></line>
                     </svg>
                     Quản lý bán hàng
+                    {isLocked && <Lock size={14} className="ml-auto" />}
                   </Link>
 
                   <hr className="my-1 border-gray-200" />
@@ -276,9 +324,17 @@ export default function Navbar() {
             {navLinks.map((link, index) => (
               <Link
                 key={index}
-                to={link.path}
-                className="flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73]"
-                onClick={() => setMenuOpen(false)}
+                to={link.path === "/become-freelancer" && isLocked ? "#" : link.path}
+                className={`flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73] ${
+                  link.path === "/become-freelancer" && isLocked ? "opacity-50" : ""
+                }`}
+                onClick={(e) => {
+                  if (link.path === "/become-freelancer" && isLocked) {
+                    handleLockedFeatureClick(e, "Trở thành Freelancer");
+                  } else {
+                    setMenuOpen(false);
+                  }
+                }}
               >
                 {link.icon ? (
                   <div className="flex items-center gap-2">
@@ -289,6 +345,7 @@ export default function Navbar() {
                   <span>{link.title}</span>
                 )}
                 {!isSignedIn && link.hasDropdown && <ChevronDown size={16} />}
+                {link.path === "/become-freelancer" && isLocked && <Lock size={16} />}
               </Link>
             ))}
 
@@ -303,6 +360,60 @@ export default function Navbar() {
                   <span>English</span>
                 </div>
               </Link>
+            )}
+
+            {/* Mobile Seller Menu - Chỉ hiển thị khi đã đăng nhập */}
+            {isSignedIn && (
+              <>
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-t border-gray-200 mt-2">
+                  NGƯỜI BÁN
+                </div>
+                
+                <Link
+                  to={isLocked ? "#" : "/seller-dashboard"}
+                  className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${isLocked ? "text-gray-400" : "hover:bg-gray-50 hover:text-[#1dbf73]"}`}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      handleLockedFeatureClick(e, "Tổng quan kinh doanh");
+                    } else {
+                      setMenuOpen(false);
+                    }
+                  }}
+                >
+                  <span>Tổng quan kinh doanh</span>
+                  {isLocked && <Lock size={16} />}
+                </Link>
+                
+                <Link
+                  to={isLocked ? "#" : "/seller-gigs"}
+                  className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${isLocked ? "text-gray-400" : "hover:bg-gray-50 hover:text-[#1dbf73]"}`}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      handleLockedFeatureClick(e, "Quản lý dịch vụ");
+                    } else {
+                      setMenuOpen(false);
+                    }
+                  }}
+                >
+                  <span>Quản lý dịch vụ</span>
+                  {isLocked && <Lock size={16} />}
+                </Link>
+                
+                <Link
+                  to={isLocked ? "#" : "/order-management"}
+                  className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${isLocked ? "text-gray-400" : "hover:bg-gray-50 hover:text-[#1dbf73]"}`}
+                  onClick={(e) => {
+                    if (isLocked) {
+                      handleLockedFeatureClick(e, "Quản lý bán hàng");
+                    } else {
+                      setMenuOpen(false);
+                    }
+                  }}
+                >
+                  <span>Quản lý bán hàng</span>
+                  {isLocked && <Lock size={16} />}
+                </Link>
+              </>
             )}
 
             {/* Mobile Authentication */}

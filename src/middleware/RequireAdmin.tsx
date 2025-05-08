@@ -2,15 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { useAccount } from "../contexts/AccountContext";
 
 const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { isLocked, isAccountNotFound, showLockedMessage } = useAccount();
 
   useEffect(() => {
     const checkAdmin = async () => {
       try {
+        // Nếu tài khoản đã bị khóa, không cần kiểm tra quyền admin
+        if (isLocked || isAccountNotFound) {
+          setLoading(false);
+          return;
+        }
+
         const res = await axios.get("http://localhost:5000/api/user/me", {
           withCredentials: true,
         });
@@ -85,7 +93,7 @@ const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
       }
     };
     checkAdmin();
-  }, [navigate]);
+  }, [navigate, isLocked, isAccountNotFound]);
 
   if (loading) {
     return (
@@ -96,6 +104,11 @@ const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
     );
+  }
+
+  // Nếu tài khoản bị khóa, hiển thị thông báo
+  if (isLocked || isAccountNotFound) {
+    return showLockedMessage();
   }
 
   return (
