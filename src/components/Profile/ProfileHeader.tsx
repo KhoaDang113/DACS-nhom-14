@@ -1,9 +1,11 @@
 import { useUser } from "@clerk/clerk-react";
+import useUserRole from '../../hooks/useUserRole';
 
 interface ProfileHeaderProps {
   user: {
     fullName: string;
-    industry: string;
+    industry?: string;
+    profilePicture?: string;
     country: string;
     created_at: string;
   };
@@ -11,26 +13,39 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ user }: ProfileHeaderProps) => {
   const { user: clerkUser } = useUser();
+  const { isCustomer, isFreelancer } = useUserRole();
 
   return (
     <div className="bg-white border-b">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          {/* Profile Avatar - Sử dụng ảnh từ Clerk */}
+          {/* Profile Avatar - Sử dụng ảnh từ user data hoặc Clerk */}
           <div className="w-24 h-24 relative">
             <img 
-              src={clerkUser?.imageUrl || "/avatar.jpg"} // Sử dụng ảnh từ Clerk hoặc fallback
+              src={user.profilePicture || clerkUser?.imageUrl || "/avatar.jpg"}
               alt={user.fullName}
-              className="w-full h-full rounded-full object-cover"
+              className="w-full h-full rounded-full object-cover border-2 border-gray-200"
             />
           </div>
 
           {/* Profile Info */}
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">
-              {clerkUser?.fullName || user.fullName} {/* Có thể sử dụng tên từ Clerk */}
+              {user.fullName}
             </h1>
-            <p className="text-gray-600 mt-1">{user.industry}</p>
+            {user.industry && (
+              <p className="text-gray-600 mt-1">{user.industry}</p>
+            )}
+            {isCustomer && (
+              <div className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                Khách hàng
+              </div>
+            )}
+            {isFreelancer && (
+              <div className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                Freelancer
+              </div>
+            )}
             <div className="flex flex-wrap gap-4 mt-4">
               <div className="flex items-center text-gray-600">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

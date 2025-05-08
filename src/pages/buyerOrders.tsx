@@ -11,10 +11,19 @@ type OrderStatus = "pending" | "approved" | "completed" | "cancelled";
 interface Order {
   _id: string;
   title: string;
-  price: number;
+  // price: number;
   status: OrderStatus;
   createdAt: string;
   cancelRequestId?: string;
+  price: number | {
+    $numberDecimal?: number | string;
+    _id?: string;
+  };
+  // status: string;
+  // createdAt: string;
+  gigId?: string; // ID của dịch vụ
+  isReviewed?: boolean; // Trạng thái đã đánh giá chưa
+  reviewId?: string; // ID của đánh giá nếu đã đánh giá
 }
 
 // Định nghĩa type cho dữ liệu phân trang
@@ -40,7 +49,7 @@ export default function BuyerOrdersPage() {
 
   // Fetch đơn hàng từ API
   useEffect(() => {
-    const fetchOrders = async () => {
+  const fetchOrders = async () => {
       try {
         setLoading(true);
         const response = await axios.get("http://localhost:5000/api/order/get-list", {
@@ -49,6 +58,8 @@ export default function BuyerOrdersPage() {
         });
 
         if (response.data.error === false) {
+          console.log("Đơn hàng:", response.data.orders);
+          
           setOrders(response.data.orders);
           setPagination(response.data.pagination);
         } else {
@@ -100,11 +111,14 @@ export default function BuyerOrdersPage() {
   };
 
   // Format price
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | string | undefined) => {
+    if (price === undefined || price === null) {
+      return "Không có thông tin";
+    }
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
-    }).format(price);
+    }).format(Number(price));
   };
 
   // Icon và màu sắc cho trạng thái
@@ -148,9 +162,15 @@ export default function BuyerOrdersPage() {
     setPagination(prev => prev ? {...prev, currentPage: page} : null);
   };
 
-  // Hàm điều hướng đến trang đánh giá khi người dùng nhấn nút đánh giá
-  const handleReviewClick = (orderId: string) => {
-    navigate(`/review-gig/${orderId}`);
+  // Hàm điều hướng đến trang đánh giá hoặc xem đánh giá
+  const handleReviewClick = (order: Order) => {
+    if (order.isReviewed && order.reviewId && order.gigId) {
+      // Nếu đã đánh giá rồi, điều hướng đến trang chi tiết gig với param reviewId
+      navigate(`/gig/${order.gigId}?reviewId=${order.reviewId}`);
+    } else {
+      // Nếu chưa đánh giá, điều hướng đến trang đánh giá
+      navigate(`/review-gig/${order._id}`);
+    }
   };
 
   // Hàm mở modal hủy đơn hàng
@@ -365,7 +385,18 @@ export default function BuyerOrdersPage() {
                           
                           <div>
                             <p className="text-sm text-gray-500 mb-1">Tổng giá</p>
-                            <p className="text-lg font-bold text-[#1dbf73]">{formatPrice(order.price)}</p>
+                            <p className="text-lg font-bold text-[#1dbf73]">
+                              {(() => {
+                                if (typeof order.price === 'number') {
+                                  return formatPrice(order.price);
+                                } else if (order.price && typeof order.price === 'object') {
+                                  if (order.price.$numberDecimal) {
+                                    return formatPrice(order.price.$numberDecimal);
+                                  }
+                                }
+                                return "Không có thông tin";
+                              })()}
+                            </p>
                           </div>
                         </div>
                         
@@ -393,10 +424,10 @@ export default function BuyerOrdersPage() {
                           
                           {order.status === "completed" && (
                             <button 
-                              onClick={() => handleReviewClick(order._id)}
+                              onClick={() => handleReviewClick(order)}
                               className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100"
                             >
-                              Đánh giá
+                              {order.isReviewed ? "Xem đánh giá" : "Đánh giá"}
                             </button>
                           )}
                         </div>

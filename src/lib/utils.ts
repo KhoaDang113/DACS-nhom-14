@@ -18,9 +18,15 @@ export const parseMongoDecimal = (value: any): number => {
     return parseFloat(value.$numberDecimal);
   }
 
-  // Xử lý trường hợp đã là số hoặc chuỗi số
+  // Xử lý trường hợp đã là số
   if (typeof value === "number") return value;
-  if (typeof value === "string") return parseFloat(value) || 0;
-
+  
+  // Xử lý trường hợp là chuỗi số
+  if (typeof value === "string") {
+    const parsedValue = parseFloat(value);
+    return isNaN(parsedValue) ? 0 : parsedValue;
+  }
+  
+  // Trả về 0 nếu không xử lý được
   return 0;
 };

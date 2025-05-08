@@ -26,7 +26,7 @@ const SellerGigManager: React.FC = () => {
   const navigate = useNavigate();
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -196,8 +196,8 @@ const SellerGigManager: React.FC = () => {
           onClick={() => handlePageChange(i)}
           className={`px-3 py-1 rounded-md ${
             currentPage === i
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? "bg-indigo-600 text-white"
+              : "bg-white text-gray-700 hover:bg-gray-50"
           }`}
         >
           {i}

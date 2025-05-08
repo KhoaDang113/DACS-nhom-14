@@ -1,18 +1,49 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { sampleGigs, Gig } from "../data/jobs";
+import { Gig } from "../data/jobs"; // Chỉ import type Gig, không import sampleGigs
 import GigCard from "../components/Card/Card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Skeleton from "../components/Card/Sekeleton";
+import axios from "axios"; // Import axios để gọi API
 
 function Dashboard() {
   const navigate = useNavigate();
   const [videoMessage, setVideoMessage] = useState<string | null>(null);
-  const [filteredGigs] = useState<Gig[]>(sampleGigs);
+  const [gigs, setGigs] = useState<Gig[]>([]); // Lưu trữ dữ liệu từ API
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  
+  const [filteredGigs, setFilteredGigs] = useState<Gig[]>([]);
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Hàm gọi API để lấy danh sách dịch vụ
+  const fetchGigs = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("http://localhost:5000/api/gigs", {
+        withCredentials: true,
+      });
+      
+      if (response.data && !response.data.error) {
+        
+        setGigs(response.data.gigs || []);
+        setFilteredGigs(response.data.gigs || []);
+      } else {
+        setError("Không thể tải dữ liệu dịch vụ.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải dịch vụ:", err);
+      setError("Đã xảy ra lỗi khi tải dữ liệu từ server.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Gọi API khi component được mount
+  useEffect(() => {
+    fetchGigs();
+  }, []);
+  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
@@ -28,18 +59,24 @@ function Dashboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [loading, setLoading] = useState(true);
   const handlePlayVideo = (videoUrl: string) => {
     setVideoMessage(`Video would play: ${videoUrl}`);
     setTimeout(() => {
       setVideoMessage(null);
     }, 3000);
   };
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-  }, []);
+
+  const handleFavoriteToggle = async (gigId: string) => {
+    try {
+      await axios.get(`http://localhost:5000/api/favorite/${gigId}`, {
+        withCredentials: true
+      });
+      // Không cần cập nhật UI ngay lập tức vì FavoritesContext sẽ xử lý
+    } catch (error) {
+      console.error("Lỗi khi thay đổi trạng thái yêu thích:", error);
+    }
+  };
+  
   return (
     <>
       <SignedIn>
@@ -83,23 +120,42 @@ function Dashboard() {
                   )}
                 </div>
 
-                <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
-                  {filteredGigs.map((gig: Gig) =>
-                    loading ? (
-                      <Skeleton />
-                    ) : (
+                {error && (
+                  <div className="p-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
+                    {[...Array(10)].map((_, i) => (
+                      <Skeleton key={i} />
+                    ))}
+                  </div>
+                ) : filteredGigs.length > 0 ? (
+                  <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
+                    {filteredGigs.map((gig: Gig) => (
                       <GigCard
-                        key={gig._id}
-                        gig={gig}
-                        onFavorite={(id: string) =>
-                          console.log(`Favorited gig: ${id}`)
-                        }
-                        onPlayVideo={handlePlayVideo}
+                      key={gig._id}
+                      gig={{
+                        _id: gig._id,
+                        title: gig.title,
+                        price: gig.price,
+                        media: gig.media,
+                        freelancer: gig.user,
+                        rating: gig.rating,
+                      }}
+                      onFavorite={(id) => console.log(`Favorited gig: ${id}`)}
+                      onPlayVideo={(url) => console.log(`Playing video: ${url}`)}
                         viewMode={viewMode}
                       />
-                    )
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-lg">Không có dịch vụ nào được tìm thấy.</p>
+                  </div>
+                )}
               </div>
 
               {/* Video Message Alert */}
