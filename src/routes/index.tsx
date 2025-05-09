@@ -20,7 +20,6 @@ import EditGig from "../pages/editGig";
 import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
-import OrderComplaintPage from "../pages/orderComplaint";
 import BecomeFreelancer from "../pages/becomeFreelancer";
 import RequireAdmin from "../middleware/RequireAdmin";
 import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
@@ -188,18 +187,6 @@ const protectedRoutes: RouteObject[] = [
       <SignedIn>
         <ProtectedRoute>
           <BookmarkPage />
-        </ProtectedRoute>
-      </SignedIn>
-    ),
-  },
-  {
-    path: "/orders-complaint",
-    element: (
-      <SignedIn>
-        <ProtectedRoute>
-          <LockedAccountRoute>
-            <OrderComplaintPage />
-          </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
     ),
