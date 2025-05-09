@@ -1,9 +1,10 @@
-import { ChevronDownIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/clerk-react";
+// import { useUnreadMessages } from "../../contexts/UnreadMessagesContext";
 
 type User = {
   _id: string;
@@ -23,13 +24,24 @@ const formatTimeAgo = (date: string | Date) => {
   return formatDistanceToNow(new Date(date), { addSuffix: true });
 };
 
-export default function Sidebar() {
+export default function Sidebar({ socket, currentUser }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
+  const [searchConversation, setSearchConversation] = useState("");
+  // const { unreadCounts, resetUnread } = useUnreadMessages();
   const navigate = useNavigate();
   const { isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const focu = () => {
+    inputRef.current?.focus();
+  };
 
   const inboxNavigate = (conversation: Conversation) => {
+    setActiveConversationId(conversation._id);
+    // resetUnread(conversation._id);
     navigate(`/inbox/${conversation._id}`);
   };
 
@@ -73,6 +85,37 @@ export default function Sidebar() {
     fetchConversation();
   }, [isLoaded, isSignedIn, getToken]);
 
+  useEffect(() => {
+    socket.on("return_new_message", (data) => {
+      setConversations((prevConversations) => {
+        return prevConversations.map((conversation) => {
+          const isLastSender = data.sender === currentUser?.user?._id;
+          if (conversation._id === data.conversationId) {
+            return {
+              ...conversation,
+              lastMessage: data.message,
+              lastMessageSender: isLastSender ? "Me: " : "",
+              updatedAt: new Date(),
+            };
+          }
+          return conversation;
+        });
+      });
+    });
+
+    return () => {
+      socket.off("return_new_message");
+    };
+  }, [socket]);
+
+  const filterConversation = conversations.filter((conversation) => {
+    return conversation.user.fullName
+      ?.toLowerCase()
+      .includes(searchConversation.toLowerCase().trim());
+  });
+
+  const displayedConversations =
+    searchConversation.trim() === "" ? conversations : filterConversation;
   // Hiển thị loading state khi Clerk chưa tải xong
   if (!isLoaded) {
     return (
@@ -94,21 +137,28 @@ export default function Sidebar() {
 
   return (
     <div className="w-80 border-r bg-gray-50 hidden md:block">
-      <div className="p-4 border-b flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="font-medium">All messages</span>
-        </div>
+      <div className="p-4 border-b flex justify-between items-center gap-2">
         <button className="p-1 rounded-full hover:bg-gray-200">
-          <SearchIcon className="h-5 w-5 text-gray-500" />
+          <SearchIcon className="h-5 w-5 text-gray-500" onClick={focu} />
         </button>
+        <input
+          type="text"
+          ref={inputRef}
+          placeholder="Tìm kiếm hội thoại..."
+          value={searchConversation}
+          onChange={(e) => setSearchConversation(e.target.value)}
+          className="w-full p-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
       <div className="h-[calc(100%-60px)] overflow-auto">
-        {conversations.map((conversation) => (
+        {displayedConversations.map((conversation) => (
           <div
             key={conversation._id}
             onClick={() => inboxNavigate(conversation)}
-            className={`p-4 hover:bg-gray-100 cursor-pointer border-b ${
-              conversation._id === "1" ? "bg-gray-100" : ""
+            className={`p-4 hover:bg-gray-100 cursor-pointer border-b transition-colors duration-200 ${
+              activeConversationId === conversation._id
+                ? "bg-blue-50 border-l-4 border-l-blue-500"
+                : ""
             }`}
           >
             <div className="flex gap-3">
@@ -125,15 +175,34 @@ export default function Sidebar() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex justify-between">
-                  <p className="font-medium truncate">
+                <div className="flex justify-between items-center">
+                  <p
+                    className={`font-medium truncate ${
+                      activeConversationId === conversation._id
+                        ? "text-blue-600"
+                        : ""
+                    }`}
+                  >
                     {conversation.user.fullName}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {formatTimeAgo(conversation.updatedAt)}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    {/* {unreadCounts[conversation._id] > 0 && (
+                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                        {unreadCounts[conversation._id]}
+                      </span>
+                    )} */}
+                    <p className="text-xs text-gray-500">
+                      {formatTimeAgo(conversation.updatedAt)}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 truncate">
+                <p
+                  className={`text-sm truncate ${
+                    activeConversationId === conversation._id
+                      ? "text-blue-600"
+                      : "text-gray-600"
+                  }`}
+                >
                   {conversation.lastMessageSender}
                   {conversation.lastMessage}
                 </p>

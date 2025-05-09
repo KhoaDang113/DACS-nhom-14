@@ -31,12 +31,15 @@ const RedirectDashboard = () => {
         }
 
         // Kiểm tra số lần thử chuyển hướng
-        const redirectAttempts = parseInt(localStorage.getItem(REDIRECT_ATTEMPT_KEY) || '0');
-        
+        const redirectAttempts = parseInt(
+          localStorage.getItem(REDIRECT_ATTEMPT_KEY) || "0"
+        );
+
         // Nếu đã thử quá nhiều lần, hiển thị thông báo lỗi và không chuyển hướng nữa
         if (redirectAttempts >= 3) {
           setAccountStatus({
-            message: "Có lỗi xảy ra khi xác thực tài khoản. Vui lòng thử lại sau."
+            message:
+              "Có lỗi xảy ra khi xác thực tài khoản. Vui lòng thử lại sau.",
           });
           setLoading(false);
           // Xóa bộ đếm sau 1 phút
@@ -47,7 +50,10 @@ const RedirectDashboard = () => {
         }
 
         // Tăng số lần thử
-        localStorage.setItem(REDIRECT_ATTEMPT_KEY, (redirectAttempts + 1).toString());
+        localStorage.setItem(
+          REDIRECT_ATTEMPT_KEY,
+          (redirectAttempts + 1).toString()
+        );
 
         try {
           // Gọi API kiểm tra vai trò
@@ -57,20 +63,13 @@ const RedirectDashboard = () => {
 
           // Xóa bộ đếm khi thành công
           localStorage.removeItem(REDIRECT_ATTEMPT_KEY);
-
-          console.log("User data:", res.data);
           const data = res.data.user;
-          
-          // In rõ các thuộc tính của user để debug
-          console.log("User object:", data);
-          console.log("isLocked status:", data.isLocked);
-
           // Kiểm tra tài khoản bị khóa
           if (data.isLocked === true) {
             console.log("Account is locked, showing notification");
             setAccountStatus({
               isLocked: true,
-              message: "Tài khoản của bạn đang bị khóa."
+              message: "Tài khoản của bạn đang bị khóa.",
             });
             setLoading(false);
             return;
@@ -89,7 +88,7 @@ const RedirectDashboard = () => {
             console.log("Account not found, showing notification");
             setAccountStatus({
               notFound: true,
-              message: "Tài khoản của bạn không tồn tại hoặc đã bị xóa."
+              message: "Tài khoản của bạn không tồn tại hoặc đã bị xóa.",
             });
             setLoading(false);
             // Xóa bộ đếm vì đã xác định được vấn đề
@@ -100,7 +99,8 @@ const RedirectDashboard = () => {
             console.log("Account is locked (403), showing notification");
             setAccountStatus({
               isLocked: true,
-              message: err.response.data?.message || "Tài khoản của bạn đang bị khóa."
+              message:
+                err.response.data?.message || "Tài khoản của bạn đang bị khóa.",
             });
             setLoading(false);
             // Xóa bộ đếm vì đã xác định được vấn đề
@@ -109,7 +109,7 @@ const RedirectDashboard = () => {
           } else {
             // Lỗi khác, hiển thị thông báo chung
             setAccountStatus({
-              message: "Không thể kết nối tới máy chủ. Vui lòng thử lại sau."
+              message: "Không thể kết nối tới máy chủ. Vui lòng thử lại sau.",
             });
             setLoading(false);
             return;
@@ -118,7 +118,7 @@ const RedirectDashboard = () => {
       } catch (err) {
         console.error("Failed to fetch user", err);
         setAccountStatus({
-          message: "Có lỗi xảy ra. Vui lòng thử lại sau."
+          message: "Có lỗi xảy ra. Vui lòng thử lại sau.",
         });
         setLoading(false);
       }
@@ -131,7 +131,7 @@ const RedirectDashboard = () => {
     try {
       // Xóa bộ đếm khi người dùng thực hiện đăng xuất
       localStorage.removeItem(REDIRECT_ATTEMPT_KEY);
-      
+
       // Đăng xuất người dùng để trở về trạng thái trước khi đăng nhập
       await signOut();
       navigate("/", { replace: true });
@@ -158,11 +158,11 @@ const RedirectDashboard = () => {
           {accountStatus.isLocked || accountStatus.notFound ? "⚠️" : "⚙️"}
         </div>
         <h1 className="text-2xl font-bold text-center text-red-600 mb-4">
-          {accountStatus.isLocked 
-            ? "Tài khoản bị khóa" 
-            : accountStatus.notFound 
-              ? "Tài khoản không tồn tại" 
-              : "Lỗi xác thực"}
+          {accountStatus.isLocked
+            ? "Tài khoản bị khóa"
+            : accountStatus.notFound
+            ? "Tài khoản không tồn tại"
+            : "Lỗi xác thực"}
         </h1>
         <p className="text-gray-700 text-center mb-6">
           {accountStatus.message || "Có lỗi xảy ra trong quá trình xác thực."}

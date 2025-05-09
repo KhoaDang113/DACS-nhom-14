@@ -9,7 +9,10 @@ export default function OrderComplaintPage() {
       <div className="container mx-auto px-4 sm:px-8 py-4">
         <div className="flex items-center h-10">
           <div className="bg-blue-50 hover:bg-blue-100 rounded-md transition duration-300">
-            <Link to="/orders" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+            <Link
+              to="/orders"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+            >
               <FaArrowLeft className="mr-2" />
               <span className="font-medium">Quay lại</span>
             </Link>
@@ -23,14 +26,16 @@ export default function OrderComplaintPage() {
           <div className="flex-1">
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
               <div className="mb-6 sm:mb-8">
-                <span className="text-lg sm:text-xl font-medium text-gray-800">Gửi khiếu nại</span>
+                <span className="text-lg sm:text-xl font-medium text-gray-800">
+                  Gửi khiếu nại
+                </span>
               </div>
               <OrderComplaintForm />
             </div>
           </div>
 
           {/* Right Column - Tips & Help */}
-          <div className="w-full lg:w-[300px] flex-shrink-0"> 
+          <div className="w-full lg:w-[300px] flex-shrink-0">
             {/* Tips Section */}
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
               <div className="flex items-center mb-4">
@@ -38,7 +43,7 @@ export default function OrderComplaintPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                   Mẹo để gửi khiếu nại hiệu quả:
                 </h3>
-              </div> 
+              </div>
               <ul className="space-y-3 sm:space-y-4">
                 <li className="flex items-start">
                   <FaCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
@@ -49,13 +54,15 @@ export default function OrderComplaintPage() {
                 <li className="flex items-start">
                   <FaCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
                   <span className="text-sm sm:text-base text-gray-600">
-                    Cung cấp đầy đủ thông tin về đơn hàng và thời gian xảy ra sự cố.
+                    Cung cấp đầy đủ thông tin về đơn hàng và thời gian xảy ra sự
+                    cố.
                   </span>
                 </li>
                 <li className="flex items-start">
                   <FaCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
                   <span className="text-sm sm:text-base text-gray-600">
-                    Đính kèm bằng chứng như hình ảnh, tin nhắn, hoặc tài liệu liên quan.
+                    Đính kèm bằng chứng như hình ảnh, tin nhắn, hoặc tài liệu
+                    liên quan.
                   </span>
                 </li>
                 <li className="flex items-start">

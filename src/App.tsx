@@ -1,11 +1,12 @@
 import { RouterProvider } from "react-router-dom";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import router from "./routes";
-import { FavoritesProvider } from './contexts/FavoritesContext';
-import { AccountProvider } from './contexts/AccountContext';
-
+import { FavoritesProvider } from "./contexts/FavoritesContext";
+import { AccountProvider } from "./contexts/AccountContext";
+import { UnreadMessagesProvider } from "./contexts/UnreadMessagesContext";
 const App: React.FC = () => {
   return (
+    // <UnreadMessagesProvider>
     <NotificationProvider>
       <FavoritesProvider>
         <AccountProvider>
@@ -13,6 +14,7 @@ const App: React.FC = () => {
         </AccountProvider>
       </FavoritesProvider>
     </NotificationProvider>
+    // </UnreadMessagesProvider>
   );
 };
 

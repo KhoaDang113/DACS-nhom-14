@@ -6,6 +6,7 @@ import {
   ImageIcon,
   SendIcon,
   XCircleIcon,
+  SearchIcon,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
@@ -13,7 +14,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 import EmojiPicker from "emoji-picker-react";
-import io from "socket.io-client";
+// import { useUnreadMessages } from "../../contexts/UnreadMessagesContext";
 
 dayjs.extend(calendar);
 
@@ -48,12 +49,7 @@ type CurrentUser = {
   };
 };
 
-// Initialize Socket.IO
-const socket = io("http://localhost:5000", {
-  withCredentials: true,
-});
-
-export default function ChatBody() {
+export default function ChatBody({ socket }) {
   const [messageInput, setMessageInput] = useState("");
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [hasSentMessage, setHasSentMessage] = useState(false);
@@ -62,9 +58,12 @@ export default function ChatBody() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // const { incrementUnread } = useUnreadMessages();
   const { id } = useParams();
 
   // Scroll to bottom when messages update
@@ -111,23 +110,22 @@ export default function ChatBody() {
     fetchConversation();
   }, [id]);
 
-  // Socket.IO: Join conversation and handle incoming messages
   useEffect(() => {
     if (!id) return;
-
-    // Join conversation room
     socket.emit("join_conversation", id);
-
-    // Listen for new messages
     socket.on("receive_message", (message: Message) => {
       setChatMessages((prev) => {
-        // Avoid duplicate messages
         if (prev.some((msg) => msg._id === message._id)) {
           return prev;
         }
         return [...prev, message];
       });
       setHasSentMessage(true);
+
+      // Increment unread count if message is from other user
+      // if (message.userId !== currentUser?.user?._id) {
+      //   incrementUnread(id);
+      // }
     });
 
     // Handle errors
@@ -152,13 +150,13 @@ export default function ChatBody() {
       }
     };
     fetchChatMessages();
-
-    // Cleanup on unmount
     return () => {
+      socket.emit("leave_conversation", id);
       socket.off("receive_message");
       socket.off("error");
     };
   }, [id]);
+  // }, [id, socket, currentUser, incrementUnread]);
 
   // Handle file change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,6 +206,13 @@ export default function ChatBody() {
         return [...prev, savedMessage];
       });
 
+      // Emit socket event to update last message in sidebar
+      socket.emit("new_message", {
+        conversationId: id,
+        message: savedMessage.content || "Đã gửi một hình ảnh",
+        sender: currentUser?.user?._id,
+      });
+
       setMessageInput("");
       setSelectedFile(null);
       setPreviewUrl(null);
@@ -249,8 +254,13 @@ export default function ChatBody() {
     };
   }, []);
 
+  // Filter messages based on search query
+  const filteredMessages = chatMessages.filter((message) =>
+    message.content?.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
+
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
+    <div className="relative flex-1 flex flex-col h-full overflow-hidden">
       {/* Chat Header */}
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -264,6 +274,12 @@ export default function ChatBody() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            className="p-1 rounded hover:bg-gray-100"
+            onClick={() => setShowSearch(!showSearch)}
+          >
+            <SearchIcon className="h-4 w-4 text-gray-500" />
+          </button>
           <button className="p-1 rounded hover:bg-gray-100">
             <PinIcon className="h-4 w-4 text-gray-500" />
           </button>
@@ -273,11 +289,27 @@ export default function ChatBody() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      {showSearch && (
+        <div className="absolute top-[50px] w-full p-2 bg-white border-b">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Tìm kiếm tin nhắn..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full p-2 pl-8 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="h-[390px]">
         <div className="flex-1 p-4 h-full overflow-y-scroll scrollbar-hide">
           <div className="space-y-6">
-            {chatMessages.map((message) => {
+            {(searchQuery ? filteredMessages : chatMessages).map((message) => {
               const isUser = message?.userId === currentUser?.user?._id;
               const sender = isUser ? currentUser?.user : freelancer;
               return (

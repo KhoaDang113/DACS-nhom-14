@@ -3,6 +3,11 @@ import ChatBody from "../components/Chat/ChatBody";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import io from "socket.io-client";
+// Initialize Socket.IO
+const socket = io("http://localhost:5000", {
+  withCredentials: true,
+});
 
 export default function Inbox() {
   const { id } = useParams();
@@ -25,6 +30,7 @@ export default function Inbox() {
 
   useEffect(() => {
     const fetchConversation = async () => {
+      if (!currentUser) return;
       try {
         const response = await axios.post(
           "http://localhost:5000/api/conversation/create-or-get",
@@ -54,10 +60,16 @@ export default function Inbox() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1 p-4 mt-[-12px] bg-gray-50">
-            <ChatBody />
+        <div className="flex h-full">
+          <Sidebar socket={socket} currentUser={currentUser} />
+          <div className="flex-1 p-4 mt-[-12px] bg-gray-50 items-center justify-center">
+            {id === "null" ? (
+              <div className="text-gray-500 italic">
+                Chưa chọn cuộc hội thoại...
+              </div>
+            ) : (
+              <ChatBody socket={socket} />
+            )}
           </div>
         </div>
       </div>

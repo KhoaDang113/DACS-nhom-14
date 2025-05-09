@@ -27,6 +27,8 @@ import Inbox from "../pages/inbox"; // Assuming this is the correct import for t
 import ProtectedRoute from "../middleware/ProtectedRoute";
 import LockedAccountRoute from "../middleware/LockedAccountRoute"; // Import LockedAccountRoute
 import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout";
+import PaymentSuccess from "../pages/paymentSuccessPage";
+import PaymentFailed from "../pages/paymentFail";
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -221,6 +223,30 @@ const protectedRoutes: RouteObject[] = [
         <ProtectedRoute>
           <LockedAccountRoute>
             <ReviewGigPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/payment/success",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <PaymentSuccess />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/payment/failed",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <PaymentFailed />
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>

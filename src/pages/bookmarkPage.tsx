@@ -4,13 +4,13 @@ import { Heart } from "lucide-react";
 import { Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
 import axios from "axios";
-import { useFavoritesContext } from '../contexts/FavoritesContext';
+import { useFavoritesContext } from "../contexts/FavoritesContext";
 
 const BookmarkPage = () => {
   const [savedGigs, setSavedGigs] = useState<Gig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Sử dụng context
   const { refreshFavorites } = useFavoritesContext();
 
@@ -21,22 +21,28 @@ const BookmarkPage = () => {
   const fetchBookmarks = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await axios.get('http://localhost:5000/api/favorite/get-list', {
-        withCredentials: true
-      });
-      
+      const response = await axios.get(
+        "http://localhost:5000/api/favorite/get-list",
+        {
+          withCredentials: true,
+        }
+      );
+
       if (response.data && !response.data.error) {
-        const bookmarkedGigs = response.data.favorites.map((fav: any) => fav.gigId);
-        console.log("Bookmarked gigs:", bookmarkedGigs);
+        const bookmarkedGigs = response.data.favorites;
         setSavedGigs(bookmarkedGigs.filter((gig: any) => gig !== null));
       } else {
         setError(response.data?.message || "Không thể lấy dịch vụ đã lưu");
       }
     } catch (error: any) {
       console.error("Error loading bookmarks:", error);
-      setError(`Đã xảy ra lỗi khi tải dịch vụ đã lưu: ${error.message || "Unknown error"}`);
+      setError(
+        `Đã xảy ra lỗi khi tải dịch vụ đã lưu: ${
+          error.message || "Unknown error"
+        }`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -44,15 +50,19 @@ const BookmarkPage = () => {
 
   const removeAllBookmarks = async () => {
     setIsLoading(true);
-    
+
     try {
       // Xóa từng bookmark một
-      const promises = savedGigs.map(gig => 
-        axios.post(`http://localhost:5000/api/favorite/${gig._id}`, {}, {
-          withCredentials: true
-        })
+      const promises = savedGigs.map((gig) =>
+        axios.post(
+          `http://localhost:5000/api/favorite/${gig._id}`,
+          {},
+          {
+            withCredentials: true,
+          }
+        )
       );
-      
+
       await Promise.all(promises);
       setSavedGigs([]);
       // Cập nhật lại context sau khi xóa tất cả
@@ -67,7 +77,7 @@ const BookmarkPage = () => {
 
   // Hàm này sẽ được gọi khi người dùng bỏ yêu thích một gig từ Card
   const handleGigUnfavorited = (gigId: string) => {
-    setSavedGigs(prevGigs => prevGigs.filter(gig => gig._id !== gigId));
+    setSavedGigs((prevGigs) => prevGigs.filter((gig) => gig._id !== gigId));
   };
 
   const handlePlayVideo = (videoUrl: string) => {
@@ -87,7 +97,7 @@ const BookmarkPage = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="text-center py-12 bg-red-50 rounded-lg">
           <p className="text-red-500">{error}</p>
-          <button 
+          <button
             onClick={fetchBookmarks}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
@@ -106,7 +116,7 @@ const BookmarkPage = () => {
       </div>
 
       {savedGigs.length > 0 && (
-        <button 
+        <button
           onClick={removeAllBookmarks}
           className="px-4 py-2 bg-red-500 text-white rounded-md mb-6 hover:bg-red-600"
         >
@@ -117,9 +127,12 @@ const BookmarkPage = () => {
       {savedGigs.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Heart size={48} className="mx-auto text-gray-300" />
-          <h2 className="text-xl font-semibold mt-4">Chưa có dịch vụ nào được lưu</h2>
+          <h2 className="text-xl font-semibold mt-4">
+            Chưa có dịch vụ nào được lưu
+          </h2>
           <p className="text-gray-500 mt-2 mb-6">
-            Bạn chưa lưu bất kỳ dịch vụ nào. Hãy khám phá danh sách dịch vụ và lưu những dịch vụ bạn quan tâm.
+            Bạn chưa lưu bất kỳ dịch vụ nào. Hãy khám phá danh sách dịch vụ và
+            lưu những dịch vụ bạn quan tâm.
           </p>
           <Link
             to="/dashboard"

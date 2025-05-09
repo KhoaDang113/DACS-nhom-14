@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import {
@@ -9,10 +9,11 @@ import {
   CheckCircle,
   FileText,
   Lock,
+  Turtle,
 } from "lucide-react";
 import { Gig } from "../data/jobs";
 import CustomerReviews from "../components/Review/CustomerReviews";
-import { CustomerReview, sampleCustomerReviews } from "../lib/reviewData";
+import { CustomerReview } from "../lib/reviewData";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import useRestrictedAccess from "../hooks/useRestrictedAccess";
 import { useAuth } from "@clerk/clerk-react";
@@ -78,6 +79,7 @@ const GigDetailPage = () => {
   const { isLocked, canAccessOrderFunctions } = useRestrictedAccess();
   const { isSignedIn } = useAuth();
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
+  const [isLoadingPayment, setIsLoadingPayment] = useState<boolean>(false);
 
   // Xử lý query parameter reviewId
   useEffect(() => {
@@ -401,7 +403,48 @@ const GigDetailPage = () => {
       </div>
     );
   }
+  const handleOrder = async () => {
+    if (!gig || !id) return;
 
+    if (!isSignedIn) {
+      navigate("/sign-in");
+      return;
+    }
+
+    if (isLocked) {
+      alert("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+      return;
+    }
+
+    setIsLoadingPayment(true);
+    console.log("gig", gig._id);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/payment/create",
+        {
+          amount: gig.price,
+          orderId: `ORDER_${gig._id}_${Date.now()}`,
+          gigId: gig._id,
+          requirements: "", // Có thể thêm input để người dùng nhập requirements
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data) {
+        window.location.href = response.data;
+      } else {
+        throw new Error("Không nhận được URL thanh toán");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo thanh toán:", error);
+      alert("Đã xảy ra lỗi khi tạo thanh toán. Vui lòng thử lại.");
+    } finally {
+      setIsLoadingPayment(false);
+    }
+  };
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -658,12 +701,12 @@ const GigDetailPage = () => {
                   Tài khoản đã bị khóa
                 </div>
               ) : (
-                <Link
-                  to={`/payment?gig=${gig._id}&price=${gig.price}`}
+                <button
+                  onClick={handleOrder}
                   className="block bg-green-500 hover:bg-green-600 text-white text-center font-medium py-3 rounded-md transition-colors w-full"
                 >
                   Đặt dịch vụ ngay
-                </Link>
+                </button>
               )}
             </div>
 
