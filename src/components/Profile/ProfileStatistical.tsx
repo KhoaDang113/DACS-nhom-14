@@ -52,7 +52,6 @@ const ProfileStatistical: React.FC = () => {
           'http://localhost:5000/api/order/get-list-freelancer',
           { withCredentials: true } // Thêm withCredentials để gửi cookie xác thực
         );
-        
         if (response.data.orders) {
           setOrders(response.data.orders);
           setError(null);

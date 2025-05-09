@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ReviewButton from "../components/Review/ReviewButton";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
@@ -29,7 +28,6 @@ export interface Order {
   price: number;
   orderDate: string;
   status: OrderStatus;
-  isReviewed?: boolean;
 }
 
 type OrderStatus = "pending" | "approved" | "completed" | "canceled" | "rejected";
@@ -61,7 +59,6 @@ const OrderManagement: React.FC = () => {
               price: parseFloat(order.gigId?.price?.$numberDecimal || "0"),
               orderDate: new Date(order.createdAt).toLocaleDateString("vi-VN"),
               status: order.status,
-              isReviewed: false,
             };
           }
         );
@@ -300,7 +297,6 @@ const OrderManagement: React.FC = () => {
                           <th className="p-4 text-center font-semibold w-[150px]">Giá</th>
                           <th className="p-4 text-center font-semibold w-[120px]">Ngày Đặt</th>
                           <th className="p-4 text-center font-semibold w-[150px]">Trạng Thái</th>
-                          <th className="p-4 text-center font-semibold w-[150px]">Đánh Giá</th>
                           <th className="p-4 text-center font-semibold rounded-tr-xl w-[300px]">Hành Động</th>
                         </tr>
                       </thead>
@@ -338,16 +334,6 @@ const OrderManagement: React.FC = () => {
                                   {getStatusIcon(order.status)}{" "}
                                   {renderStatusText(order.status)}
                                 </span>
-                              </td>
-                              <td className="p-4 border-t text-center w-[150px]">
-                                <div className="flex items-center justify-center">
-                                  {order.status === "completed" && (
-                                    <ReviewButton 
-                                      orderId={order.id} 
-                                      isReviewed={order.isReviewed || false} 
-                                    />
-                                  )}
-                                </div>
                               </td>
                               <td className="p-4 border-t text-center w-[300px]">
                                 {order.status === "pending" && (
@@ -393,28 +379,6 @@ const OrderManagement: React.FC = () => {
                                       Từ Chối
                                     </button>
                                   </div>
-                                )}
-                                {order.status === "approved" && (
-                                  <button
-                                    className="flex items-center justify-center w-32 h-9 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 text-sm"
-                                    onClick={() => handleAction(order.id, "complete")}
-                                  >
-                                    <svg
-                                      className="w-4 h-4 mr-1"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                      />
-                                    </svg>
-                                    Hoàn Thành
-                                  </button>
                                 )}
                               </td>
                             </tr>

@@ -59,9 +59,6 @@ const GigDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const reviewListRef = useRef<HTMLDivElement>(null);
-  const [highlightedReviewId, setHighlightedReviewId] = useState<string | null>(
-    null
-  );
   const [gig, setGig] = useState<GigDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -75,12 +72,9 @@ const GigDetailPage = () => {
   const navigate = useNavigate();
   const [selectedMediaType, setSelectedMediaType] = useState<string>("image");
   const [processedMedia, setProcessedMedia] = useState<MediaItem[]>([]);
-  const [videoThumbnails, setVideoThumbnails] = useState<
-    Record<string, string>
-  >({});
-  const [processingThumbnails, setProcessingThumbnails] =
-    useState<boolean>(false);
-  const { isLocked, canAccessOrderFunctions } = useRestrictedAccess();
+  const [videoThumbnails, setVideoThumbnails] = useState<Record<string, string>>({});
+  const [processingThumbnails, setProcessingThumbnails] = useState<boolean>(false);
+  const { isLocked } = useRestrictedAccess();
   const { isSignedIn } = useAuth();
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
 
@@ -91,8 +85,6 @@ const GigDetailPage = () => {
     const reviewId = queryParams.get("reviewId");
 
     if (reviewId) {
-      setHighlightedReviewId(reviewId);
-
       // Đợi reviews được load xong trước khi cuộn
       const checkReviewsLoaded = setInterval(() => {
         if (reviews.length > 0 && reviewListRef.current) {
@@ -211,8 +203,6 @@ const GigDetailPage = () => {
         );
 
         if (videoItems.length > 0) {
-          setProcessingThumbnails(true);
-
           // Xử lý media ban đầu với thumbnail mặc định
           const initialProcessed = gig.media.map((item) => {
             if (item.type === "video" && !item.thumbnailUrl) {
