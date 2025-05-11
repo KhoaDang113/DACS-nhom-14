@@ -76,8 +76,12 @@ const BookmarkPage = () => {
   };
 
   // Hàm này sẽ được gọi khi người dùng bỏ yêu thích một gig từ Card
-  const handleGigUnfavorited = (gigId: string) => {
+  const handleGigUnfavorited = async (gigId: string) => {
+    // Cập nhật UI
     setSavedGigs((prevGigs) => prevGigs.filter((gig) => gig._id !== gigId));
+
+    // Đảm bảo context cũng được cập nhật
+    await refreshFavorites();
   };
 
   const handlePlayVideo = (videoUrl: string) => {
@@ -149,7 +153,6 @@ const BookmarkPage = () => {
                 gig={gig}
                 onFavorite={handleGigUnfavorited}
                 onPlayVideo={handlePlayVideo}
-                isFavorited={true} // Đã được lưu trong danh sách bookmark
               />
             </div>
           ))}
