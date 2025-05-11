@@ -79,15 +79,13 @@ const GigCard: React.FC<GigCardProps> = ({
   const { isGigFavorited, toggleFavorite: toggleFavoriteContext } =
     useFavoritesContext();
 
-  // Ưu tiên prop từ parent, nếu không có thì lấy từ context
-  const [isFavorite, setIsFavorite] = useState(
-    isFavorited || isGigFavorited(gig._id)
-  );
+  // Sử dụng context là nguồn duy nhất cho trạng thái yêu thích
+  const [isFavorite, setIsFavorite] = useState(isGigFavorited(gig._id));
 
-  // Cập nhật state khi prop hoặc context thay đổi
+  // Cập nhật state khi context thay đổi
   useEffect(() => {
-    setIsFavorite(isFavorited || isGigFavorited(gig._id));
-  }, [isFavorited, isGigFavorited, gig._id]);
+    setIsFavorite(isGigFavorited(gig._id));
+  }, [isGigFavorited, gig._id]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -351,5 +349,3 @@ const GigCard: React.FC<GigCardProps> = ({
 };
 
 export default GigCard;
-
-
