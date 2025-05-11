@@ -51,7 +51,7 @@ const ReviewGigPage: React.FC = () => {
         // Kiểm tra nếu API trả về lỗi
         if (response.data.error) {
           toast.error(response.data.message || 'Không thể tải thông tin đơn hàng');
-          navigate('/orderManagement'); // Chuyển về trang quản lý đơn hàng
+          navigate('/orders'); // Chuyển về trang quản lý đơn hàng
           return;
         }
 
@@ -60,7 +60,7 @@ const ReviewGigPage: React.FC = () => {
         // Kiểm tra xem đơn hàng đã hoàn thành chưa
         if (orderData.status !== 'completed') {
           toast.error('Chỉ có thể đánh giá đơn hàng đã hoàn thành!');
-          navigate('/orderManagement');
+          navigate('/orders');
           return;
         }
 
@@ -122,7 +122,7 @@ const ReviewGigPage: React.FC = () => {
         
         // Không chuyển hướng ngay, để người dùng có thể thấy thông báo lỗi
         setTimeout(() => {
-          navigate('/orderManagement');
+          navigate('/orders');
         }, 2000);
       } finally {
         setIsLoading(false);
@@ -139,7 +139,7 @@ const ReviewGigPage: React.FC = () => {
     
     // Hiển thị thông báo thành công và chuyển hướng sau 3 giây
     setTimeout(() => {
-      navigate('/orderManagement');
+      navigate('/orders');
     }, 3000);
   };
 
@@ -226,7 +226,7 @@ const ReviewGigPage: React.FC = () => {
               
               <div className="mt-6">
                 <button 
-                  onClick={() => navigate('/orderManagement')}
+                  onClick={() => navigate('/orders')}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                 >
                   Trở về trang quản lý đơn hàng
@@ -247,7 +247,7 @@ const ReviewGigPage: React.FC = () => {
             <h2 className="text-xl font-bold text-red-600">Lỗi tải thông tin đơn hàng</h2>
             <p className="text-gray-600 mt-2">Không thể tìm thấy thông tin đơn hàng. Vui lòng thử lại sau.</p>
             <button 
-              onClick={() => navigate('/orderManagement')}
+              onClick={() => navigate('/orders')}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
             >
               Trở về trang quản lý đơn hàng

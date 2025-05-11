@@ -20,12 +20,14 @@ import EditGig from "../pages/editGig";
 import BookmarkPage from "../pages/bookmarkPage";
 import RedirectDashboard from "../pages/RedirectDashboard";
 import ReviewGigPage from "../pages/reviewGig";
-import OrderComplaintPage from "../pages/orderComplaint";
 import BecomeFreelancer from "../pages/becomeFreelancer";
 import RequireAdmin from "../middleware/RequireAdmin";
+import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
 import ProtectedRoute from "../middleware/ProtectedRoute";
 import LockedAccountRoute from "../middleware/LockedAccountRoute"; // Import LockedAccountRoute
 import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout";
+import PaymentSuccess from "../pages/paymentSuccessPage";
+import PaymentFailed from "../pages/paymentFail";
 //admin
 import AdminLayout from "../components/layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
@@ -41,6 +43,7 @@ import AdminViolationReport from "../pages/admin/ViolationReports";
 // Quảng cáo Job Hot
 import AdminHotJobAds from "../pages/admin/HotJobAds";
 import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
+import ChatBoxLayout from "../components/layouts/ChatBoxLayout";
 
 // Routes không cần đăng nhập
 const publicRoutes: RouteObject[] = [
@@ -54,48 +57,48 @@ const publicRoutes: RouteObject[] = [
 
 // Routes cần đăng nhập và được bảo vệ
 const protectedRoutes: RouteObject[] = [
-  { 
-    path: "/redirect-dashboard", 
+  {
+    path: "/redirect-dashboard",
     element: (
       <SignedIn>
         <ProtectedRoute>
           <RedirectDashboard />
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/dashboard", 
+  {
+    path: "/dashboard",
     element: (
       <SignedIn>
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/profile", 
+  {
+    path: "/profile",
     element: (
       <SignedIn>
         <ProtectedRoute>
           <ProfilePage />
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/profile/:userId", 
+  {
+    path: "/profile/:userId",
     element: (
       <SignedIn>
         <ProtectedRoute>
           <ProfilePage />
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/create-gig", 
+  {
+    path: "/create-gig",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -104,10 +107,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/seller-gigs", 
+  {
+    path: "/seller-gigs",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -116,10 +119,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/order-management", 
+  {
+    path: "/order-management",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -128,10 +131,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/seller-dashboard", 
+  {
+    path: "/seller-dashboard",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -140,10 +143,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/edit-gig/:id", 
+  {
+    path: "/edit-gig/:id",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -152,10 +155,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/custom-order/:id", 
+  {
+    path: "/custom-order/:id",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -164,10 +167,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/orders", 
+  {
+    path: "/orders",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -176,32 +179,20 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/bookmarks", 
+  {
+    path: "/bookmarks",
     element: (
       <SignedIn>
         <ProtectedRoute>
           <BookmarkPage />
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/orders-complaint", 
-    element: (
-      <SignedIn>
-        <ProtectedRoute>
-          <LockedAccountRoute>
-            <OrderComplaintPage />
-          </LockedAccountRoute>
-        </ProtectedRoute>
-      </SignedIn>
-    ) 
-  },
-  { 
-    path: "/become-freelancer", 
+  {
+    path: "/become-freelancer",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -210,10 +201,10 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
   },
-  { 
-    path: "/review-gig/:orderId", 
+  {
+    path: "/review-gig/:orderId",
     element: (
       <SignedIn>
         <ProtectedRoute>
@@ -222,7 +213,31 @@ const protectedRoutes: RouteObject[] = [
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
-    ) 
+    ),
+  },
+  {
+    path: "/payment/success",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <PaymentSuccess />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/payment/failed",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <PaymentFailed />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
   },
 ];
 
@@ -233,7 +248,7 @@ const router: RouteObject[] = [
     children: [
       // Public routes
       ...publicRoutes,
-      
+
       // Protected routes
       {
         element: (
@@ -243,12 +258,12 @@ const router: RouteObject[] = [
             </AuthenticatedLayout>
           </SignedIn>
         ),
-        children: protectedRoutes.map(route => ({
-          path: route.path?.toString().replace(/^\//, ''),
-          element: route.element
-        }))
+        children: protectedRoutes.map((route) => ({
+          path: route.path?.toString().replace(/^\//, ""),
+          element: route.element,
+        })),
       },
-      
+
       // Fallback for routes that need sign in
       {
         path: "*",
@@ -256,14 +271,14 @@ const router: RouteObject[] = [
           <SignedOut>
             <RedirectToSignIn />
           </SignedOut>
-        )
-      }
+        ),
+      },
     ],
   },
 
   //admin path
-  { 
-    path: "/admin", 
+  {
+    path: "/admin",
     element: (
       <SignedIn>
         <AuthenticatedLayout>
@@ -287,6 +302,25 @@ const router: RouteObject[] = [
       // Quảng cáo Job Hot
       { path: "hot-job-ads", element: <AdminHotJobAds /> },
       { path: "hot-job-ads/create", element: <AdminCreateHotJobAd /> },
+    ],
+  },
+  {
+    path: "/inbox",
+    element: <ChatBoxLayout />,
+    children: [
+      {
+        path: "/inbox/:id",
+        element: (
+          <>
+            <SignedIn>
+              <Inbox />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ),
+      },
     ],
   },
 ];
