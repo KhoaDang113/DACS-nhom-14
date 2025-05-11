@@ -16,7 +16,15 @@ import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Badge from "../../components/ui/admin/Badge";
 import { Dropdown, DropdownItem } from "../../components/ui/admin/Dropdown";
-import { Search, Filter, ArrowUpDown, Eye, Check, X, Loader } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ArrowUpDown,
+  Eye,
+  Check,
+  X,
+  Loader,
+} from "lucide-react";
 
 // Định nghĩa interface cho dữ liệu báo cáo vi phạm từ API
 interface Violation {
@@ -53,15 +61,20 @@ const ViolationReports: React.FC = () => {
   const fetchViolations = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:5000/api/admin/complaint/get", {
-        withCredentials: true
-      });
-      
+      const response = await axios.get(
+        "http://localhost:5000/api/admin/complaint/get",
+        {
+          withCredentials: true,
+        }
+      );
+
       if (!response.data.error && response.data.complaints) {
         setViolations(response.data.complaints);
         setError(null);
       } else {
-        setError(response.data.message || "Không thể tải dữ liệu báo cáo vi phạm");
+        setError(
+          response.data.message || "Không thể tải dữ liệu báo cáo vi phạm"
+        );
       }
     } catch (err: any) {
       console.error("Lỗi khi tải dữ liệu báo cáo vi phạm:", err);
@@ -77,26 +90,29 @@ const ViolationReports: React.FC = () => {
   }, []);
 
   // Hàm xử lý báo cáo vi phạm (phê duyệt/từ chối)
-  const handleViolation = async (id: string, status: "resolved" | "rejected") => {
+  const handleViolation = async (
+    id: string,
+    status: "resolved" | "rejected"
+  ) => {
     try {
       const response = await axios.put(
         `http://localhost:5000/api/admin/complaint/${id}/handle-complaint`,
         { status },
         { withCredentials: true }
       );
-      
+
       if (!response.data.error) {
         toast.success(
-          status === "resolved" 
-            ? "Đã xử lý báo cáo vi phạm thành công" 
+          status === "resolved"
+            ? "Đã xử lý báo cáo vi phạm thành công"
             : "Đã bỏ qua báo cáo vi phạm"
         );
-        
+
         // Cập nhật dữ liệu trên UI
-        setViolations(prevViolations => 
-          prevViolations.map(violation => 
-            violation._id === id 
-              ? { ...violation, status, resolvedAt: new Date().toISOString() } 
+        setViolations((prevViolations) =>
+          prevViolations.map((violation) =>
+            violation._id === id
+              ? { ...violation, status, resolvedAt: new Date().toISOString() }
               : violation
           )
         );
@@ -104,56 +120,66 @@ const ViolationReports: React.FC = () => {
         toast.error(response.data.message || "Không thể xử lý báo cáo vi phạm");
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Đã xảy ra lỗi khi xử lý báo cáo vi phạm");
+      toast.error(
+        err.response?.data?.message || "Đã xảy ra lỗi khi xử lý báo cáo vi phạm"
+      );
     }
   };
 
   // Hàm xem chi tiết báo cáo vi phạm
   const viewViolationDetail = async (id: string) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/admin/complaint/${id}/get`, {
-        withCredentials: true
-      });
-      
+      const response = await axios.get(
+        `http://localhost:5000/api/admin/complaint/${id}/get`,
+        {
+          withCredentials: true,
+        }
+      );
+
       if (!response.data.error) {
         // Hiển thị thông tin chi tiết báo cáo trong modal hoặc trang mới
         toast.success("Đã tải chi tiết báo cáo vi phạm");
         console.log("Chi tiết báo cáo vi phạm:", response.data.complaint);
-        
+
         // Đoạn này có thể mở modal hiển thị chi tiết báo cáo
         // hoặc chuyển hướng đến trang chi tiết
       } else {
-        toast.error(response.data.message || "Không thể tải chi tiết báo cáo vi phạm");
+        toast.error(
+          response.data.message || "Không thể tải chi tiết báo cáo vi phạm"
+        );
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Đã xảy ra lỗi khi tải chi tiết báo cáo vi phạm");
+      toast.error(
+        err.response?.data?.message ||
+          "Đã xảy ra lỗi khi tải chi tiết báo cáo vi phạm"
+      );
     }
   };
 
   // Lọc báo cáo vi phạm theo từ khóa tìm kiếm và trạng thái
-  const filteredViolations = violations.filter(
-    (violation) => {
-      const matchesSearch = 
-        violation.gigId.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        violation.userId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        violation.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        violation._id.toLowerCase().includes(searchTerm.toLowerCase());
-        
-      const matchesStatus = statusFilter ? violation.status === statusFilter : true;
-      
-      return matchesSearch && matchesStatus;
-    }
-  );
+  const filteredViolations = violations.filter((violation) => {
+    const matchesSearch =
+      violation.gigId.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      violation.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      violation.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      violation._id.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter
+      ? violation.status === statusFilter
+      : true;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // Định dạng ngày giờ từ chuỗi ISO
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -190,7 +216,7 @@ const ViolationReports: React.FC = () => {
     switch (reason) {
       case "dịch vụ bị cấm":
         return "Dịch vụ bị cấm";
-      case "nội dung không phù hợp": 
+      case "nội dung không phù hợp":
         return "Nội dung không phù hợp";
       case "không nguyên bản":
         return "Không nguyên bản";
@@ -239,10 +265,18 @@ const ViolationReports: React.FC = () => {
             }
             align="right"
           >
-            <DropdownItem onClick={() => setStatusFilter(null)}>Tất cả</DropdownItem>
-            <DropdownItem onClick={() => setStatusFilter("pending")}>Chờ xử lý</DropdownItem>
-            <DropdownItem onClick={() => setStatusFilter("resolved")}>Đã xử lý</DropdownItem>
-            <DropdownItem onClick={() => setStatusFilter("rejected")}>Đã bỏ qua</DropdownItem>
+            <DropdownItem onClick={() => setStatusFilter(null)}>
+              Tất cả
+            </DropdownItem>
+            <DropdownItem onClick={() => setStatusFilter("pending")}>
+              Chờ xử lý
+            </DropdownItem>
+            <DropdownItem onClick={() => setStatusFilter("resolved")}>
+              Đã xử lý
+            </DropdownItem>
+            <DropdownItem onClick={() => setStatusFilter("rejected")}>
+              Đã bỏ qua
+            </DropdownItem>
           </Dropdown>
           <Dropdown
             trigger={
@@ -256,8 +290,22 @@ const ViolationReports: React.FC = () => {
             }
             align="right"
           >
-            <DropdownItem onClick={() => {setSortField("createdAt"); setSortOrder("desc")}}>Mới nhất</DropdownItem>
-            <DropdownItem onClick={() => {setSortField("createdAt"); setSortOrder("asc")}}>Cũ nhất</DropdownItem>
+            <DropdownItem
+              onClick={() => {
+                setSortField("createdAt");
+                setSortOrder("desc");
+              }}
+            >
+              Mới nhất
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => {
+                setSortField("createdAt");
+                setSortOrder("asc");
+              }}
+            >
+              Cũ nhất
+            </DropdownItem>
           </Dropdown>
         </div>
       </div>
@@ -298,7 +346,7 @@ const ViolationReports: React.FC = () => {
                   <TableCell className="max-w-[200px] truncate">
                     {violation.gigId.title}
                   </TableCell>
-                  <TableCell>{violation.userId.name}</TableCell>
+                  <TableCell>{violation.userId?.name}</TableCell>
                   <TableCell className="max-w-[200px] truncate">
                     {translateReason(violation.reason)}
                   </TableCell>
@@ -321,7 +369,7 @@ const ViolationReports: React.FC = () => {
                       >
                         <span className="sr-only">Xem</span>
                       </Button>
-                      
+
                       {violation.status === "pending" && (
                         <>
                           <Button
@@ -329,7 +377,9 @@ const ViolationReports: React.FC = () => {
                             size="sm"
                             className="text-green-600"
                             icon={<Check className="h-4 w-4" />}
-                            onClick={() => handleViolation(violation._id, "resolved")}
+                            onClick={() =>
+                              handleViolation(violation._id, "resolved")
+                            }
                           >
                             <span className="sr-only">Phê duyệt</span>
                           </Button>
@@ -338,7 +388,9 @@ const ViolationReports: React.FC = () => {
                             size="sm"
                             className="text-red-600"
                             icon={<X className="h-4 w-4" />}
-                            onClick={() => handleViolation(violation._id, "rejected")}
+                            onClick={() =>
+                              handleViolation(violation._id, "rejected")
+                            }
                           >
                             <span className="sr-only">Từ chối</span>
                           </Button>
@@ -355,22 +407,24 @@ const ViolationReports: React.FC = () => {
 
       {!loading && !error && filteredViolations.length > 0 && (
         <div className="flex items-center justify-end space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
           >
             Trước
           </Button>
           <span className="text-sm text-gray-500">
             Trang {currentPage} / {totalPages}
           </span>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
           >
             Tiếp
           </Button>

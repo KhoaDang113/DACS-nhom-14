@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Play } from "lucide-react";
 import { GrFormNext, GrFormPrevious } from "react-icons/gr";
-import { parseMongoDecimal } from '../../lib/utils';
-import GigCard from '../Card/Card'; // Import GigCard component
+import { parseMongoDecimal } from "../../lib/utils";
+import GigCard from "../Card/Card"; // Import GigCard component
 
 interface MediaItem {
-  url: string
-  type: "image" | "video"
-  thumbnailUrl?: string // Thumbnail for video
+  url: string;
+  type: "image" | "video";
+  thumbnailUrl?: string; // Thumbnail for video
 }
 interface Gig {
   _id: string; // Thay id bằng _id
@@ -19,7 +19,7 @@ interface Gig {
   media: MediaItem[]; // Thay image bằng media array
   duration: number;
   keywords: string[];
-  status: 'pending' | 'approved' | 'rejected' | 'hidden' | 'deleted';
+  status: "pending" | "approved" | "rejected" | "hidden" | "deleted";
   freelancer?: {
     _id: string;
     name: string;
@@ -33,23 +33,24 @@ interface ProfileGigsProps {
 }
 
 const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
-  console.log('Received gigs:', gigs); // Thêm log để debug
   const navigate = useNavigate(); // Thêm hook navigate
 
-  const [filter, setFilter] = useState<'all' | 'approved' | 'pending' | 'hidden'>('all');
+  const [filter, setFilter] = useState<
+    "all" | "approved" | "pending" | "hidden"
+  >("all");
 
   // Hàm format giá tiền theo định dạng tiền tệ VN
   const formatPrice = (price: any): string => {
     // Xử lý giá trị MongoDB Decimal128
     const parsedPrice = parseMongoDecimal(price);
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(parsedPrice);
   };
 
-  const filteredGigs = gigs.filter(gig => {
-    if (filter === 'all') return true;
+  const filteredGigs = gigs.filter((gig) => {
+    if (filter === "all") return true;
     return gig.status === filter;
   });
 
@@ -75,41 +76,41 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
       <div className="border-b border-gray-200 p-4">
         <div className="flex gap-4">
           <button
-            onClick={() => setFilter('all')}
+            onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              filter === 'all'
-                ? 'bg-[#1dbf73] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === "all"
+                ? "bg-[#1dbf73] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             Tất cả
           </button>
           <button
-            onClick={() => setFilter('approved')}
+            onClick={() => setFilter("approved")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              filter === 'approved'
-                ? 'bg-[#1dbf73] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === "approved"
+                ? "bg-[#1dbf73] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             Đã duyệt
           </button>
           <button
-            onClick={() => setFilter('pending')}
+            onClick={() => setFilter("pending")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              filter === 'pending'
-                ? 'bg-[#1dbf73] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === "pending"
+                ? "bg-[#1dbf73] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             Đang chờ duyệt
           </button>
           <button
-            onClick={() => setFilter('hidden')}
+            onClick={() => setFilter("hidden")}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              filter === 'hidden'
-                ? 'bg-[#1dbf73] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === "hidden"
+                ? "bg-[#1dbf73] text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             Đã ẩn
@@ -132,8 +133,12 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredGigs.map((gig) => (
-              <div key={gig._id} className="relative cursor-pointer" onClick={() => handleGigClick(gig._id)}>
-                <GigCard 
+              <div
+                key={gig._id}
+                className="relative cursor-pointer"
+                onClick={() => handleGigClick(gig._id)}
+              >
+                <GigCard
                   gig={gig}
                   onFavorite={handleFavoriteToggle}
                   onPlayVideo={handlePlayVideo}
@@ -142,18 +147,18 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
                 <div className="absolute top-2 left-2 z-10">
                   <span
                     className={`inline-block px-2 py-1 text-xs rounded-full ${
-                      gig.status === 'approved'
-                        ? 'bg-green-100 text-green-800'
-                        : gig.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
+                      gig.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : gig.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {gig.status === 'approved'
-                      ? 'Đã duyệt'
-                      : gig.status === 'pending'
-                      ? 'Đang chờ duyệt'
-                      : 'Đã ẩn'}
+                    {gig.status === "approved"
+                      ? "Đã duyệt"
+                      : gig.status === "pending"
+                      ? "Đang chờ duyệt"
+                      : "Đã ẩn"}
                   </span>
                 </div>
               </div>

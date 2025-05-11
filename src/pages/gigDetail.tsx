@@ -12,6 +12,7 @@ import {
   FileText,
   MoreVertical,
   Lock,
+  EyeIcon,
 } from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
 import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
@@ -87,16 +88,14 @@ const GigDetailPage = () => {
   const [processingThumbnails, setProcessingThumbnails] =
     useState<boolean>(false);
   const { isLocked } = useRestrictedAccess();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [isLoadingPayment, setIsLoadingPayment] = useState<boolean>(false);
-
   // Xử lý query parameter reviewId
   useEffect(() => {
     // Lấy reviewId từ query parameters nếu có
     const queryParams = new URLSearchParams(location.search);
     const reviewId = queryParams.get("reviewId");
-
     if (reviewId) {
       // Đợi reviews được load xong trước khi cuộn
       const checkReviewsLoaded = setInterval(() => {
@@ -392,9 +391,6 @@ const GigDetailPage = () => {
           },
         }
       );
-
-      console.log("Response:", response.data);
-
       if (response.data && !response.data.error) {
         setIsReportModalOpen(false);
         setReportReason("");
@@ -475,8 +471,6 @@ const GigDetailPage = () => {
     }
 
     setIsLoadingPayment(true);
-    console.log("gig", gig._id);
-
     try {
       const response = await axios.post(
         "http://localhost:5000/api/payment/create",
@@ -627,17 +621,14 @@ const GigDetailPage = () => {
                 />
                 <div>
                   <p className="font-medium">{freelancer.name}</p>
-                  <div className="flex items-center">
-                    <Star
-                      size={14}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <span className="text-sm font-medium ml-1">
-                      {freelancer.rating || "5.0"}
+                  <div className="flex items-center justify-start">
+                    <EyeIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium ml-1 text-black">
+                      Lượt xem:
                     </span>
-                    <span className="text-sm text-gray-500 ml-1">
-                      ({freelancer.reviewCount || "0"})
-                    </span>
+                    <div className="text-sm font-medium ml-1 text-black">
+                      {gig.views}
+                    </div>
                   </div>
                 </div>
               </>
@@ -792,7 +783,10 @@ const GigDetailPage = () => {
           <div className="mb-10">
             <h2 className="text-xl font-bold mb-4">Đánh giá của khách hàng</h2>
             {reviews.length > 0 ? (
-              <CustomerReviews reviews={reviews} />
+              <CustomerReviews
+                reviews={reviews}
+                isGigOwner={userId === gig.freelancerId}
+              />
             ) : (
               <div className="bg-white rounded-lg shadow-sm p-6 text-center">
                 <p className="text-gray-500">
@@ -916,13 +910,13 @@ const GigDetailPage = () => {
                   <span>Tài khoản đã bị khóa</span>
                 </div>
               ) : (
-                <Link
-                  to={`/custom-order/${gig._id}`}
+                <button
+                  onClick={naviagteToConversation}
                   className="flex items-center justify-center gap-2 text-green-500 hover:text-green-600 font-medium w-full"
                 >
                   <FileText size={18} />
-                  <span>Gửi yêu cầu tùy chỉnh</span>
-                </Link>
+                  <span>Liên hệ với tôi</span>
+                </button>
               )}
             </div>
 
