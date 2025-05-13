@@ -3,11 +3,8 @@ import ChatBody from "../components/Chat/ChatBody";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import io from "socket.io-client";
+import socket from "../lib/socket";
 // Initialize Socket.IO
-const socket = io("http://localhost:5000", {
-  withCredentials: true,
-});
 
 export default function Inbox() {
   const { id } = useParams();

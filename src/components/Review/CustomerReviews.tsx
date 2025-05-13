@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Star, ChevronDown, MessageCircle, ThumbsUp, Send } from "lucide-react";
 import {
@@ -7,6 +7,7 @@ import {
   calculateAverageRating,
 } from "../../lib/reviewData";
 import axios from "axios";
+import socket from "../../lib/socket";
 
 interface Response {
   id: string;
@@ -26,6 +27,7 @@ interface CustomerReviewWithResponse extends CustomerReview {
   vote?: {
     isHelpFull: "like" | "dislike" | "none";
   };
+  isResponse?: boolean;
 }
 
 interface CustomerReviewsProps {
@@ -55,7 +57,33 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   }>({});
 
   const averageRating = calculateAverageRating(reviews);
+  useEffect(() => {
+    if (!socket.connected) socket.connect();
 
+    socket.on("new_response", ({ reviewId, response }) => {
+      setReviews((prev) =>
+        prev.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                response: response,
+                isResponse: true,
+              }
+            : review
+        )
+      );
+      console.log("reviews", reviews);
+
+      setShowResponses((prev) => ({
+        ...prev,
+        [reviewId]: true,
+      }));
+    });
+
+    return () => {
+      socket.off("new_response");
+    };
+  }, []);
   const toggleExpandComment = (reviewId: string) => {
     setExpandedComments((prev) =>
       prev.includes(reviewId)
@@ -90,11 +118,15 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
         setReplyingTo(null);
 
         // Cập nhật state reviews với phản hồi mới
-        const newResponse = response.data.response;
+        const newResponse = response.data.respone;
         setReviews((prevReviews) =>
           prevReviews.map((review) =>
             review.id === reviewId
-              ? { ...review, response: newResponse }
+              ? {
+                  ...review,
+                  response: newResponse,
+                  isResponse: true,
+                }
               : review
           )
         );
