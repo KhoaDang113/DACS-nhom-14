@@ -48,9 +48,14 @@ const CategoryManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddSubcategoryModalOpen, setIsAddSubcategoryModalOpen] = useState(false);
-  const [isSubcategoriesModalOpen, setIsSubcategoriesModalOpen] = useState(false);
-  const [selectedCategoryForSubcategories, setSelectedCategoryForSubcategories] = useState<Category | null>(null);
+  const [isAddSubcategoryModalOpen, setIsAddSubcategoryModalOpen] =
+    useState(false);
+  const [isSubcategoriesModalOpen, setIsSubcategoriesModalOpen] =
+    useState(false);
+  const [
+    selectedCategoryForSubcategories,
+    setSelectedCategoryForSubcategories,
+  ] = useState<Category | null>(null);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [loadingSubcategories, setLoadingSubcategories] = useState(false);
   const [subcategoryError, setSubcategoryError] = useState<string | null>(null);
@@ -59,13 +64,13 @@ const CategoryManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Trạng thái cho modal thêm/sửa danh mục
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [parentCategory, setParentCategory] = useState<string>("");
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
-  
+
   // Phân trang (mỗi trang hiển thị 10 mục)
   const itemsPerPage = 10;
 
@@ -85,7 +90,9 @@ const CategoryManagement: React.FC = () => {
       );
       if (response.data && !response.data.error) {
         setCategories(response.data.data || []);
-        setTotalPages(Math.ceil((response.data.data?.length || 0) / itemsPerPage));
+        setTotalPages(
+          Math.ceil((response.data.data?.length || 0) / itemsPerPage)
+        );
       } else {
         setError(response.data.message || "Có lỗi khi tải danh mục");
       }
@@ -110,24 +117,28 @@ const CategoryManagement: React.FC = () => {
           withCredentials: true,
         }
       );
-      
+
       // Làm mới danh sách
       fetchCategories();
-      
+
       // Đóng modal và reset form
       setIsModalOpen(false);
       setCategoryName("");
       setCategoryDescription("");
       setParentCategory("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi khi tạo danh mục:", err);
-      setError(err.response?.data?.message || "Không thể tạo danh mục");
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data?.message || "Không thể tạo danh mục");
+      } else {
+        setError("Không thể tạo danh mục");
+      }
     }
   };
 
   const handleUpdateCategory = async () => {
     if (!currentCategory) return;
-    
+
     try {
       await axios.put(
         `http://localhost:5000/api/admin/category/${currentCategory._id}/update`,
@@ -140,19 +151,23 @@ const CategoryManagement: React.FC = () => {
           withCredentials: true,
         }
       );
-      
+
       // Làm mới danh sách
       fetchCategories();
-      
+
       // Đóng modal và reset form
       setIsEditModalOpen(false);
       setCategoryName("");
       setCategoryDescription("");
       setParentCategory("");
       setCurrentCategory(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi khi cập nhật danh mục:", err);
-      setError(err.response?.data?.message || "Không thể cập nhật danh mục");
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data?.message || "Không thể cập nhật danh mục");
+      } else {
+        setError("Không thể cập nhật danh mục");
+      }
     }
   };
 
@@ -160,7 +175,7 @@ const CategoryManagement: React.FC = () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
       return;
     }
-    
+
     try {
       await axios.delete(
         `http://localhost:5000/api/admin/category/${categoryId}/delete`,
@@ -168,12 +183,16 @@ const CategoryManagement: React.FC = () => {
           withCredentials: true,
         }
       );
-      
+
       // Làm mới danh sách
       fetchCategories();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi khi xóa danh mục:", err);
-      setError(err.response?.data?.message || "Không thể xóa danh mục");
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data?.message || "Không thể xóa danh mục");
+      } else {
+        setError("Không thể xóa danh mục");
+      }
     }
   };
 
@@ -206,12 +225,20 @@ const CategoryManagement: React.FC = () => {
       if (response.data && !response.data.error) {
         return response.data.subcategories || [];
       } else {
-        setSubcategoryError(response.data.message || "Có lỗi khi tải danh mục con");
+        setSubcategoryError(
+          response.data.message || "Có lỗi khi tải danh mục con"
+        );
         return [];
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi khi tải danh mục con:", err);
-      setSubcategoryError(err.response?.data?.message || "Không thể tải danh mục con");
+      if (axios.isAxiosError(err) && err.response) {
+        setSubcategoryError(
+          err.response.data?.message || "Không thể tải danh mục con"
+        );
+      } else {
+        setSubcategoryError("Không thể tải danh mục con");
+      }
       return [];
     } finally {
       setLoadingSubcategories(false);
@@ -222,7 +249,7 @@ const CategoryManagement: React.FC = () => {
   const openSubcategoriesModal = async (category: Category) => {
     setSelectedCategoryForSubcategories(category);
     setIsSubcategoriesModalOpen(true);
-    
+
     // Lấy danh sách danh mục con từ API
     const subCategories = await fetchSubcategories(category._id);
     setSubcategories(subCategories);
@@ -233,7 +260,7 @@ const CategoryManagement: React.FC = () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục con này?")) {
       return;
     }
-    
+
     try {
       await axios.delete(
         `http://localhost:5000/api/admin/category/${subcategoryId}/delete`,
@@ -241,18 +268,26 @@ const CategoryManagement: React.FC = () => {
           withCredentials: true,
         }
       );
-      
+
       // Cập nhật lại danh sách danh mục con
       if (selectedCategoryForSubcategories) {
-        const updatedSubcategories = await fetchSubcategories(selectedCategoryForSubcategories._id);
+        const updatedSubcategories = await fetchSubcategories(
+          selectedCategoryForSubcategories._id
+        );
         setSubcategories(updatedSubcategories);
       }
-      
+
       // Cũng cần cập nhật danh sách danh mục chính
       fetchCategories();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi khi xóa danh mục con:", err);
-      setSubcategoryError(err.response?.data?.message || "Không thể xóa danh mục con");
+      if (axios.isAxiosError(err) && err.response) {
+        setSubcategoryError(
+          err.response.data?.message || "Không thể xóa danh mục con"
+        );
+      } else {
+        setSubcategoryError("Không thể xóa danh mục con");
+      }
     }
   };
 
@@ -270,16 +305,11 @@ const CategoryManagement: React.FC = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  // Đếm số lượng danh mục con và gig trong mỗi danh mục
+  // Đếm số lượng danh mục con trong mỗi danh mục
   const getCategoryStats = (category: Category) => {
     const childCount = category.children?.length || 0;
-    
-    // Giả định: trong thực tế cần API khác để lấy số lượng gigs
-    // Hiện tại đang để trống và sẽ được bổ sung sau khi có API phù hợp
-    const gigCount = 0;
-    
-    return { childCount, gigCount };
+
+    return { childCount };
   };
 
   return (
@@ -345,9 +375,10 @@ const CategoryManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {" "}
                 {paginatedCategories.length > 0 ? (
                   paginatedCategories.map((category) => {
-                    const { childCount, gigCount } = getCategoryStats(category);
+                    const { childCount } = getCategoryStats(category);
                     return (
                       <TableRow key={category._id}>
                         <TableCell className="font-medium max-w-[100px] truncate">
@@ -379,26 +410,34 @@ const CategoryManagement: React.FC = () => {
                             }
                             align="right"
                           >
-                            <DropdownItem onClick={() => openEditModal(category)}>
+                            <DropdownItem
+                              onClick={() => openEditModal(category)}
+                            >
                               <div className="flex items-center">
                                 <Edit className="h-4 w-4 mr-2" />
                                 Chỉnh sửa
                               </div>
                             </DropdownItem>
-                            <DropdownItem onClick={() => openAddSubcategoryModal(category._id)}>
+                            <DropdownItem
+                              onClick={() =>
+                                openAddSubcategoryModal(category._id)
+                              }
+                            >
                               <div className="flex items-center">
                                 <PlusCircle className="h-4 w-4 mr-2" />
                                 Thêm danh mục con
                               </div>
                             </DropdownItem>
-                            <DropdownItem onClick={() => openSubcategoriesModal(category)}>
+                            <DropdownItem
+                              onClick={() => openSubcategoriesModal(category)}
+                            >
                               <div className="flex items-center">
                                 <Folder className="h-4 w-4 mr-2" />
                                 Xem danh mục con
                               </div>
                             </DropdownItem>
                             <DropdownDivider />
-                            <DropdownItem 
+                            <DropdownItem
                               className="text-red-600"
                               onClick={() => handleDeleteCategory(category._id)}
                             >
@@ -414,13 +453,23 @@ const CategoryManagement: React.FC = () => {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6">
-                      {searchTerm ? (
-                        <p>Không tìm thấy danh mục phù hợp với từ khóa "{searchTerm}"</p>
-                      ) : (
-                        <p>Không có danh mục nào</p>
-                      )}
+                    <TableCell>
+                      <div className="text-center py-6">
+                        {searchTerm ? (
+                          <p>
+                            Không tìm thấy danh mục phù hợp với từ khóa "
+                            {searchTerm}"
+                          </p>
+                        ) : (
+                          <p>Không có danh mục nào</p>
+                        )}
+                      </div>
                     </TableCell>
+                    <TableCell>{""}</TableCell>
+                    <TableCell>{""}</TableCell>
+                    <TableCell>{""}</TableCell>
+                    <TableCell>{""}</TableCell>
+                    <TableCell>{""}</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -442,10 +491,12 @@ const CategoryManagement: React.FC = () => {
                 Trang {currentPage} / {totalPages}
               </span>
               <Button
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
               >
                 Sau
               </Button>
@@ -468,9 +519,9 @@ const CategoryManagement: React.FC = () => {
             >
               Tên danh mục
             </label>
-            <Input 
-              id="name" 
-              placeholder="VD: Phát triển web" 
+            <Input
+              id="name"
+              placeholder="VD: Phát triển web"
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
             />
@@ -534,8 +585,8 @@ const CategoryManagement: React.FC = () => {
             >
               Tên danh mục
             </label>
-            <Input 
-              id="edit-name" 
+            <Input
+              id="edit-name"
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
             />
@@ -600,9 +651,9 @@ const CategoryManagement: React.FC = () => {
             >
               Tên danh mục con
             </label>
-            <Input 
-              id="sub-name" 
-              placeholder="VD: Frontend Development" 
+            <Input
+              id="sub-name"
+              placeholder="VD: Frontend Development"
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
             />
@@ -621,7 +672,7 @@ const CategoryManagement: React.FC = () => {
               onChange={(e) => setCategoryDescription(e.target.value)}
             />
           </div>
-          
+
           <div className="pt-2">
             <p className="text-sm text-gray-600">
               Danh mục này sẽ được thêm vào bên dưới danh mục cha đã chọn.
@@ -629,7 +680,10 @@ const CategoryManagement: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
-            <Button variant="outline" onClick={() => setIsAddSubcategoryModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddSubcategoryModalOpen(false)}
+            >
               Hủy
             </Button>
             <Button onClick={handleCreateCategory}>Thêm danh mục con</Button>
@@ -641,7 +695,9 @@ const CategoryManagement: React.FC = () => {
       <Modal
         isOpen={isSubcategoriesModalOpen}
         onClose={() => setIsSubcategoriesModalOpen(false)}
-        title={`Danh mục con của: ${selectedCategoryForSubcategories?.name || ''}`}
+        title={`Danh mục con của: ${
+          selectedCategoryForSubcategories?.name || ""
+        }`}
       >
         <div className="space-y-4">
           {subcategoryError && (
@@ -654,7 +710,9 @@ const CategoryManagement: React.FC = () => {
           {loadingSubcategories ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-              <span className="ml-2 text-gray-500">Đang tải danh mục con...</span>
+              <span className="ml-2 text-gray-500">
+                Đang tải danh mục con...
+              </span>
             </div>
           ) : (
             <>
@@ -663,10 +721,30 @@ const CategoryManagement: React.FC = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mô tả</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
-                        <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Tên
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Mô tả
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Slug
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Hành động
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -675,13 +753,17 @@ const CategoryManagement: React.FC = () => {
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center">
                               <Folder className="h-4 w-4 text-gray-400 mr-2" />
-                              <span className="text-sm font-medium text-gray-900">{subcategory.name}</span>
+                              <span className="text-sm font-medium text-gray-900">
+                                {subcategory.name}
+                              </span>
                             </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate">
                             {subcategory.description || "Không có mô tả"}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">{subcategory.slug}</td>
+                          <td className="px-4 py-3 text-sm text-gray-500">
+                            {subcategory.slug}
+                          </td>
                           <td className="px-4 py-3 whitespace-nowrap text-center">
                             <div className="flex items-center justify-center space-x-2">
                               <Button
@@ -699,7 +781,9 @@ const CategoryManagement: React.FC = () => {
                                 variant="outline"
                                 size="sm"
                                 className="text-red-600 border-red-200 hover:bg-red-50"
-                                onClick={() => handleDeleteSubcategory(subcategory._id)}
+                                onClick={() =>
+                                  handleDeleteSubcategory(subcategory._id)
+                                }
                                 icon={<Trash2 className="h-3.5 w-3.5" />}
                               >
                                 Xóa
@@ -713,13 +797,17 @@ const CategoryManagement: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <p className="text-gray-500">Danh mục này chưa có danh mục con nào.</p>
-                  <Button 
+                  <p className="text-gray-500">
+                    Danh mục này chưa có danh mục con nào.
+                  </p>
+                  <Button
                     variant="outline"
                     className="mt-4"
                     onClick={() => {
                       setIsSubcategoriesModalOpen(false);
-                      openAddSubcategoryModal(selectedCategoryForSubcategories?._id || "");
+                      openAddSubcategoryModal(
+                        selectedCategoryForSubcategories?._id || ""
+                      );
                     }}
                     icon={<PlusCircle className="h-4 w-4 mr-1" />}
                   >
@@ -732,11 +820,13 @@ const CategoryManagement: React.FC = () => {
 
           <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
             {subcategories.length > 0 && (
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   setIsSubcategoriesModalOpen(false);
-                  openAddSubcategoryModal(selectedCategoryForSubcategories?._id || "");
+                  openAddSubcategoryModal(
+                    selectedCategoryForSubcategories?._id || ""
+                  );
                 }}
                 icon={<PlusCircle className="h-4 w-4" />}
               >
