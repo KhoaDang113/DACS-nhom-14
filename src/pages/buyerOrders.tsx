@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
-import { Clock, CheckCircle, ShoppingBag, AlertCircle, Search, Filter } from "lucide-react";
+import {
+  Clock,
+  CheckCircle,
+  ShoppingBag,
+  AlertCircle,
+  Search,
+  Filter,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // Định nghĩa các trạng thái có thể có của đơn hàng
-type OrderStatus = "pending" | "approved" | "completed" | "cancelled";
+type OrderStatus = "pending" | "approved" | "completed" | "canceled";
 
 // Định nghĩa type cho đơn hàng
 interface Order {
@@ -15,10 +22,12 @@ interface Order {
   status: OrderStatus;
   createdAt: string;
   cancelRequestId?: string;
-  price: number | {
-    $numberDecimal?: number | string;
-    _id?: string;
-  };
+  price:
+    | number
+    | {
+        $numberDecimal?: number | string;
+        _id?: string;
+      };
   // status: string;
   // createdAt: string;
   gigId?: string; // ID của dịch vụ
@@ -49,17 +58,20 @@ export default function BuyerOrdersPage() {
 
   // Fetch đơn hàng từ API
   useEffect(() => {
-  const fetchOrders = async () => {
+    const fetchOrders = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/order/get-list", {
-          withCredentials: true,
-          params: { page: pagination?.currentPage || 1 }
-        });
+        const response = await axios.get(
+          "http://localhost:5000/api/order/get-list",
+          {
+            withCredentials: true,
+            params: { page: pagination?.currentPage || 1 },
+          }
+        );
 
         if (response.data.error === false) {
           console.log("Đơn hàng:", response.data.orders);
-          
+
           setOrders(response.data.orders);
           setPagination(response.data.pagination);
         } else {
@@ -77,36 +89,37 @@ export default function BuyerOrdersPage() {
   }, [pagination?.currentPage]);
 
   // Lọc đơn hàng theo trạng thái và từ khóa tìm kiếm
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     // Kiểm tra trạng thái đơn hàng
     let statusMatch = filter === "all";
-    
+
     if (filter === "pending") {
       statusMatch = order.status === "pending";
     } else if (filter === "approved") {
       statusMatch = order.status === "approved";
     } else if (filter === "completed") {
       statusMatch = order.status === "completed";
-    } else if (filter === "cancelled") {
-      statusMatch = order.status === "cancelled";
+    } else if (filter === "canceled") {
+      statusMatch = order.status === "canceled";
     }
-    
+
     // Kiểm tra từ khóa tìm kiếm
-    const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          order._id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch =
+      order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order._id.toLowerCase().includes(searchTerm.toLowerCase());
+
     return statusMatch && matchesSearch;
   });
 
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('vi-VN', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -115,51 +128,51 @@ export default function BuyerOrdersPage() {
     if (price === undefined || price === null) {
       return "Không có thông tin";
     }
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(Number(price));
   };
 
   // Icon và màu sắc cho trạng thái
   const getStatusInfo = (status: string) => {
-    switch(status) {
+    switch (status) {
       case "pending":
-        return { 
-          icon: <Clock className="h-5 w-5" />, 
-          text: "Đang xử lý", 
-          color: "bg-yellow-100 text-yellow-800"
+        return {
+          icon: <Clock className="h-5 w-5" />,
+          text: "Đang xử lý",
+          color: "bg-yellow-100 text-yellow-800",
         };
       case "approved":
         return {
           icon: <CheckCircle className="h-5 w-5" />,
           text: "Đã xác nhận",
-          color: "bg-blue-100 text-blue-800"
+          color: "bg-blue-100 text-blue-800",
         };
       case "completed":
-        return { 
-          icon: <CheckCircle className="h-5 w-5" />, 
-          text: "Hoàn tất", 
-          color: "bg-green-100 text-green-800"
+        return {
+          icon: <CheckCircle className="h-5 w-5" />,
+          text: "Hoàn tất",
+          color: "bg-green-100 text-green-800",
         };
-      case "cancelled":
-        return { 
-          icon: <AlertCircle className="h-5 w-5" />, 
-          text: "Đã hủy", 
-          color: "bg-red-100 text-red-800"
+      case "canceled":
+        return {
+          icon: <AlertCircle className="h-5 w-5" />,
+          text: "Đã hủy",
+          color: "bg-red-100 text-red-800",
         };
       default:
-        return { 
-          icon: <Clock className="h-5 w-5" />, 
-          text: "Đang xử lý", 
-          color: "bg-gray-100 text-gray-800"
+        return {
+          icon: <Clock className="h-5 w-5" />,
+          text: "Đang xử lý",
+          color: "bg-gray-100 text-gray-800",
         };
     }
   };
 
   // Chuyển đến trang khác
   const handlePageChange = (page: number) => {
-    setPagination(prev => prev ? {...prev, currentPage: page} : null);
+    setPagination((prev) => (prev ? { ...prev, currentPage: page } : null));
   };
 
   // Hàm điều hướng đến trang đánh giá hoặc xem đánh giá
@@ -196,7 +209,9 @@ export default function BuyerOrdersPage() {
 
     try {
       // Kiểm tra xem đơn hàng đã có yêu cầu hủy chưa
-      const orderToCancel = orders.find(order => order._id === selectedOrderId);
+      const orderToCancel = orders.find(
+        (order) => order._id === selectedOrderId
+      );
       if (orderToCancel?.cancelRequestId) {
         alert("Đơn hàng này đã có yêu cầu hủy");
         closeCancelModal();
@@ -207,24 +222,24 @@ export default function BuyerOrdersPage() {
       const response = await axios.post(
         `http://localhost:5000/api/order/request-cancel/${selectedOrderId}`,
         {
-          reason: cancelReason.trim()
+          reason: cancelReason.trim(),
         },
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
       if (!response.data.error) {
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
             order._id === selectedOrderId
-              ? { 
-                  ...order, 
+              ? {
+                  ...order,
                   status: response.data.order.status,
-                  cancelRequestId: response.data.order.cancelRequestId 
+                  cancelRequestId: response.data.order.cancelRequestId,
                 }
               : order
           )
@@ -233,21 +248,23 @@ export default function BuyerOrdersPage() {
         closeCancelModal();
       }
     } catch (err: unknown) {
-      const error = err as { 
-        response?: { 
-          data?: { 
-            message?: string; 
-            error?: boolean 
-          }; 
-          status?: number 
-        } 
+      const error = err as {
+        response?: {
+          data?: {
+            message?: string;
+            error?: boolean;
+          };
+          status?: number;
+        };
       };
-      console.error('Error canceling order:', error);
-      
+      console.error("Error canceling order:", error);
+
       if (error.response?.data?.message) {
         alert(error.response.data.message);
       } else if (error.response?.status === 400) {
-        alert("Không thể hủy đơn hàng. Vui lòng kiểm tra lại trạng thái đơn hàng.");
+        alert(
+          "Không thể hủy đơn hàng. Vui lòng kiểm tra lại trạng thái đơn hàng."
+        );
       } else {
         alert("Có lỗi xảy ra khi hủy đơn hàng. Vui lòng thử lại sau.");
       }
@@ -261,8 +278,10 @@ export default function BuyerOrdersPage() {
       <SignedIn>
         <div className="min-h-screen bg-gray-50 py-8">
           <div className="max-w-6xl mx-auto px-4">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Quản lý đơn hàng</h1>
-            
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">
+              Quản lý đơn hàng
+            </h1>
+
             {/* Tìm kiếm và bộ lọc */}
             <div className="bg-white rounded-lg shadow p-4 mb-6">
               <div className="flex flex-col md:flex-row md:items-center gap-4">
@@ -280,7 +299,7 @@ export default function BuyerOrdersPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Filter className="h-5 w-5 text-gray-500 mr-2" />
                   <span className="text-sm text-gray-500 mr-2">Lọc:</span>
@@ -326,9 +345,9 @@ export default function BuyerOrdersPage() {
                       Hoàn tất
                     </button>
                     <button
-                      onClick={() => setFilter("cancelled")}
+                      onClick={() => setFilter("canceled")}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        filter === "cancelled"
+                        filter === "canceled"
                           ? "bg-[#1dbf73] text-white"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
@@ -349,49 +368,77 @@ export default function BuyerOrdersPage() {
               ) : error ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Đã xảy ra lỗi</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Đã xảy ra lỗi
+                  </h3>
                   <p className="text-gray-500">{error}</p>
                 </div>
               ) : filteredOrders.length === 0 ? (
                 <div className="bg-white rounded-lg shadow p-8 text-center">
                   <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy đơn hàng nào</h3>
-                  <p className="text-gray-500">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Không tìm thấy đơn hàng nào
+                  </h3>
+                  <p className="text-gray-500">
+                    Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.
+                  </p>
                 </div>
               ) : (
                 filteredOrders.map((order) => {
                   const { icon, text, color } = getStatusInfo(order.status);
                   return (
-                    <div key={order._id} className="bg-white rounded-lg shadow overflow-hidden">
+                    <div
+                      key={order._id}
+                      className="bg-white rounded-lg shadow overflow-hidden"
+                    >
                       <div className="p-4 border-b border-gray-200">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900">{order.title}</h3>
-                            <p className="text-sm text-gray-500">ID Đơn hàng: {order._id}</p>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {order.title}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              ID Đơn hàng: {order._id}
+                            </p>
                           </div>
-                          <div className={`flex items-center px-3 py-1 rounded-full ${color}`}>
+                          <div
+                            className={`flex items-center px-3 py-1 rounded-full ${color}`}
+                          >
                             {icon}
-                            <span className="ml-1 text-sm font-medium">{text}</span>
+                            <span className="ml-1 text-sm font-medium">
+                              {text}
+                            </span>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="p-4">
                         <div className="flex flex-col md:flex-row justify-between mb-4">
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Ngày đặt hàng</p>
-                            <p className="font-medium">{formatDate(order.createdAt)}</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              Ngày đặt hàng
+                            </p>
+                            <p className="font-medium">
+                              {formatDate(order.createdAt)}
+                            </p>
                           </div>
-                          
+
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Tổng giá</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              Tổng giá
+                            </p>
                             <p className="text-lg font-bold text-[#1dbf73]">
                               {(() => {
-                                if (typeof order.price === 'number') {
+                                if (typeof order.price === "number") {
                                   return formatPrice(order.price);
-                                } else if (order.price && typeof order.price === 'object') {
+                                } else if (
+                                  order.price &&
+                                  typeof order.price === "object"
+                                ) {
                                   if (order.price.$numberDecimal) {
-                                    return formatPrice(order.price.$numberDecimal);
+                                    return formatPrice(
+                                      order.price.$numberDecimal
+                                    );
                                   }
                                 }
                                 return "Không có thông tin";
@@ -399,20 +446,21 @@ export default function BuyerOrdersPage() {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end space-x-3">
                           <button className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                             Chi tiết
                           </button>
-                          
-                          {(order.status === "pending" || order.status === "approved") && (
+
+                          {(order.status === "pending" ||
+                            order.status === "approved") && (
                             <div className="flex items-center space-x-2">
                               {order.cancelRequestId ? (
                                 <div className="px-4 py-2 bg-orange-50 border border-orange-300 rounded-md text-sm font-medium text-orange-700">
                                   Đã gửi yêu cầu hủy
                                 </div>
                               ) : (
-                                <button 
+                                <button
                                   onClick={() => openCancelModal(order._id)}
                                   className="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-100 flex items-center"
                                 >
@@ -421,9 +469,9 @@ export default function BuyerOrdersPage() {
                               )}
                             </div>
                           )}
-                          
+
                           {order.status === "completed" && (
-                            <button 
+                            <button
                               onClick={() => handleReviewClick(order)}
                               className="px-4 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100"
                             >
@@ -436,12 +484,15 @@ export default function BuyerOrdersPage() {
                   );
                 })
               )}
-              
+
               {/* Phân trang */}
               {pagination && pagination.totalPages > 1 && (
                 <div className="flex justify-center mt-6">
                   <div className="flex space-x-1">
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                    {Array.from(
+                      { length: pagination.totalPages },
+                      (_, i) => i + 1
+                    ).map((page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
@@ -465,7 +516,9 @@ export default function BuyerOrdersPage() {
         {showCancelModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-              <h3 className="text-lg font-medium mb-4">Xác nhận hủy đơn hàng</h3>
+              <h3 className="text-lg font-medium mb-4">
+                Xác nhận hủy đơn hàng
+              </h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Lý do hủy đơn hàng
