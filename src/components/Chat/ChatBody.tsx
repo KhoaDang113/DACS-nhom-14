@@ -5,6 +5,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 import EmojiPicker from "emoji-picker-react";
+import { useUser } from "../../contexts/UserContext";
 // import { useUnreadMessages } from "../../contexts/UnreadMessagesContext";
 
 dayjs.extend(calendar);
@@ -32,19 +33,17 @@ type EmojiClickData = {
   unified: string;
 };
 
-type CurrentUser = {
-  user: {
-    _id: string;
-    fullName: string;
-    avatar: string;
-  };
-};
+interface Socket {
+  emit: (event: string, data: any) => void;
+  on: (event: string, callback: (data: any) => void) => void;
+  off: (event: string) => void;
+}
 
-export default function ChatBody({ socket }) {
+export default function ChatBody({ socket }: { socket: Socket }) {
   const [messageInput, setMessageInput] = useState("");
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [hasSentMessage, setHasSentMessage] = useState(false);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const { user } = useUser();
   const [freelancer, setFreelancer] = useState<User | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -70,21 +69,6 @@ export default function ChatBody({ socket }) {
       setHasSentMessage(false);
     }
   }, [chatMessages, hasSentMessage]);
-
-  // Fetch current user
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/user/me`, {
-          withCredentials: true,
-        });
-        setCurrentUser(response.data);
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
 
   // Fetch conversation
   useEffect(() => {
@@ -115,7 +99,7 @@ export default function ChatBody({ socket }) {
       setHasSentMessage(true);
 
       // Increment unread count if message is from other user
-      // if (message.userId !== currentUser?.user?._id) {
+      // if (message.userId !== currentUser?.user.user?._id) {
       //   incrementUnread(id);
       // }
     });
@@ -207,8 +191,8 @@ export default function ChatBody({ socket }) {
         conversationId: id,
         message: savedMessage.content || "Đã gửi một hình ảnh",
         sender: {
-          _id: currentUser?.user?._id,
-          fullName: currentUser?.user?.name,
+          _id: user.user?._id,
+          fullName: user.user?.name,
         },
         receiver: {
           _id: freelancer?._id,
@@ -313,8 +297,8 @@ export default function ChatBody({ socket }) {
         <div className="flex-1 p-4 h-full overflow-y-scroll scrollbar-hide">
           <div className="space-y-6">
             {(searchQuery ? filteredMessages : chatMessages).map((message) => {
-              const isUser = message?.userId === currentUser?.user?._id;
-              const sender = isUser ? currentUser?.user : freelancer;
+              const isUser = message?.userId === user.user?._id;
+              const sender = isUser ? user?.user : freelancer;
               return (
                 <div
                   key={message._id}
