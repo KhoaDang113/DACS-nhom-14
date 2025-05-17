@@ -186,7 +186,7 @@ function Dashboard() {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 relative z-10">
                   👋 Chào mừng đến với JopViet
                 </h1>
-                <p className="text-sm sm:text-base md:text-lg opacity-95 relative z-10 max-w-2xl">
+                <p className="text-sm sm:text-base md:text-lg opacity-95 relative z-10 max-w-2xl whitespace-nowrap">
                   Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc, tạo sản phẩm mang dấu ấn cá nhân!
                 </p>
               </div>
@@ -240,7 +240,7 @@ function Dashboard() {
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                           </svg>
-                          Grid
+                          Lưới
                         </span>
                       </button>
                       <button
@@ -255,7 +255,7 @@ function Dashboard() {
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                           </svg>
-                          List
+                          Danh sách
                         </span>
                       </button>
                     </div>

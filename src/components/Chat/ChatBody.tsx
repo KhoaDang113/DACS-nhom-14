@@ -1,13 +1,4 @@
-import {
-  PinIcon,
-  MoreVerticalIcon,
-  ArrowUpIcon,
-  SmileIcon,
-  ImageIcon,
-  SendIcon,
-  XCircleIcon,
-  SearchIcon,
-} from "lucide-react";
+import { PinIcon, MoreVerticalIcon, SmileIcon, ImageIcon, SendIcon, XCircleIcon, SearchIcon, FileIcon } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
@@ -63,6 +54,7 @@ export default function ChatBody({ socket }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
   // const { incrementUnread } = useUnreadMessages();
   const { id } = useParams();
 
@@ -162,12 +154,16 @@ export default function ChatBody({ socket }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (file.type.startsWith('image/')) {
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setSelectedFile(file);
+      }
     }
   };
 
@@ -411,6 +407,12 @@ export default function ChatBody({ socket }) {
             accept="image/*"
             className="hidden"
           />
+          <input
+            type="file"
+            ref={documentInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
           <div className="flex justify-between">
             <div className="flex gap-2 relative">
               <button
@@ -432,6 +434,12 @@ export default function ChatBody({ socket }) {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <ImageIcon className="h-5 w-5 text-gray-500" />
+              </button>
+              <button
+                className="p-2 rounded-full hover:bg-gray-100"
+                onClick={() => documentInputRef.current?.click()}
+              >
+                <FileIcon className="h-5 w-5 text-gray-500" />
               </button>
             </div>
             <button
