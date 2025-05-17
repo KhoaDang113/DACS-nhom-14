@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import socket from "../lib/socket";
 import { useNotification } from "../contexts/NotificationContext";
-import axios from "axios";
+import { useUser } from "../contexts/UserContext";
 import { useLocation } from "react-router-dom";
 
 interface Notification {
@@ -29,33 +29,36 @@ const NotificationBell: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { showNotification } = useNotification();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useUser();
   const location = useLocation();
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const response = await axios.get(`http://localhost:5000/api/user/me`, {
-        withCredentials: true,
-      });
-      setUser(response.data.user);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
     };
-    fetchUser();
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
     if (!user) return;
 
-    // Lắng nghe sự kiện tin nhắn mới
     socket.on("return_new_message", (data) => {
-      // Lấy conversationId từ URL hiện tại
       const currentConversationId = location.pathname.split("/").pop();
 
-      // Kiểm tra nếu người nhận là người dùng hiện tại và không ở trong cuộc trò chuyện đó
       if (
-        data.receiver._id === user._id &&
+        data.receiver._id === user.user._id &&
         data.conversationId !== currentConversationId
       ) {
-        // Thêm thông báo mới
         const newNotification: Notification = {
           id: Date.now(),
           title: "Tin nhắn mới",
@@ -68,8 +71,6 @@ const NotificationBell: React.FC = () => {
         };
 
         setNotifications((prev) => [newNotification, ...prev]);
-
-        // Hiển thị thông báo popup
         showNotification(`${data.sender.fullName}: ${data.message}`, "success");
       }
     });
@@ -80,7 +81,7 @@ const NotificationBell: React.FC = () => {
   }, [user, showNotification, location]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={notificationRef}>
       <button
         onClick={() => setShowNotifications(!showNotifications)}
         className="relative flex items-center"

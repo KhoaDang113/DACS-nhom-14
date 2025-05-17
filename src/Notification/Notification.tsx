@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle2, XCircle, X } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { AlertCircle, CheckCircle2, XCircle, X } from "lucide-react";
 
-type NotificationType = 'success' | 'error' | 'warning';
+type NotificationType = "success" | "error" | "warning";
 
 interface NotificationProps {
   message: string;
@@ -10,7 +10,12 @@ interface NotificationProps {
   onClose?: () => void;
 }
 
-const Notification = ({ message, type, duration = 3000, onClose }: NotificationProps) => {
+const Notification = ({
+  message,
+  type,
+  duration = 3000,
+  onClose,
+}: NotificationProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -31,11 +36,11 @@ const Notification = ({ message, type, duration = 3000, onClose }: NotificationP
 
   const getIcon = () => {
     switch (type) {
-      case 'success':
+      case "success":
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'error':
+      case "error":
         return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'warning':
+      case "warning":
         return <AlertCircle className="h-5 w-5 text-yellow-500" />;
       default:
         return null;
@@ -44,27 +49,27 @@ const Notification = ({ message, type, duration = 3000, onClose }: NotificationP
 
   const getBgColor = () => {
     switch (type) {
-      case 'success':
-        return 'bg-green-100 border border-green-200';
-      case 'error':
-        return 'bg-red-100 border border-red-200';
-      case 'warning':
-        return 'bg-yellow-100 border border-yellow-200';
+      case "success":
+        return "bg-green-100 border border-green-200";
+      case "error":
+        return "bg-red-100 border border-red-200";
+      case "warning":
+        return "bg-yellow-100 border border-yellow-200";
       default:
-        return 'bg-gray-100 border border-gray-200';
+        return "bg-gray-100 border border-gray-200";
     }
   };
 
   const getTextColor = () => {
     switch (type) {
-      case 'success':
-        return 'text-green-800';
-      case 'error':
-        return 'text-red-800';
-      case 'warning':
-        return 'text-yellow-800';
+      case "success":
+        return "text-green-800";
+      case "error":
+        return "text-red-800";
+      case "warning":
+        return "text-yellow-800";
       default:
-        return 'text-gray-800';
+        return "text-gray-800";
     }
   };
 
@@ -84,4 +89,4 @@ const Notification = ({ message, type, duration = 3000, onClose }: NotificationP
   );
 };
 
-export default Notification; 
+export default Notification;
