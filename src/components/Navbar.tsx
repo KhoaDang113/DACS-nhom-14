@@ -114,7 +114,7 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
-          {isSignedIn && <NotificationBell unreadCount={2} />}
+          {isSignedIn && <NotificationBell currentUser={user} />}
           {navLinks.map((link, index) => (
             <div key={index} className="flex items-center">
               <Link
@@ -297,7 +297,7 @@ export default function Navbar() {
                     Tạo dịch vụ
                     {isLocked && <Lock size={14} className="ml-auto" />}
                   </Link>
-                  
+
                   <Link
                     to={isLocked ? "#" : "/seller-gigs"}
                     className={`block px-4 py-2 text-sm ${
@@ -364,7 +364,7 @@ export default function Navbar() {
                     </svg>
                     Quản lý bán hàng
                     {isLocked && <Lock size={14} className="ml-auto" />}
-                  </Link>                  
+                  </Link>
                 </div>
               )}
             </div>
