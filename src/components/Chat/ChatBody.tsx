@@ -210,7 +210,14 @@ export default function ChatBody({ socket }) {
       socket.emit("new_message", {
         conversationId: id,
         message: savedMessage.content || "Đã gửi một hình ảnh",
-        sender: currentUser?.user?._id,
+        sender: {
+          _id: currentUser?.user?._id,
+          fullName: currentUser?.user?.name,
+        },
+        receiver: {
+          _id: freelancer?._id,
+          fullName: freelancer?.name,
+        },
       });
 
       setMessageInput("");
