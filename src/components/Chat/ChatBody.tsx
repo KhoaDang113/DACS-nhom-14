@@ -338,9 +338,6 @@ export default function ChatBody({ socket }) {
                       <span className="text-xs text-gray-500">
                         {dayjs(message.createdAt).calendar()}
                       </span>
-                      <button className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ArrowUpIcon className="h-3 w-3 text-gray-400" />
-                      </button>
                     </div>
                     <div
                       className={`inline-block max-w-[80%] px-4 py-2 rounded-lg ${

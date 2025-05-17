@@ -273,260 +273,267 @@ const SellerGigManager: React.FC = () => {
       <ToastContainer />
       <Tooltip.Provider>
         {/* Desktop/Tablet View */}
-        <div className="hidden md:block overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  STT
-                </th>
-                <th
-                  scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Dịch vụ
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Mô tả
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  <div className="flex items-center justify-center">
-                    <Eye className="w-4 h-4 mr-1" />
-                    Lượt xem
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  <div className="flex items-center justify-center">
-                    <Package className="w-4 h-4 mr-1" />
-                    Đơn hàng
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Trạng thái
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {gigs.map((gig, index) => (
-                <tr
-                  key={gig._id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-4 pl-4 pr-3 text-sm text-gray-500">
-                    {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
-                  </td>
-                  <td className="py-4 pl-4 pr-3">
-                    <div className="flex items-center">
-                      <div className="h-14 w-14 flex-shrink-0">
-                        <img
-                          className="h-14 w-14 rounded-md object-cover shadow-sm"
-                          src={gig.media[0]?.url}
-                          alt={gig.title}
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <Tooltip.Root>
-                          <Tooltip.Trigger asChild>
-                            <div className="font-medium text-gray-900 line-clamp-1 max-w-[250px] cursor-default">
-                              {gig.title}
-                            </div>
-                          </Tooltip.Trigger>
-                          <Tooltip.Portal>
-                            <Tooltip.Content
-                              className="bg-black text-white px-2 py-1 rounded text-xs"
-                              side="top"
-                              sideOffset={4}
-                            >
-                              {gig.title}
-                              <Tooltip.Arrow className="fill-black" />
-                            </Tooltip.Content>
-                          </Tooltip.Portal>
-                        </Tooltip.Root>
-                      </div>
+        <div className="hidden md:block overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]"
+                  >
+                    STT
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]"
+                  >
+                    Dịch vụ
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]"
+                  >
+                    Mô tả
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]"
+                  >
+                    <div className="flex items-center justify-center">
+                      <Eye className="w-4 h-4 mr-1" />
+                      Lượt xem
                     </div>
-                  </td>
-                  <td className="px-3 py-4">
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <div className="text-sm text-gray-500 line-clamp-2 max-w-[250px] cursor-default">
-                          {gig.description}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]"
+                  >
+                    <div className="flex items-center justify-center">
+                      <Package className="w-4 h-4 mr-1" />
+                      Đơn hàng
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]"
+                  >
+                    Trạng thái
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[18%]"
+                  >
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {gigs.map((gig, index) => (
+                  <tr
+                    key={gig._id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-4 pl-4 pr-3 text-sm text-gray-500 whitespace-nowrap">
+                      {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
+                    </td>
+                    <td className="py-4 pl-4 pr-3">
+                      <div className="flex items-center">
+                        <div className="h-12 w-12 flex-shrink-0">
+                          <img
+                            className="h-12 w-12 rounded-md object-cover shadow-sm"
+                            src={gig.media[0]?.url}
+                            alt={gig.title}
+                          />
                         </div>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Content
-                          className="bg-black text-white px-2 py-1 rounded text-xs"
-                          side="top"
-                          sideOffset={4}
+                        <div className="ml-3 max-w-[200px]">
+                          <Tooltip.Root>
+                            <Tooltip.Trigger asChild>
+                              <div className="font-medium text-gray-900 line-clamp-1 cursor-default">
+                                {gig.title}
+                              </div>
+                            </Tooltip.Trigger>
+                            <Tooltip.Portal>
+                              <Tooltip.Content
+                                className="bg-black text-white px-2 py-1 rounded text-xs max-w-md"
+                                side="top"
+                                sideOffset={4}
+                              >
+                                {gig.title}
+                                <Tooltip.Arrow className="fill-black" />
+                              </Tooltip.Content>
+                            </Tooltip.Portal>
+                          </Tooltip.Root>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-4">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <div className="text-sm text-gray-500 line-clamp-2 max-w-[250px] cursor-default">
+                            {gig.description}
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="bg-black text-white px-2 py-1 rounded text-xs max-w-md"
+                            side="top"
+                            sideOffset={4}
+                          >
+                            {gig.description}
+                            <Tooltip.Arrow className="fill-black" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500 text-center whitespace-nowrap">
+                      {gig.views || 0}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500 text-center whitespace-nowrap">
+                      {gig.orders || 0}
+                    </td>
+                    <td className="px-3 py-4 text-center whitespace-nowrap">
+                      {getStatusBadge(gig.status)}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-right whitespace-nowrap">
+                      <div className="flex items-center justify-center space-x-1.5">
+                        <button
+                          onClick={() => handleEdit(gig._id)}
+                          className="inline-flex items-center justify-center px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none transition"
+                          title="Sửa"
                         >
-                          {gig.description}
-                          <Tooltip.Arrow className="fill-black" />
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </td>
-                  <td className="px-3 py-4 text-sm text-gray-500 text-center">
-                    {gig.views || 0}
-                  </td>
-                  <td className="px-3 py-4 text-sm text-gray-500 text-center">
-                    {gig.orders || 0}
-                  </td>
-                  <td className="px-3 py-4 text-center">
-                    {getStatusBadge(gig.status)}
-                  </td>
-                  <td className="px-3 py-4 text-sm text-gray-500 text-right">
-                    <div className="flex items-center justify-center space-x-3">
+                          <Edit className="w-3 h-3 mr-1" />
+                          Sửa
+                        </button>
+                        <button
+                          onClick={() => handleHideGig(gig._id)}
+                          className="inline-flex items-center justify-center px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none transition"
+                          title={gig.status === "hidden" ? "Hiện" : "Ẩn"}
+                        >
+                          {gig.status === "hidden" ? (
+                            <Eye className="w-3 h-3 mr-1" />
+                          ) : (
+                            <EyeOff className="w-3 h-3 mr-1" />
+                          )}
+                          {gig.status === "hidden" ? "Hiện" : "Ẩn"}
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(gig._id)}
+                          className="inline-flex items-center justify-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none transition"
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block md:hidden">
+          <div className="grid grid-cols-1 gap-4 w-full">
+            {gigs.map((gig) => (
+              <div
+                key={gig._id}
+                className="bg-white p-4 rounded-lg shadow w-full"
+              >
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div className="h-20 w-20 flex-shrink-0">
+                      <img
+                        className="h-20 w-20 rounded-md object-cover"
+                        src={gig.media[0]?.url}
+                        alt={gig.title}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <p className="text-sm font-medium text-gray-900 line-clamp-2 cursor-default">
+                            {gig.title}
+                          </p>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="bg-black text-white px-2 py-1 rounded text-xs max-w-xs"
+                            side="top"
+                            sideOffset={4}
+                          >
+                            {gig.title}
+                            <Tooltip.Arrow className="fill-black" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <p className="text-sm text-gray-500 line-clamp-2 mt-1 cursor-default">
+                            {gig.description}
+                          </p>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="bg-black text-white px-2 py-1 rounded text-xs max-w-xs"
+                            side="top"
+                            sideOffset={4}
+                          >
+                            {gig.description}
+                            <Tooltip.Arrow className="fill-black" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center p-2 bg-gray-50 rounded">
+                      <Eye className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{gig.views || 0} lượt xem</span>
+                    </div>
+                    <div className="flex items-center p-2 bg-gray-50 rounded">
+                      <Package className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{gig.orders || 0} đơn hàng</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div>{getStatusBadge(gig.status)}</div>
+                    <div className="grid grid-cols-3 gap-2 mt-3">
                       <button
                         onClick={() => handleEdit(gig._id)}
-                        className="inline-flex items-center justify-center w-20 px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none transition"
+                        className="inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                       >
-                        <Edit className="w-4 h-4 mr-1" />
+                        <Edit className="w-3 h-3 mr-1" />
                         Sửa
                       </button>
                       <button
                         onClick={() => handleHideGig(gig._id)}
-                        className="inline-flex items-center justify-center w-20 px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none transition"
+                        className="inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
                       >
                         {gig.status === "hidden" ? (
-                          <Eye className="w-4 h-4 mr-1" />
+                          <Eye className="w-3 h-3 mr-1" />
                         ) : (
-                          <EyeOff className="w-4 h-4 mr-1" />
+                          <EyeOff className="w-3 h-3 mr-1" />
                         )}
                         {gig.status === "hidden" ? "Hiện" : "Ẩn"}
                       </button>
                       <button
                         onClick={() => openDeleteModal(gig._id)}
-                        className="inline-flex items-center justify-center w-20 px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none transition"
+                        className="inline-flex items-center justify-center px-2 py-1.5 text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200"
                       >
-                        <Trash2 className="w-4 h-4 mr-1" />
+                        <Trash2 className="w-3 h-3 mr-1" />
                         Xóa
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile View */}
-        <div className="grid grid-cols-1 gap-4 md:hidden w-full">
-          {gigs.map((gig) => (
-            <div
-              key={gig._id}
-              className="bg-white p-4 rounded-lg shadow space-y-3 w-full"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="h-20 w-20 flex-shrink-0">
-                    <img
-                      className="h-20 w-20 rounded-md object-cover"
-                      src={gig.media[0]?.url}
-                      alt={gig.title}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1 max-w-[250px] cursor-default">
-                          {gig.title}
-                        </p>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Content
-                          className="bg-black text-white px-2 py-1 rounded text-xs"
-                          side="top"
-                          sideOffset={4}
-                        >
-                          {gig.title}
-                          <Tooltip.Arrow className="fill-black" />
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <p className="text-sm text-gray-500 line-clamp-2 cursor-default">
-                          {gig.description}
-                        </p>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Content
-                          className="bg-black text-white px-2 py-1 rounded text-xs"
-                          side="top"
-                          sideOffset={4}
-                        >
-                          {gig.description}
-                          <Tooltip.Arrow className="fill-black" />
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
                   </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center justify-center p-2 bg-gray-50 rounded">
-                  <Eye className="w-4 h-4 mr-1 text-gray-500" />
-                  <span>{gig.views || 0} lượt xem</span>
-                </div>
-                <div className="flex items-center justify-center p-2 bg-gray-50 rounded">
-                  <Package className="w-4 h-4 mr-1 text-gray-500" />
-                  <span>{gig.orders || 0} đơn hàng</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>{getStatusBadge(gig.status)}</div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(gig._id)}
-                    className="inline-flex items-center justify-center w-16 px-1.5 py-1 text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleHideGig(gig._id)}
-                    className="inline-flex items-center justify-center w-16 px-1.5 py-1 text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200"
-                  >
-                    {gig.status === "hidden" ? (
-                      <Eye className="w-3 h-3 mr-1" />
-                    ) : (
-                      <EyeOff className="w-3 h-3 mr-1" />
-                    )}
-                    {gig.status === "hidden" ? "Hiện" : "Ẩn"}
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(gig._id)}
-                    className="inline-flex items-center justify-center w-16 px-1.5 py-1 text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200"
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </Tooltip.Provider>
 
