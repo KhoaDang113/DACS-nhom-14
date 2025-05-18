@@ -192,7 +192,7 @@ function Dashboard() {
               </div>
 
               {/* Filter buttons */}
-              <div className="flex overflow-x-auto pb-2 mb-4 gap-2 no-scrollbar">
+              <div className="flex overflow-x-auto pb-2 mb-4 gap-2 scrollbar-hide">
                 <button 
                   onClick={() => filterByCategory("all")}
                   className={`px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 text-sm font-medium w-32 text-center ${
@@ -279,9 +279,7 @@ function Dashboard() {
                 ) : filteredGigs.length > 0 ? (
                   <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
                     {filteredGigs.map((gig, index) => (
-                      <div
-                        key={gig._id}
-                        className="opacity-0 animate-fadeIn"
+                      <div key={gig._id} className="opacity-0 animate-fade-in"
                         style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
                       >
                         <GigCard
@@ -324,7 +322,7 @@ function Dashboard() {
               
               {/* Video Message Alert */}
               {videoMessage && (
-                <div className="fixed bottom-24 right-6 bg-blue-600 text-white py-2 px-4 rounded-xl shadow-lg z-50 animate-slideIn">
+                <div className="fixed bottom-24 right-6 bg-blue-600 text-white py-2 px-4 rounded-xl shadow-lg z-50 animate-slide-in">
                   <div className="flex items-center gap-2">
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -341,48 +339,6 @@ function Dashboard() {
       <SignedOut>
         <RedirectToSignIn />
       </SignedOut>
-
-      {/* CSS cho các animation */}
-      <style jsx global>{`
-        /* Ẩn thanh cuộn cho các overflow-x */
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        
-        /* Animation cho heart icon */
-        @keyframes heartBeat {
-          0% { transform: scale(1); }
-          14% { transform: scale(1.3); }
-          28% { transform: scale(1); }
-          42% { transform: scale(1.3); }
-          70% { transform: scale(1); }
-        }
-        .animate-heart {
-          animation: heartBeat 1s ease-in-out;
-        }
-        
-        /* Animation cho fade-in của từng card */
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        
-        /* Animation cho slide-in của thông báo */
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
-        }
-      `}</style>
     </>
   );
 }

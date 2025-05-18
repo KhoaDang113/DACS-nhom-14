@@ -34,13 +34,14 @@ interface Gig {
   };
 }
 
-// Cập nhật interface GigCardProps để bổ sung prop isFavorited
+// Cập nhật interface GigCardProps để bổ sung prop isFavorited và onClick
 interface GigCardProps {
   gig: Gig;
   onFavorite?: (id: string) => void;
   onPlayVideo?: (videoUrl: string) => void;
   isFavorited?: boolean;
-  viewMode?: "grid" | "list"; // Thêm prop này
+  viewMode?: "grid" | "list";
+  onClick?: () => void;
 }
 
 // Hàm format giá trong Card.tsx
@@ -70,6 +71,7 @@ const GigCard: React.FC<GigCardProps> = ({
   gig,
   onFavorite,
   viewMode,
+  onClick,
 }) => {
   // Lấy trạng thái từ context
   const { isGigFavorited, toggleFavorite: toggleFavoriteContext } =
@@ -181,6 +183,7 @@ const GigCard: React.FC<GigCardProps> = ({
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={onClick}
       >
         {/* Media Slider */}
         <div

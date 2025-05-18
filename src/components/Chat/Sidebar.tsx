@@ -1,215 +1,179 @@
+import { useState, useEffect } from "react";
 import { SearchIcon } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth, useUser } from "@clerk/clerk-react";
-// import { useUnreadMessages } from "../../contexts/UnreadMessagesContext";
+import axios from "axios";
+import dayjs from "dayjs";
+import calendar from "dayjs/plugin/calendar";
 
-type User = {
-  _id: string;
-  fullName: string;
-  avatar: string;
-  isOnline?: boolean;
-};
+dayjs.extend(calendar);
+
 type Conversation = {
   _id: string;
-  user: User;
   lastMessage: string;
-  lastMessageSender: string;
-  updatedAt: Date;
-  unread?: boolean;
-};
-const formatTimeAgo = (date: string | Date) => {
-  return formatDistanceToNow(new Date(date), { addSuffix: true });
+  lastMessageSender?: string;
+  updatedAt: string;
+  user: {
+    _id: string;
+    fullName: string;
+    avatar: string;
+    isOnline?: boolean;
+  };
 };
 
-export default function Sidebar({ socket, currentUser }) {
+type UserType = {
+  user?: {
+    _id?: string;
+    name?: string;
+  };
+};
+
+type MessageData = {
+  conversationId: string;
+  sender: string;
+  message: string;
+  timestamp?: string;
+};
+
+interface SidebarProps {
+  socket: {
+    on: (event: string, callback: (data: MessageData) => void) => void;
+    off: (event: string) => void;
+  };
+  currentUser: UserType | null;
+  onSelectChat?: () => void;
+  isMobile?: boolean;
+}
+
+export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = false }: SidebarProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<
-    string | null
-  >(null);
-  const [searchConversation, setSearchConversation] = useState("");
-  // const { unreadCounts, resetUnread } = useUnreadMessages();
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const { isLoaded, isSignedIn } = useUser();
-  const { getToken } = useAuth();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const focu = () => {
-    inputRef.current?.focus();
-  };
 
-  const inboxNavigate = (conversation: Conversation) => {
-    setActiveConversationId(conversation._id);
-    // resetUnread(conversation._id);
-    navigate(`/inbox/${conversation._id}`);
-  };
-
-  useEffect(() => {
-    const fetchConversation = async () => {
-      // Chỉ thực hiện request khi Clerk đã tải xong và người dùng đã đăng nhập
-      if (!isLoaded || !isSignedIn) return;
-
-      // Thêm retry logic để tránh lỗi 401
-      let retried = false;
-
-      while (!retried) {
-        try {
-          const token = await getToken({ template: "TemplateClaim" });
-          if (!token) {
-            throw new Error("Không thể lấy token");
-          }
-
-          const response = await axios.get(
-            "http://localhost:5000/api/conversation/get-conversations",
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const data = await response.data.conversationList;
-          setConversations(data);
-          if (conversations) {
-            retried = true;
-          }
-          break; // Thoát vòng lặp nếu thành công
-        } catch (err) {
-          // Đợi 2 giây trước khi thử lại
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
+  const fetchConversations = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/conversation/get-conversations",
+        { withCredentials: true }
+      );
+      if (response.data?.conversationList) {
+        setConversations(response.data.conversationList);
       }
-    };
-
-    fetchConversation();
-  }, [isLoaded, isSignedIn, getToken]);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    }
+  };
 
   useEffect(() => {
-    socket.on("return_new_message", (data) => {
-      setConversations((prevConversations) => {
-        return prevConversations.map((conversation) => {
-          const isLastSender = data.sender === currentUser?.user?._id;
-          if (conversation._id === data.conversationId) {
-            return {
-              ...conversation,
-              lastMessage: data.message,
-              lastMessageSender: isLastSender ? "Me: " : "",
-              updatedAt: new Date(),
-            };
-          }
-          return conversation;
-        });
+    fetchConversations();
+
+    socket.on("return_new_message", (data: MessageData) => {
+      fetchConversations();
+
+      setConversations((prev) => {
+        const isCurrentUserSender = currentUser?.user?._id === data.sender;
+
+        const updated = prev.map((conv) =>
+          conv._id === data.conversationId
+            ? {
+                ...conv,
+                lastMessage: data.message,
+                lastMessageSender: isCurrentUserSender ? "Me: " : "",
+                updatedAt: new Date().toISOString(),
+              }
+            : conv
+        );
+
+        return updated.sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
       });
     });
 
     return () => {
       socket.off("return_new_message");
     };
-  }, [socket]);
+  }, [currentUser, socket]);
 
-  const filterConversation = conversations.filter((conversation) => {
-    return conversation.user.fullName
-      ?.toLowerCase()
-      .includes(searchConversation.toLowerCase().trim());
-  });
+  useEffect(() => {
+    const intervalId = setInterval(fetchConversations, 10000); // chỉnh lại 10 giây đúng với mô tả
+    return () => clearInterval(intervalId);
+  }, []);
 
-  const displayedConversations =
-    searchConversation.trim() === "" ? conversations : filterConversation;
-  // Hiển thị loading state khi Clerk chưa tải xong
-  if (!isLoaded) {
-    return (
-      <div className="w-80 border-r bg-gray-50 hidden md:block overflow-x-auto">
-        <div className="p-4 border-b flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">All messages</span>
-          </div>
-          <button className="p-1 rounded-full hover:bg-gray-200">
-            <SearchIcon className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-        <div className="h-[calc(100%-60px)] overflow-auto flex items-center justify-center">
-          <div className="animate-pulse text-gray-500">Loading...</div>
-        </div>
-      </div>
-    );
-  }
+  const filteredConversations = conversations.filter((conversation) =>
+    conversation.user.fullName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase().trim())
+  );
+
+  const handleConversationClick = (conversationId: string) => {
+    navigate(`/inbox/${conversationId}`);
+    if (isMobile && onSelectChat) onSelectChat();
+  };
 
   return (
-    <div className="w-80 border-r bg-gray-50 hidden md:block">
-      <div className="p-4 border-b flex justify-between items-center gap-2">
-        <button className="p-1 rounded-full hover:bg-gray-200">
-          <SearchIcon className="h-5 w-5 text-gray-500" onClick={focu} />
-        </button>
-        <input
-          type="text"
-          ref={inputRef}
-          placeholder="Tìm kiếm hội thoại..."
-          value={searchConversation}
-          onChange={(e) => setSearchConversation(e.target.value)}
-          className="w-full p-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+    <div className="w-full h-full border-r bg-white flex flex-col">
+      <div className="p-4 border-b">
+        <div className="text-lg font-semibold">Tin nhắn</div>
       </div>
-      <div className="h-[calc(100%-60px)] overflow-auto">
-        {displayedConversations.map((conversation) => (
-          <div
-            key={conversation._id}
-            onClick={() => inboxNavigate(conversation)}
-            className={`p-4 hover:bg-gray-100 cursor-pointer border-b transition-colors duration-200 ${
-              activeConversationId === conversation._id
-                ? "bg-blue-50 border-l-4 border-l-blue-500"
-                : ""
-            }`}
-          >
-            <div className="flex gap-3">
-              <div className="relative">
-                <div className="h-10 w-10 rounded-full overflow-hidden">
-                  <img
-                    src={conversation.user.avatar || "/placeholder.svg"}
-                    alt={conversation.user.fullName}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                {conversation.user.isOnline && (
-                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-1 ring-white"></span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <p
-                    className={`font-medium truncate ${
-                      activeConversationId === conversation._id
-                        ? "text-blue-600"
-                        : ""
-                    }`}
-                  >
-                    {conversation.user.fullName}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {/* {unreadCounts[conversation._id] > 0 && (
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                        {unreadCounts[conversation._id]}
+
+      <div className="p-3 border-b">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Tìm kiếm tin nhắn..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-2 pl-8 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {filteredConversations.length === 0 ? (
+          <div className="text-center py-4 text-gray-500">
+            Không có cuộc trò chuyện nào
+          </div>
+        ) : (
+          <div className="space-y-1 p-2">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation._id}
+                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+                onClick={() => handleConversationClick(conversation._id)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="h-10 w-10 rounded-full overflow-hidden">
+                      <img
+                        src={conversation.user.avatar || "/placeholder.svg"}
+                        alt={conversation.user.fullName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    {conversation.user.isOnline && (
+                      <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between">
+                      <span className="font-medium truncate">
+                        {conversation.user.fullName}
                       </span>
-                    )} */}
-                    <p className="text-xs text-gray-500">
-                      {formatTimeAgo(conversation.updatedAt)}
+                      <span className="text-xs text-gray-500">
+                        {dayjs(conversation.updatedAt).calendar()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 truncate">
+                      {conversation.lastMessageSender || ""}
+                      {conversation.lastMessage}
                     </p>
                   </div>
                 </div>
-                <p
-                  className={`text-sm truncate ${
-                    activeConversationId === conversation._id
-                      ? "text-blue-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {conversation.lastMessageSender}
-                  {conversation.lastMessage}
-                </p>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
