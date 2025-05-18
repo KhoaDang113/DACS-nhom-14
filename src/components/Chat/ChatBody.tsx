@@ -1,13 +1,4 @@
-import {
-  PinIcon,
-  MoreVerticalIcon,
-  ArrowUpIcon,
-  SmileIcon,
-  ImageIcon,
-  SendIcon,
-  XCircleIcon,
-  SearchIcon,
-} from "lucide-react";
+import { PinIcon, MoreVerticalIcon, SmileIcon, ImageIcon, SendIcon, XCircleIcon, SearchIcon, FileIcon, ArrowLeftIcon } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
@@ -35,6 +26,14 @@ type User = {
   isOnline?: boolean;
 };
 
+type CurrentUser = {
+  user?: {
+    _id?: string;
+    name?: string;
+    avatar?: string;
+  };
+};
+
 type EmojiClickData = {
   emoji: string;
   activeSkinTone: string;
@@ -43,16 +42,22 @@ type EmojiClickData = {
 };
 
 interface Socket {
-  emit: (event: string, data: any) => void;
-  on: (event: string, callback: (data: any) => void) => void;
+  emit: (event: string, data: unknown) => void;
+  on: (event: string, callback: (data: unknown) => void) => void;
   off: (event: string) => void;
 }
 
-export default function ChatBody({ socket }: { socket: Socket }) {
+interface ChatBodyProps {
+  socket: Socket;
+  onBackToList?: () => void;
+  isMobile?: boolean;
+}
+
+export default function ChatBody({ socket, onBackToList, isMobile = false }: ChatBodyProps) {
   const [messageInput, setMessageInput] = useState("");
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [hasSentMessage, setHasSentMessage] = useState(false);
-  const { user } = useUser();
+  const { user } = useUser() as { user: CurrentUser | null };
   const [freelancer, setFreelancer] = useState<User | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -62,8 +67,12 @@ export default function ChatBody({ socket }: { socket: Socket }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
   // const { incrementUnread } = useUnreadMessages();
   const { id } = useParams();
+
+  console.log("ChatBody - User:", user);
+  console.log("ChatBody - Conversation ID:", id);
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -81,11 +90,15 @@ export default function ChatBody({ socket }: { socket: Socket }) {
   // Fetch conversation
   useEffect(() => {
     const fetchConversation = async () => {
+      if (!id) return;
+      
       try {
+        console.log("Fetching conversation details for:", id);
         const response = await axios.get(
           `http://localhost:5000/api/conversation/get-conversation/${id}`,
           { withCredentials: true }
         );
+        console.log("Conversation details:", response.data);
         setFreelancer(response.data.conversation.user);
       } catch (error) {
         console.error("Error fetching conversation:", error);
@@ -96,8 +109,13 @@ export default function ChatBody({ socket }: { socket: Socket }) {
 
   useEffect(() => {
     if (!id) return;
-    socket.emit("join_conversation", id);
-    socket.on("receive_message", (message: Message) => {
+    
+    console.log("Joining conversation room:", id);
+    socket.emit("join_conversation", id as unknown);
+    
+    socket.on("receive_message", (data: unknown) => {
+      console.log("Message received:", data);
+      const message = data as Message;
       setChatMessages((prev) => {
         if (prev.some((msg) => msg._id === message._id)) {
           return prev;
@@ -105,15 +123,11 @@ export default function ChatBody({ socket }: { socket: Socket }) {
         return [...prev, message];
       });
       setHasSentMessage(true);
-
-      // Increment unread count if message is from other user
-      // if (message.userId !== currentUser?.user.user?._id) {
-      //   incrementUnread(id);
-      // }
     });
 
     // Handle errors
-    socket.on("error", (error) => {
+    socket.on("error", (data: unknown) => {
+      const error = data as { message: string };
       console.error("Socket error:", error.message);
       alert(error.message);
     });
@@ -121,12 +135,14 @@ export default function ChatBody({ socket }: { socket: Socket }) {
     // Fetch initial messages
     const fetchChatMessages = async () => {
       try {
+        console.log("Fetching messages for conversation:", id);
         const response = await axios.get(
           `http://localhost:5000/api/message/${id}/get-all`,
           {
             withCredentials: true,
           }
         );
+        console.log("Messages data:", response.data);
         setChatMessages(response.data.messages);
         setHasSentMessage(true);
       } catch (error) {
@@ -134,8 +150,10 @@ export default function ChatBody({ socket }: { socket: Socket }) {
       }
     };
     fetchChatMessages();
+    
     return () => {
-      socket.emit("leave_conversation", id);
+      console.log("Leaving conversation room:", id);
+      socket.emit("leave_conversation", id as unknown);
       socket.off("receive_message");
       socket.off("error");
     };
@@ -146,12 +164,16 @@ export default function ChatBody({ socket }: { socket: Socket }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (file.type.startsWith('image/')) {
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setSelectedFile(file);
+      }
     }
   };
 
@@ -159,6 +181,8 @@ export default function ChatBody({ socket }: { socket: Socket }) {
   const handleSendMessage = async () => {
     if ((messageInput.trim() === "" && !selectedFile) || !id) return;
 
+    console.log("Sending message to conversation:", id);
+    
     const formData = new FormData();
     formData.append("conversationId", id);
     if (messageInput.trim()) {
@@ -180,6 +204,7 @@ export default function ChatBody({ socket }: { socket: Socket }) {
         }
       );
 
+      console.log("Message sent response:", response.data);
       const savedMessage = response.data.message;
 
       // Add message to local state (for sender)
@@ -191,18 +216,21 @@ export default function ChatBody({ socket }: { socket: Socket }) {
       });
 
       // Emit socket event to update last message in sidebar
-      socket.emit("new_message", {
+      const messageData = {
         conversationId: id,
         message: savedMessage.content || "Đã gửi một hình ảnh",
         sender: {
-          _id: user.user?._id,
-          fullName: user.user?.name,
+          _id: user?.user?._id,
+          fullName: user?.user?.name,
         },
         receiver: {
           _id: freelancer?._id,
-          fullName: freelancer?.name,
+          fullName: freelancer?.fullName,
         },
-      });
+      };
+      
+      console.log("Emitting new_message event:", messageData);
+      socket.emit("new_message", messageData as unknown);
 
       setMessageInput("");
       setSelectedFile(null);
@@ -250,11 +278,28 @@ export default function ChatBody({ socket }: { socket: Socket }) {
     message.content?.toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
 
+  // Handle back button click
+  const handleBackButtonClick = () => {
+    console.log("Back button clicked");
+    if (onBackToList) {
+      onBackToList();
+    }
+  };
+
   return (
     <div className="relative flex-1 flex flex-col h-full overflow-hidden">
       {/* Chat Header */}
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center gap-3">
+          {isMobile && onBackToList && (
+            <button
+              onClick={handleBackButtonClick}
+              className="p-1 rounded-full hover:bg-gray-100 mr-2"
+              aria-label="Quay lại"
+            >
+              <ArrowLeftIcon className="h-5 w-5 text-gray-500" />
+            </button>
+          )}
           <div className="flex items-center gap-2">
             <span className="text-gray-800 font-medium">
               {freelancer?.fullName || "Loading..."}
@@ -299,64 +344,70 @@ export default function ChatBody({ socket }: { socket: Socket }) {
       {/* Messages */}
       <div className="h-[390px]">
         <div className="flex-1 p-4 h-full overflow-y-scroll scrollbar-hide">
-          <div className="space-y-6">
-            {(searchQuery ? filteredMessages : chatMessages).map((message) => {
-              const isUser = message?.userId === user.user?._id;
-              const sender = isUser ? user?.user : freelancer;
-              return (
-                <div
-                  key={message._id}
-                  className={`flex gap-3 group ${
-                    isUser ? "flex-row-reverse" : ""
-                  }`}
-                >
-                  <div className="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mt-1">
-                    <img
-                      src={sender?.avatar || "/placeholder.svg"}
-                      alt={sender?.fullName}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
+          {chatMessages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500 italic text-center">
+                <p>Chưa có tin nhắn nào</p>
+                <p className="text-sm mt-2">Hãy bắt đầu cuộc trò chuyện</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {(searchQuery ? filteredMessages : chatMessages).map((message) => {
+                const isUser = message?.userId === user?.user?._id;
+                const sender = isUser ? user?.user : freelancer;
+                return (
                   <div
-                    className={`flex-1 ${isUser ? "text-right" : "text-left"}`}
+                    key={message._id}
+                    className={`flex gap-3 group ${
+                      isUser ? "flex-row-reverse" : ""
+                    }`}
                   >
-                    <div
-                      className={`flex items-center gap-2 mb-1 ${
-                        isUser ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <span className="font-medium">{sender?.fullName}</span>
-                      <span className="text-xs text-gray-500">
-                        {dayjs(message.createdAt).calendar()}
-                      </span>
-                      <button className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ArrowUpIcon className="h-3 w-3 text-gray-400" />
-                      </button>
+                    <div className="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                      <img
+                        src={sender?.avatar || "/placeholder.svg"}
+                        alt={isUser ? user?.user?.name || "User" : freelancer?.fullName || "User"}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div
-                      className={`inline-block max-w-[80%] px-4 py-2 rounded-lg ${
-                        isUser
-                          ? "bg-blue-500 text-white rounded-tr-none"
-                          : "bg-gray-100 text-gray-800 rounded-tl-none"
-                      }`}
+                      className={`flex-1 ${isUser ? "text-right" : "text-left"}`}
                     >
-                      {message.content && <p>{message.content}</p>}
-                      {message.attachment && (
-                        <div className="mt-2">
-                          <img
-                            src={message.attachment}
-                            alt="Attachment"
-                            className="max-w-full max-h-64 rounded-lg object-cover"
-                          />
-                        </div>
-                      )}
+                      <div
+                        className={`flex items-center gap-2 mb-1 ${
+                          isUser ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <span className="font-medium">{isUser ? user?.user?.name : freelancer?.fullName}</span>
+                        <span className="text-xs text-gray-500">
+                          {dayjs(message.createdAt).calendar()}
+                        </span>
+                      </div>
+                      <div
+                        className={`inline-block max-w-[80%] px-4 py-2 rounded-lg ${
+                          isUser
+                            ? "bg-blue-500 text-white rounded-tr-none"
+                            : "bg-gray-100 text-gray-800 rounded-tl-none"
+                        }`}
+                      >
+                        {message.content && <p>{message.content}</p>}
+                        {message.attachment && (
+                          <div className="mt-2">
+                            <img
+                              src={message.attachment}
+                              alt="Attachment"
+                              className="max-w-full max-h-64 rounded-lg object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -398,6 +449,12 @@ export default function ChatBody({ socket }: { socket: Socket }) {
             accept="image/*"
             className="hidden"
           />
+          <input
+            type="file"
+            ref={documentInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
           <div className="flex justify-between">
             <div className="flex gap-2 relative">
               <button
@@ -419,6 +476,12 @@ export default function ChatBody({ socket }: { socket: Socket }) {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <ImageIcon className="h-5 w-5 text-gray-500" />
+              </button>
+              <button
+                className="p-2 rounded-full hover:bg-gray-100"
+                onClick={() => documentInputRef.current?.click()}
+              >
+                <FileIcon className="h-5 w-5 text-gray-500" />
               </button>
             </div>
             <button

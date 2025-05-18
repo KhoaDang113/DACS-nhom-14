@@ -2,21 +2,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  CheckCircle,
-  MessageSquare,
-  Shield,
-  AlertTriangle,
-  FolderTree,
-  Tags,
-  UserCog,
-  Receipt,
-  Search,
-  X,
-  Zap,
-} from "lucide-react";
+import { LayoutDashboard, Users, CheckCircle, AlertTriangle, FolderTree, Receipt, Search, X, Zap } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;

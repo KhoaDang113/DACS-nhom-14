@@ -176,15 +176,12 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentGigs.map((gig: Gig) => (
-                <div
-                  key={gig._id}
-                  className="relative cursor-pointer"
-                  onClick={() => handleGigClick(gig._id)}
-                >
+                <div key={gig._id} className="relative">
                   <GigCard
                     gig={gig}
                     onFavorite={handleFavoriteToggle}
                     onPlayVideo={handlePlayVideo}
+                    onClick={() => handleGigClick(gig._id)}
                   />
                   {/* Status Badge overlay */}
                   <div className="absolute top-2 left-2 z-10">
@@ -284,16 +281,6 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
                 </button>
               </div>
             )}
-
-            {/* Hiển thị thông tin phân trang */}
-            <div className="text-center text-sm text-gray-500 mt-4">
-              Hiển thị{" "}
-              {filteredGigs.length > 0
-                ? (currentPage - 1) * ITEMS_PER_PAGE + 1
-                : 0}{" "}
-              - {Math.min(currentPage * ITEMS_PER_PAGE, filteredGigs.length)}{" "}
-              trên tổng số {filteredGigs.length} dịch vụ
-            </div>
           </>
         )}
       </div>
