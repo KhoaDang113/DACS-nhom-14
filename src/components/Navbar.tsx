@@ -114,7 +114,7 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
-          {isSignedIn && <NotificationBell currentUser={user} />}
+          {isSignedIn && <NotificationBell />}
           {navLinks.map((link, index) => (
             <div key={index} className="flex items-center">
               <Link
