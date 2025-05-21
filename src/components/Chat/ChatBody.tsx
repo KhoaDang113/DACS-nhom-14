@@ -1,11 +1,21 @@
-import { PinIcon, MoreVerticalIcon, SmileIcon, ImageIcon, SendIcon, XCircleIcon, SearchIcon, FileIcon, ArrowLeftIcon } from "lucide-react";
+import {
+  PinIcon,
+  MoreVerticalIcon,
+  SmileIcon,
+  ImageIcon,
+  SendIcon,
+  XCircleIcon,
+  SearchIcon,
+  FileIcon,
+  ArrowLeftIcon,
+} from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
 import EmojiPicker from "emoji-picker-react";
-import { useUser } from "../../contexts/UserContext";
+import { useUser } from "../../hooks/useUser";
 // import { useUnreadMessages } from "../../contexts/UnreadMessagesContext";
 
 dayjs.extend(calendar);
@@ -15,7 +25,12 @@ type Message = {
   conversationId: string;
   userId?: string;
   content?: string;
-  attachment?: string;
+  attachment?: {
+    url: string;
+    name: string;
+    type: string;
+    size: number;
+  };
   createdAt: string;
 };
 
@@ -53,7 +68,11 @@ interface ChatBodyProps {
   isMobile?: boolean;
 }
 
-export default function ChatBody({ socket, onBackToList, isMobile = false }: ChatBodyProps) {
+export default function ChatBody({
+  socket,
+  onBackToList,
+  isMobile = false,
+}: ChatBodyProps) {
   const [messageInput, setMessageInput] = useState("");
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [hasSentMessage, setHasSentMessage] = useState(false);
@@ -64,16 +83,13 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [sendMessage, setSendMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
   // const { incrementUnread } = useUnreadMessages();
   const { id } = useParams();
-
-  console.log("ChatBody - User:", user);
-  console.log("ChatBody - Conversation ID:", id);
-
   // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -91,14 +107,12 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
   useEffect(() => {
     const fetchConversation = async () => {
       if (!id) return;
-      
+
       try {
-        console.log("Fetching conversation details for:", id);
         const response = await axios.get(
           `http://localhost:5000/api/conversation/get-conversation/${id}`,
           { withCredentials: true }
         );
-        console.log("Conversation details:", response.data);
         setFreelancer(response.data.conversation.user);
       } catch (error) {
         console.error("Error fetching conversation:", error);
@@ -109,12 +123,9 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
 
   useEffect(() => {
     if (!id) return;
-    
-    console.log("Joining conversation room:", id);
     socket.emit("join_conversation", id as unknown);
-    
+
     socket.on("receive_message", (data: unknown) => {
-      console.log("Message received:", data);
       const message = data as Message;
       setChatMessages((prev) => {
         if (prev.some((msg) => msg._id === message._id)) {
@@ -135,14 +146,12 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
     // Fetch initial messages
     const fetchChatMessages = async () => {
       try {
-        console.log("Fetching messages for conversation:", id);
         const response = await axios.get(
           `http://localhost:5000/api/message/${id}/get-all`,
           {
             withCredentials: true,
           }
         );
-        console.log("Messages data:", response.data);
         setChatMessages(response.data.messages);
         setHasSentMessage(true);
       } catch (error) {
@@ -150,9 +159,8 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
       }
     };
     fetchChatMessages();
-    
+
     return () => {
-      console.log("Leaving conversation room:", id);
       socket.emit("leave_conversation", id as unknown);
       socket.off("receive_message");
       socket.off("error");
@@ -164,15 +172,17 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
-        setSelectedFile(file);
+      setSelectedFile(file);
+      if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
           setPreviewUrl(reader.result as string);
         };
         reader.readAsDataURL(file);
+        setSendMessage("imgae");
       } else {
-        setSelectedFile(file);
+        setSendMessage("file");
+        setPreviewUrl("");
       }
     }
   };
@@ -181,8 +191,6 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
   const handleSendMessage = async () => {
     if ((messageInput.trim() === "" && !selectedFile) || !id) return;
 
-    console.log("Sending message to conversation:", id);
-    
     const formData = new FormData();
     formData.append("conversationId", id);
     if (messageInput.trim()) {
@@ -203,8 +211,6 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
           },
         }
       );
-
-      console.log("Message sent response:", response.data);
       const savedMessage = response.data.message;
 
       // Add message to local state (for sender)
@@ -218,7 +224,9 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
       // Emit socket event to update last message in sidebar
       const messageData = {
         conversationId: id,
-        message: savedMessage.content || "Đã gửi một hình ảnh",
+        message:
+          savedMessage.content ||
+          (sendMessage === "file" ? "📎file" : "📷 ảnh"),
         sender: {
           _id: user?.user?._id,
           fullName: user?.user?.name,
@@ -228,10 +236,25 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
           fullName: freelancer?.fullName,
         },
       };
-      
-      console.log("Emitting new_message event:", messageData);
-      socket.emit("new_message", messageData as unknown);
+      const notification = await axios.post(
+        "http://localhost:5000/api/notifications",
+        {
+          type: "message",
+          title: "Tin nhắn mới",
+          message:
+            savedMessage.content ||
+            (sendMessage === "file" ? "📎file" : "📷 ảnh"),
+          conversationId: id,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
+      socket.emit("new_message", {
+        ...messageData,
+        notificationId: notification.data.notification._id,
+      } as unknown);
       setMessageInput("");
       setSelectedFile(null);
       setPreviewUrl(null);
@@ -353,58 +376,81 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
             </div>
           ) : (
             <div className="space-y-6">
-              {(searchQuery ? filteredMessages : chatMessages).map((message) => {
-                const isUser = message?.userId === user?.user?._id;
-                const sender = isUser ? user?.user : freelancer;
-                return (
-                  <div
-                    key={message._id}
-                    className={`flex gap-3 group ${
-                      isUser ? "flex-row-reverse" : ""
-                    }`}
-                  >
-                    <div className="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mt-1">
-                      <img
-                        src={sender?.avatar || "/placeholder.svg"}
-                        alt={isUser ? user?.user?.name || "User" : freelancer?.fullName || "User"}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
+              {(searchQuery ? filteredMessages : chatMessages).map(
+                (message) => {
+                  const isUser = message?.userId === user?.user?._id;
+                  const sender = isUser ? user?.user : freelancer;
+                  return (
                     <div
-                      className={`flex-1 ${isUser ? "text-right" : "text-left"}`}
+                      key={message._id}
+                      className={`flex gap-3 group ${
+                        isUser ? "flex-row-reverse" : ""
+                      }`}
                     >
-                      <div
-                        className={`flex items-center gap-2 mb-1 ${
-                          isUser ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <span className="font-medium">{isUser ? user?.user?.name : freelancer?.fullName}</span>
-                        <span className="text-xs text-gray-500">
-                          {dayjs(message.createdAt).calendar()}
-                        </span>
+                      <div className="h-10 w-10 rounded-full overflow-hidden flex-shrink-0 mt-1">
+                        <img
+                          src={sender?.avatar || "/placeholder.svg"}
+                          alt={
+                            isUser
+                              ? user?.user?.name || "User"
+                              : freelancer?.fullName || "User"
+                          }
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       <div
-                        className={`inline-block max-w-[80%] px-4 py-2 rounded-lg ${
-                          isUser
-                            ? "bg-blue-500 text-white rounded-tr-none"
-                            : "bg-gray-100 text-gray-800 rounded-tl-none"
+                        className={`flex-1 ${
+                          isUser ? "text-right" : "text-left"
                         }`}
                       >
-                        {message.content && <p>{message.content}</p>}
-                        {message.attachment && (
-                          <div className="mt-2">
-                            <img
-                              src={message.attachment}
-                              alt="Attachment"
-                              className="max-w-full max-h-64 rounded-lg object-cover"
-                            />
-                          </div>
-                        )}
+                        <div
+                          className={`flex items-center gap-2 mb-1 ${
+                            isUser ? "justify-end" : "justify-start"
+                          }`}
+                        >
+                          <span className="font-medium">
+                            {isUser ? user?.user?.name : freelancer?.fullName}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {dayjs(message.createdAt).calendar()}
+                          </span>
+                        </div>
+                        <div
+                          className={`inline-block max-w-[40%] px-4 py-2 rounded-lg whitespace-pre-wrap break-words ${
+                            isUser
+                              ? "bg-blue-500 text-white rounded-tr-none"
+                              : "bg-gray-100 text-gray-800 rounded-tl-none"
+                          }`}
+                        >
+                          {message.content && (
+                            <p className=" break-words break-all">
+                              {message.content}
+                            </p>
+                          )}
+                          {message.attachment?.url && (
+                            <div className="mt-2">
+                              {message.attachment.type?.includes("image") ? (
+                                <img
+                                  src={message.attachment?.url}
+                                  alt="Attachment"
+                                  className="max-w-full max-h-64 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <a
+                                  href={message.attachment?.url}
+                                  className="flex bg-amber-50 p-2 border rounded-lg text-nowrap line-clamp-1"
+                                >
+                                  <p>📎 {message.attachment?.name}</p>
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -414,7 +460,7 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
       {/* Message Input */}
       <div className="p-4 border-t">
         <div className="relative flex flex-col gap-2">
-          {previewUrl && (
+          {previewUrl ? (
             <div className="absolute bottom-[120px] left-0 mb-2 z-10 bg-white rounded-lg shadow-lg p-2">
               <div className="relative w-32 h-32">
                 <img
@@ -433,6 +479,20 @@ export default function ChatBody({ socket, onBackToList, isMobile = false }: Cha
                 </button>
               </div>
             </div>
+          ) : (
+            selectedFile && (
+              <div className="file-preview-box p-2 border rounded-lg">
+                <p>📎 {selectedFile?.name}</p>
+                <button
+                  onClick={() => {
+                    setSelectedFile(null);
+                  }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                >
+                  <XCircleIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )
           )}
           <textarea
             placeholder="Type a message..."

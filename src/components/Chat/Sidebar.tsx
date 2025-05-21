@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { SearchIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
+import { id } from "date-fns/locale";
 
 dayjs.extend(calendar);
 
@@ -44,11 +45,16 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = false }: SidebarProps) {
+export default function Sidebar({
+  socket,
+  currentUser,
+  onSelectChat,
+  isMobile = false,
+}: SidebarProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-
+  const { id } = useParams();
   const fetchConversations = async () => {
     try {
       const response = await axios.get(
@@ -67,10 +73,8 @@ export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = 
     fetchConversations();
 
     socket.on("return_new_message", (data: MessageData) => {
-      fetchConversations();
-
       setConversations((prev) => {
-        const isCurrentUserSender = currentUser?.user?._id === data.sender;
+        const isCurrentUserSender = currentUser?.user?._id === data.sender._id;
 
         const updated = prev.map((conv) =>
           conv._id === data.conversationId
@@ -84,7 +88,8 @@ export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = 
         );
 
         return updated.sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
       });
     });
@@ -92,12 +97,7 @@ export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = 
     return () => {
       socket.off("return_new_message");
     };
-  }, [currentUser, socket]);
-
-  useEffect(() => {
-    const intervalId = setInterval(fetchConversations, 10000); // chỉnh lại 10 giây đúng với mô tả
-    return () => clearInterval(intervalId);
-  }, []);
+  }, [currentUser, socket, id]);
 
   const filteredConversations = conversations.filter((conversation) =>
     conversation.user.fullName
@@ -108,6 +108,7 @@ export default function Sidebar({ socket, currentUser, onSelectChat, isMobile = 
   const handleConversationClick = (conversationId: string) => {
     navigate(`/inbox/${conversationId}`);
     if (isMobile && onSelectChat) onSelectChat();
+    fetchConversations();
   };
 
   return (

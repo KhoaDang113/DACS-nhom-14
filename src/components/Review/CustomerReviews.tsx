@@ -78,6 +78,7 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
         ...prev,
         [reviewId]: true,
       }));
+      console.log("showResponses", showResponses);
     });
 
     return () => {

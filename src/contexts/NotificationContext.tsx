@@ -1,16 +1,21 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import Notification from "../Notification/Notification";
 
-type NotificationType = "success" | "error" | "warning";
+type NotificationType = "success" | "error" | "warning" | "message";
 
 interface NotificationItem {
   id: string;
   message: string;
   type: NotificationType;
+  conversationId: string;
 }
 
 interface NotificationContextType {
-  showNotification: (message: string, type: NotificationType) => void;
+  showNotification: (
+    message: string,
+    type: NotificationType,
+    conversationId: string
+  ) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -36,9 +41,16 @@ export const NotificationProvider = ({
 }: NotificationProviderProps) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  const showNotification = (message: string, type: NotificationType) => {
+  const showNotification = (
+    message: string,
+    type: NotificationType,
+    conversationId: string
+  ) => {
     const id = Math.random().toString(36).substr(2, 9);
-    setNotifications((prev) => [...prev, { id, message, type }]);
+    setNotifications((prev) => [
+      ...prev,
+      { id, message, type, conversationId },
+    ]);
   };
 
   const removeNotification = (id: string) => {
@@ -56,6 +68,7 @@ export const NotificationProvider = ({
             key={notification.id}
             message={notification.message}
             type={notification.type}
+            conversationId={notification.conversationId}
             onClose={() => removeNotification(notification.id)}
           />
         ))}

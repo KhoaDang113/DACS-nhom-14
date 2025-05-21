@@ -138,8 +138,8 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between h-16 sm:h-20">
         {/* Logo */}
         <div className="font-bold text-2xl sm:text-3xl flex-shrink-0">
-          <a
-            href="/dashboard"
+          <Link
+            to="/dashboard"
             className="flex items-center gap-2 font-bold text-xl"
           >
             <img
@@ -148,7 +148,7 @@ export default function Navbar() {
               className="h-8 w-8"
             />
             <span>JopViet</span>
-          </a>
+          </Link>
         </div>
 
         {/* Thanh tìm kiếm - Chỉ hiển thị khi không ở trang chủ */}
@@ -160,7 +160,7 @@ export default function Navbar() {
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
-          {isSignedIn && <NotificationBell currentUser={user} />}
+          {isSignedIn && <NotificationBell />}
           {navLinks.map((link, index) => (
             <div key={index} className="flex items-center">
               <Link
