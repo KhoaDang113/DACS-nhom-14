@@ -1,16 +1,8 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/admin/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/admin/Card";
 import { Eye, CheckCircle, Users, AlertTriangle, Bell } from "lucide-react";
-import {
-  getDashboardStats,
-  DashboardStats,
-} from "../../lib/services/adminDashboardService";
+import { getDashboardStats, DashboardStats } from "../../lib/services/adminDashboardService";
 
 interface StatCardProps {
   title: string;

@@ -17,10 +17,16 @@ interface GigFormValues {
   images: string[];
 }
 
+type Subcategory = {
+  _id: string;
+  name: string;
+  subcategoryChildren?: Subcategory[];
+};
+
 type Category = {
   _id: string;
   name: string;
-  subcategories?: Category[];
+  subcategories: Subcategory[];
 };
 
 interface EditGigFormProps {
@@ -240,17 +246,25 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
                     >
                       <option value="">Chọn danh mục</option>
                       {categories.map((cat) => (
-                        <optgroup key={cat._id} label={cat.name}>
-                          {cat.subcategories?.length ? (
-                            cat.subcategories.map((child) => (
-                              <option key={child._id} value={child._id}>
-                                {child.name}
+                        <React.Fragment key={cat._id}>
+                          <option value="" disabled className="font-bold">
+                            {cat.name}
+                          </option>
+                          
+                          {cat.subcategories && cat.subcategories.map((sub) => (
+                            <React.Fragment key={sub._id}>
+                              <option value="" disabled className="font-bold">
+                                {'\u00A0\u00A0'}{sub.name}
                               </option>
-                            ))
-                          ) : (
-                            <option value={cat._id}>{cat.name}</option>
-                          )}
-                        </optgroup>
+                              
+                              {sub.subcategoryChildren && sub.subcategoryChildren.map((subChild) => (
+                                <option key={subChild._id} value={subChild._id}>
+                                  {'\u00A0\u00A0\u00A0\u00A0'}{subChild.name}
+                                </option>
+                              ))}
+                            </React.Fragment>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </Field>
                     <ErrorMessage name="category" component="div" className="text-red-500 text-sm" />

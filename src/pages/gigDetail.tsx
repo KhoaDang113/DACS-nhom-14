@@ -1,21 +1,11 @@
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Heart,
-  Star,
-  Clock,
-  MessageSquare,
-  CheckCircle,
-  FileText,
-  MoreVertical,
-  Lock,
-  EyeIcon,
-} from "lucide-react";
+import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical, Lock, EyeIcon } from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
-import CustomerReviews from "../components/Review/CustomerReviews"; // Import component CustomerReviews
+import CustomerReviews from "../components/Review/CustomerReviews";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import useRestrictedAccess from "../hooks/useRestrictedAccess";
 import { useAuth } from "@clerk/clerk-react";
@@ -44,7 +34,7 @@ interface GigDetail {
     average: number;
     count: number;
   };
-  duration?: number; // Thêm các trường tùy chọn nếu cần
+  duration?: number;
 }
 
 // Định nghĩa interface cho dữ liệu freelancer

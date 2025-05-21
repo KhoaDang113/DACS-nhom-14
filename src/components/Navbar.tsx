@@ -4,12 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown, Bell, Mail, Heart, Lock } from "lucide-react";
-import {
-  useUser,
-  UserButton,
-  SignInButton,
-  SignUpButton,
-} from "@clerk/clerk-react";
+import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import NotificationBell from "./NotificationBell";
 import SearchBar from "./Search/SearchBar";
 import useUserRole from "../hooks/useUserRole";
@@ -18,14 +13,56 @@ import toast from "react-hot-toast";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showSearch, setShowSearch] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const { isSignedIn, user } = useUser();
   const { isFreelancer, isAdmin, isLoading } = useUserRole();
   const { isLocked } = useLockedAccount(); // Sử dụng hook useLockedAccount
   const navigate = useNavigate();
   const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
+
+  // Xử lý sự kiện cuộn trang và lấy vị trí của thanh tìm kiếm Feature
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    // Lấy vị trí của thanh tìm kiếm trong Feature
+    const getFeatureSearchPosition = () => {
+      const featureSearch = document.getElementById('feature-search-bar');
+      if (featureSearch && location.pathname === '/') {
+        // Thiết lập ngưỡng hiển thị thanh tìm kiếm khi đã cuộn một khoảng vừa phải
+        // Tăng lên 300px để không quá sớm nhưng cũng không quá muộn
+        const threshold = 300;
+        setFeatureSearchHeight(threshold);
+      } else {
+        setFeatureSearchHeight(0);
+      }
+    };
+
+    // Gọi hàm khi component mount và khi window resize
+    getFeatureSearchPosition();
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", getFeatureSearchPosition);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", getFeatureSearchPosition);
+    };
+  }, [location.pathname]);
+
+  // Kiểm tra ẩn/hiện thanh tìm kiếm khi cuộn trang
+  useEffect(() => {
+    if (location.pathname === '/') {
+      // Ở trang chủ: hiển thị thanh tìm kiếm ngay khi bắt đầu cuộn
+      setShowSearch(scrollY >= featureSearchHeight);
+    } else {
+      // Ở các trang khác: luôn hiển thị thanh tìm kiếm
+      setShowSearch(true);
+    }
+  }, [location.pathname, scrollY, featureSearchHeight]);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -83,10 +120,12 @@ export default function Navbar() {
           : []),
       ]
     : [
-        // Người dùng chưa đăng nhập
-        { title: "Khám phá", path: "#", hasDropdown: true },
-        { title: "Trở thành người bán", path: "#" },
-        { title: "Danh sách công việc", path: "/jobs" },
+        { 
+          title: "Trở thành người bán", 
+          path: "#", 
+          icon: undefined, 
+          hasDropdown: false 
+        },
       ];
 
   return (
@@ -107,10 +146,12 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Thanh tìm kiếm - Luôn hiển thị */}
-        <div className="hidden md:block flex-grow max-w-xl mx-4">
-          <SearchBar />
-        </div>
+        {/* Thanh tìm kiếm - Chỉ hiển thị khi không ở trang chủ */}
+        {showSearch && (
+          <div className="hidden md:block flex-grow max-w-xl mx-4">
+            <SearchBar />
+          </div>
+        )}
 
         {/* Navigation */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6">
@@ -140,18 +181,6 @@ export default function Navbar() {
               )}
             </div>
           ))}
-
-          {!isSignedIn && (
-            <div className="flex items-center gap-1">
-              <span className="text-black">🌐</span>
-              <Link
-                to="#"
-                className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base"
-              >
-                English
-              </Link>
-            </div>
-          )}
 
           {/* Dropdown Chức năng */}
           {isSignedIn && (
@@ -227,7 +256,7 @@ export default function Navbar() {
                     NGƯỜI BÁN
                   </div>
 
-                  <Link
+                  {/* <Link
                     to={isLocked ? "#" : "/seller-dashboard"}
                     className={`block px-4 py-2 text-sm ${
                       isLocked
@@ -265,7 +294,7 @@ export default function Navbar() {
                     </svg>
                     Tổng quan kinh doanh
                     {isLocked && <Lock size={14} className="ml-auto" />}
-                  </Link>
+                  </Link> */}
                   <Link
                     to={isLocked ? "#" : "/create-gig"}
                     className={`block px-4 py-2 text-sm ${
@@ -385,13 +414,13 @@ export default function Navbar() {
                 onSignIn={handleSignInSuccess}
               >
                 <div className="cursor-pointer text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap">
-                  Đăng nhập
+                  Đăng ký
                 </div>
               </SignInButton>
 
               <SignUpButton mode="modal">
                 <div className="cursor-pointer text-gray-800 bg-white rounded-2xl px-3 py-1.5 text-sm lg:text-base font-medium border border-gray-800 hover:text-white hover:bg-gray-800 transition-all duration-200 whitespace-nowrap">
-                  Tham gia
+                  Đăng nhập
                 </div>
               </SignUpButton>
             </div>
@@ -411,10 +440,12 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
-          {/* Mobile Search */}
-          <div className="px-4 py-3 border-b">
-            <SearchBar />
-          </div>
+          {/* Mobile Search - Chỉ hiển thị khi không ở trang chủ */}
+          {showSearch && (
+            <div className="px-4 py-3 border-b">
+              <SearchBar />
+            </div>
+          )}
 
           {/* Mobile Navigation */}
           <nav className="flex flex-col py-2">
@@ -474,7 +505,7 @@ export default function Navbar() {
                   NGƯỜI BÁN
                 </div>
 
-                <Link
+                {/* <Link
                   to={isLocked ? "#" : "/seller-dashboard"}
                   className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${
                     isLocked
@@ -491,7 +522,7 @@ export default function Navbar() {
                 >
                   <span>Tổng quan kinh doanh</span>
                   {isLocked && <Lock size={16} />}
-                </Link>
+                </Link> */}
 
                 <Link
                   to={isLocked ? "#" : "/seller-gigs"}

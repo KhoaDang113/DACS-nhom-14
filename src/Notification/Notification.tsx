@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
-  X,
-  ChartGanttIcon,
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { AlertCircle, CheckCircle2, XCircle, X, ChartGanttIcon } from "lucide-react";
 
 type NotificationType = "success" | "error" | "warning" | "message";
 
@@ -96,12 +89,14 @@ const Notification = ({
       {type === "message" ? (
         <a
           href={`/inbox/${conversationId}`}
-          className="text-sm font-medium w-[320px] truncate"
+          className="text-sm font-medium w-[200px] sm:w-[320px] truncate"
         >
           {message}
         </a>
       ) : (
-        <p className="text-sm font-medium w-[320px] truncate">{message}</p>
+        <p className="text-sm font-medium w-[200px] sm:w-[320px] truncate">
+          {message}
+        </p>
       )}
       <button
         onClick={handleClose}

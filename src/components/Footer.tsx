@@ -80,12 +80,23 @@ const Footer = () => {
     },
   ];
 
-  const socialIcons = [
-    "twitter.png",
-    "facebook.png",
-    "linkedin.png",
-    "pinterest.png",
-    "instagram.png",
+  const socialLinks = [
+    {
+      icon: "facebook.png",
+      url: "https://www.facebook.com",
+    },
+    {
+      icon: "linkedin.png",
+      url: "https://linkedin.com",
+    },
+    {
+      icon: "pinterest.png",
+      url: "https://pinterest.com",
+    },
+    {
+      icon: "instagram.png",
+      url: "https://instagram.com",
+    },
   ];
 
   return (
@@ -117,47 +128,27 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center py-5 gap-5">
           <div className="flex items-center gap-5">
-            <h2 className="text-xl font-bold">fiverr</h2>
+            <h2 className="text-xl font-bold">JopViet</h2>
             <span className="text-sm">
-              © Fiverr International Ltd. {new Date().getFullYear()}
+              © Công ty TNHH 3 Anh Em {new Date().getFullYear()}
             </span>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-5">
             <div className="flex items-center gap-3">
-              {socialIcons.map((icon, index) => (
-                <img
+              {socialLinks.map((item, index) => (
+                <a
                   key={index}
-                  src={`./media/${icon}`}
-                  alt={`Social media icon ${index + 1}`}
-                  className="w-6 h-6 hover:opacity-80 transition-opacity cursor-pointer"
-                />
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src={`./media/${item.icon}`}
+                    alt={`Social media icon ${index + 1}`}
+                    className="w-6 h-6 hover:opacity-80 transition-opacity cursor-pointer"
+                  />
+                </a>
               ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-5">
-              <button className="flex items-center gap-2 hover:text-gray-800 transition-colors  bg-gray-600 text-white">
-                <img
-                  src="./media/language.png"
-                  alt="Language selector"
-                  className="w-5 h-5"
-                />
-                <span>English</span>
-              </button>
-              <button className="flex items-center gap-2 hover:text-gray-800 transition-colors  bg-gray-600 text-white">
-                <img
-                  src="./media/coin.png"
-                  alt="Currency selector"
-                  className="w-5 h-5"
-                />
-                <span>USD</span>
-              </button>
-              <button className="flex items-center gap-2 hover:text-gray-800 transition-colors  bg-gray-600 text-white">
-                <img
-                  src="./media/accessibility.png"
-                  alt="Accessibility"
-                  className="w-5 h-5"
-                />
-                <span>Accessibility</span>
-              </button>
             </div>
           </div>
         </div>

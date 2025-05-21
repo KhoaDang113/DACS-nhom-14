@@ -1,32 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "../../components/ui/admin/Table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Badge from "../../components/ui/admin/Badge";
-import Modal from "../../components/ui/admin/Modal";
-import { 
-  Search, 
-  Plus, 
-  Calendar, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  MoreHorizontal
-} from "lucide-react";
-import { 
-  hotJobAds, 
-  HotJobAd, 
-  formatCurrency 
-} from "../../lib/hotJobData";
+import { Search, Plus, Calendar, Eye, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { hotJobAds, formatCurrency } from "../../lib/hotJobData";
 import { Link } from "react-router-dom";
 import { Dropdown, DropdownItem } from "../../components/ui/admin/Dropdown";
 
