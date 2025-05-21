@@ -8,7 +8,7 @@ import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Modal from "../../components/ui/admin/Modal";
 import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/admin/Dropdown";
-import { Search, Plus, Folder, Edit, Trash2, PlusCircle, Loader2, AlertCircle } from "lucide-react";
+import { Search, Plus, Folder, Edit, Trash2, PlusCircle, Loader2, AlertCircle, MoreHorizontal } from "lucide-react";
 
 interface Category {
   _id: string;

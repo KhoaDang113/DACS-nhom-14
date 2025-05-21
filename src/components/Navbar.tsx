@@ -4,7 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown, Bell, Mail, Heart, Lock } from "lucide-react";
-import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
+import {
+  useUser,
+  UserButton,
+  SignInButton,
+  SignUpButton,
+} from "@clerk/clerk-react";
 import NotificationBell from "./NotificationBell";
 import SearchBar from "./Search/SearchBar";
 import useUserRole from "../hooks/useUserRole";
@@ -31,8 +36,8 @@ export default function Navbar() {
 
     // Lấy vị trí của thanh tìm kiếm trong Feature
     const getFeatureSearchPosition = () => {
-      const featureSearch = document.getElementById('feature-search-bar');
-      if (featureSearch && location.pathname === '/') {
+      const featureSearch = document.getElementById("feature-search-bar");
+      if (featureSearch && location.pathname === "/") {
         // Thiết lập ngưỡng hiển thị thanh tìm kiếm khi đã cuộn một khoảng vừa phải
         // Tăng lên 300px để không quá sớm nhưng cũng không quá muộn
         const threshold = 300;
@@ -55,7 +60,7 @@ export default function Navbar() {
 
   // Kiểm tra ẩn/hiện thanh tìm kiếm khi cuộn trang
   useEffect(() => {
-    if (location.pathname === '/') {
+    if (location.pathname === "/") {
       // Ở trang chủ: hiển thị thanh tìm kiếm ngay khi bắt đầu cuộn
       setShowSearch(scrollY >= featureSearchHeight);
     } else {
@@ -119,14 +124,7 @@ export default function Navbar() {
           ? [{ title: "Trở thành Freelancer", path: "/become-freelancer" }]
           : []),
       ]
-    : [
-        { 
-          title: "Trở thành người bán", 
-          path: "#", 
-          icon: undefined, 
-          hasDropdown: false 
-        },
-      ];
+    : [];
 
   return (
     <header className="sticky left-0 top-0 z-50 w-full border-b bg-white md:pl-[30px] md:pr-[30px]">
