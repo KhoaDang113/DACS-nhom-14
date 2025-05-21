@@ -4,12 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown, Bell, Mail, Heart, Lock } from "lucide-react";
-import {
-  useUser,
-  UserButton,
-  SignInButton,
-  SignUpButton,
-} from "@clerk/clerk-react";
+import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import NotificationBell from "./NotificationBell";
 import SearchBar from "./Search/SearchBar";
 import useUserRole from "../hooks/useUserRole";
@@ -261,7 +256,7 @@ export default function Navbar() {
                     NGƯỜI BÁN
                   </div>
 
-                  <Link
+                  {/* <Link
                     to={isLocked ? "#" : "/seller-dashboard"}
                     className={`block px-4 py-2 text-sm ${
                       isLocked
@@ -299,7 +294,7 @@ export default function Navbar() {
                     </svg>
                     Tổng quan kinh doanh
                     {isLocked && <Lock size={14} className="ml-auto" />}
-                  </Link>
+                  </Link> */}
                   <Link
                     to={isLocked ? "#" : "/create-gig"}
                     className={`block px-4 py-2 text-sm ${
@@ -510,7 +505,7 @@ export default function Navbar() {
                   NGƯỜI BÁN
                 </div>
 
-                <Link
+                {/* <Link
                   to={isLocked ? "#" : "/seller-dashboard"}
                   className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${
                     isLocked
@@ -527,7 +522,7 @@ export default function Navbar() {
                 >
                   <span>Tổng quan kinh doanh</span>
                   {isLocked && <Lock size={16} />}
-                </Link>
+                </Link> */}
 
                 <Link
                   to={isLocked ? "#" : "/seller-gigs"}
