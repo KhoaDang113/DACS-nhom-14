@@ -2,14 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "../../components/ui/admin/Table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Badge from "../../components/ui/admin/Badge";

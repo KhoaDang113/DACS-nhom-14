@@ -4,15 +4,17 @@ interface PopularCardProps {
   title: string;
   image: string;
   bgColor: string;
+  linkTo: string;
 }
 
 export default function PopularCard({
   title,
   image,
   bgColor,
+  linkTo
 }: PopularCardProps) {
   return (
-    <Link to="#">
+    <Link to={`${linkTo}`}>
       <div
         className={"rounded-lg overflow-hidden min-w-[200px] min-h-[310px] flex flex-col mr-8"}
         style={{ backgroundColor: `${bgColor}` }}

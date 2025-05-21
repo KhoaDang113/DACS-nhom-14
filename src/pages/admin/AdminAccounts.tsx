@@ -2,34 +2,14 @@
 
 import type React from "react";
 import { useState } from "react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "../../components/ui/admin/Table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Badge from "../../components/ui/admin/Badge";
 import Avatar from "../../components/ui/admin/Avatar";
 import Modal from "../../components/ui/admin/Modal";
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownDivider,
-} from "../../components/ui/admin/Dropdown";
-import {
-  Search,
-  Plus,
-  Shield,
-  Mail,
-  Key,
-  Trash2,
-  MoreHorizontal,
-  User,
-} from "lucide-react";
+import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/admin/Dropdown";
+import { Search, Plus, Shield, Mail, Key, Trash2, MoreHorizontal, User } from "lucide-react";
 
 interface Admin {
   id: string;

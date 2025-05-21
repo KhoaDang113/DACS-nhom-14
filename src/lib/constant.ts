@@ -39,61 +39,73 @@ export const categoryContentCards = [
 
 export const popularCards = [
   {
+    linkTo: "/advanced-search",
     title: "Website Development",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156477/website-development.png",
     backgroundColor: "#00732e",
   },
   {
+    linkTo: "/advanced-search",
     title: "Logo Design",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156494/logo-design.png",
     backgroundColor: "#ff7640",
   },
   {
+    linkTo: "/advanced-search",
     title: "SEO",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156488/seo.png",
     backgroundColor: "#003912",
   },
   {
+    linkTo: "/advanced-search",
     title: "Architecture & Interior Design",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156473/architecture-design.png",
     backgroundColor: "#4d1727",
   },
   {
+    linkTo: "/advanced-search",
     title: "Voice Over",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156479/voice-over.png",
     backgroundColor: "#421300",
   },
   {
+    linkTo: "/advanced-search",
     title: "Social Media Marketing",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156476/social-media-marketing.png",
     backgroundColor: "#687200",
   },
   {
+    linkTo: "/advanced-search",
     title: "UGC Videos",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/ece24f7f595e2dd44b26567705d1c600-1728279781879/UGC%20Video%20img.png",
     backgroundColor: "#be5272",
   },
   {
+    linkTo: "/advanced-search",
     title: "Software Development",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156476/software-development.png",
     backgroundColor: "#254200",
   },
   {
+    linkTo: "/advanced-search",
     title: "Data Science & ML",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156495/data-science.png",
     backgroundColor: "#8f2900",
   },
   {
+    linkTo: "/advanced-search",
     title: "Product Photography",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156481/product-photography.png",
     backgroundColor: "#687200",
   },
   {
+    linkTo: "/advanced-search",
     title: "E-Commerce Marketing",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156474/e-commerce.png",
     backgroundColor: "#00732e",
   },
   {
+    linkTo: "/advanced-search",
     title: "Video Editing",
     Image: "https://fiverr-res.cloudinary.com/q_auto,f_auto,w_188,dpr_1.0/v1/attachments/generic_asset/asset/798403f5b92b1b5af997acc704a3d21c-1702465156494/video-editing.png",
     backgroundColor: "#be5272",

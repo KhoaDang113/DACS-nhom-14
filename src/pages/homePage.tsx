@@ -1,10 +1,4 @@
-import {
-  categoryContentCards,
-  popularCards,
-  serviceCards,
-  benefitItems,
-} from "../lib/constant";
-
+import { categoryContentCards, popularCards, serviceCards, benefitItems } from "../lib/constant";
 import { SignUpButton } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import Slide from "../components/Slide";
@@ -36,12 +30,11 @@ export default function HomePage() {
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
-      if (!isLoaded) return; // Đợi cho đến khi Clerk đã tải xong
+      if (!isLoaded) return;
 
       if (isSignedIn) {
         const token = await fetchToken();
         if (token) {
-          // Thêm một khoảng thời gian ngắn để đảm bảo token đã được lưu
           setTimeout(() => {
             navigate("/redirect-dashboard");
           }, 500);
@@ -77,8 +70,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Hot Jobs Banner */}
-        
         {/*list popular services*/}
         <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
           <div className="mt-4 sm:mt-6 md:mt-10 relative">
@@ -88,11 +79,9 @@ export default function HomePage() {
                   Dịch vụ phổ biến
                 </h2>
                 <p className="text-gray-500 text-sm sm:text-base hidden sm:block mb-5">
-                  Khám phá những dịch vụ được săn đón nhất từ các freelancer
-                  hàng đầu
+                  Khám phá những dịch vụ được săn đón nhất từ các freelancer hàng đầu
                 </p>
               </div>
-              {/* Loại bỏ các lớp wrapper không cần thiết */}
               <Slide>
                 {popularCards.map((popularCard, index) => (
                   <PopularCard
@@ -100,6 +89,7 @@ export default function HomePage() {
                     image={popularCard.Image}
                     bgColor={popularCard.backgroundColor}
                     key={index}
+                    linkTo={popularCard.linkTo}
                   />
                 ))}
               </Slide>
@@ -120,8 +110,7 @@ export default function HomePage() {
             </h2>
 
             <span className="text-base sm:text-lg text-[#62646a] mb-4 sm:mb-6 md:mb-8 lg:mb-10 max-w-3xl">
-              Vontélle Eyewear tìm đến các freelancer trên Fiverr để biến tầm
-              nhìn của họ thành hiện thực.
+              Tìm đến các freelancer trên JobViet để biến tầm nhìn của họ thành hiện thực.
             </span>
 
             {/* Updated video container */}

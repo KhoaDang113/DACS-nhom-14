@@ -3,33 +3,12 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "../../components/ui/admin/Table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Modal from "../../components/ui/admin/Modal";
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownDivider,
-} from "../../components/ui/admin/Dropdown";
-import {
-  Search,
-  Plus,
-  Folder,
-  Edit,
-  Trash2,
-  MoreHorizontal,
-  PlusCircle,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/admin/Dropdown";
+import { Search, Plus, Folder, Edit, Trash2, PlusCircle, Loader2, AlertCircle } from "lucide-react";
 
 interface Category {
   _id: string;

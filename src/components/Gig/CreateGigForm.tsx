@@ -7,6 +7,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import React from "react";
 
 const formSchema = z.object({
   title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(1000, "Tiêu đề không được vượt quá 1000 ký tự"),
@@ -17,10 +18,16 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type Subcategory = {
+  _id: string;
+  name: string;
+  subcategoryChildren?: Subcategory[];
+};
+
 type Category = {
   _id: string;
   name: string;
-  subcategories?: Category[];
+  subcategories: Subcategory[];
 };
 
 const steps = [
@@ -386,17 +393,25 @@ export default function CreateGigForm() {
             >
               <option value="">Chọn danh mục</option>
               {categories.map((cat) => (
-                <optgroup key={cat._id} label={cat.name}>
-                  {cat.subcategories?.length ? (
-                    cat.subcategories.map((child) => (
-                      <option key={child._id} value={child._id}>
-                        {child.name}
+                <React.Fragment key={cat._id}>
+                  <option value="" disabled style={{ fontWeight: 'bold' }}>
+                    {cat.name}
+                  </option>
+                  
+                  {cat.subcategories && cat.subcategories.map((sub) => (
+                    <React.Fragment key={sub._id}>
+                      <option value="" disabled style={{ fontWeight: 'bold' }}>
+                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{sub.name}
                       </option>
-                    ))
-                  ) : (
-                    <option value={cat._id}>{cat.name}</option>
-                  )}
-                </optgroup>
+                      
+                      {sub.subcategoryChildren && sub.subcategoryChildren.map((subChild) => (
+                        <option key={subChild._id} value={subChild._id}>
+                          {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{subChild.name}
+                        </option>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </React.Fragment>
               ))}
             </select>
             {errors.category && (

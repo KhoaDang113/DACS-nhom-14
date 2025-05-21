@@ -104,7 +104,7 @@ export default function SearchBar() {
       </form>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 w-full bg-white border mt-1 rounded-md shadow-md z-10">
+        <div className="absolute top-full left-0 w-full bg-white border mt-1 rounded-md shadow-md z-[100]" style={{ zIndex: 100 }}>
           {recentSearches.length > 0 && (
             <div className="px-4 py-2 border-b">
               <div className="flex justify-between items-center mb-1">

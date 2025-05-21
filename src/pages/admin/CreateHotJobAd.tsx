@@ -4,13 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
-import { 
-  userJobs, 
-  Job, 
-  hotJobPackages, 
-  formatCurrency 
-} from "../../lib/hotJobData";
-import { Calendar, Upload, Image, DollarSign } from "lucide-react";
+import { userJobs, Job, hotJobPackages, formatCurrency } from "../../lib/hotJobData";
+import { Calendar, Image, DollarSign } from "lucide-react";
 
 const CreateHotJobAd: React.FC = () => {
   const navigate = useNavigate();

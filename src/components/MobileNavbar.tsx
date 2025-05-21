@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { FiSearch, FiUser, FiShoppingCart, FiMenu } from 'react-icons/fi';
+import { FiSearch, FiUser, FiShoppingCart } from 'react-icons/fi';
 import { Lock } from 'lucide-react';
 import useLockedAccount from '../hooks/useLockedAccount';
 import toast from 'react-hot-toast';
