@@ -4,6 +4,7 @@ import GigCard from "../components/Card/Card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Skeleton from "../components/Card/Sekeleton";
 import axios from "axios";
+import HotJobsBanner from "../components/HotJobsBanner";
 
 function Dashboard() {
   const [videoMessage, setVideoMessage] = useState(null);
@@ -191,6 +192,9 @@ function Dashboard() {
                 </p>
               </div>
 
+              {/* Hot Jobs Banner */}
+              <HotJobsBanner />
+
               {/* Filter buttons */}
               <div className="flex overflow-x-auto pb-2 mb-4 gap-2 scrollbar-hide">
                 <button 
@@ -271,15 +275,15 @@ function Dashboard() {
                 {loading ? (
                   <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
                     {[...Array(10)].map((_, i) => (
-                      <div key={i} className="animate-pulse">
+                      <div key={i} className="animate-pulse h-full">
                         <Skeleton />
                       </div>
                     ))}
                   </div>
                 ) : filteredGigs.length > 0 ? (
-                  <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6" : "flex flex-col gap-4"}`}>
+                  <div className={`${viewMode === "grid" ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr" : "flex flex-col gap-4"}`}>
                     {filteredGigs.map((gig, index) => (
-                      <div key={gig._id} className="opacity-0 animate-fade-in"
+                      <div key={gig._id} className="opacity-0 animate-fade-in h-full"
                         style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
                       >
                         <GigCard

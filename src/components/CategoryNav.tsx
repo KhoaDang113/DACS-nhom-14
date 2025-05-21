@@ -125,16 +125,16 @@ const CategoryNav = () => {
       <div
         className="flex items-center px-10 py-1 overflow-x-auto scrollbar-hide scroll-smooth relative"
         ref={categoryRef}
-        style={{ 
-          scrollbarWidth: "none", 
+        style={{
+          scrollbarWidth: "none",
           msOverflowStyle: "none",
-          WebkitOverflowScrolling: "touch"
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {categories.map((category) => (
           <div
             key={category._id}
-            className="relative py-3 flex-shrink-0 mx-4 first:ml-0 last:mr-0"
+            className="relative flex-shrink-0 mx-4 first:ml-0 last:mr-0"
             onMouseEnter={() => handleCategoryHover(category._id)}
             onMouseLeave={handleCategoryLeave}
           >
@@ -155,9 +155,9 @@ const CategoryNav = () => {
       {activeCategory && (
         <div
           className="absolute left-0 top-full w-full bg-white shadow-lg z-50 border-t border-gray-100"
-          style={{ 
+          style={{
             boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
-            animation: "fadeIn 0.3s ease-in-out forwards" 
+            animation: "fadeIn 0.3s ease-in-out forwards",
           }}
           onMouseEnter={() => handleCategoryHover(activeCategory)}
           onMouseLeave={handleCategoryLeave}
@@ -207,7 +207,10 @@ const CategoryNav = () => {
           onClick={() => handleScroll("left")}
           aria-label="Cuộn sang trái"
         >
-          <ChevronLeft className="text-gray-600 hover:text-gray-800" size={18} />
+          <ChevronLeft
+            className="text-gray-600 hover:text-gray-800"
+            size={18}
+          />
         </button>
       )}
 
@@ -218,13 +221,17 @@ const CategoryNav = () => {
           onClick={() => handleScroll("right")}
           aria-label="Cuộn sang phải"
         >
-          <ChevronRight className="text-gray-600 hover:text-gray-800" size={18} />
+          <ChevronRight
+            className="text-gray-600 hover:text-gray-800"
+            size={18}
+          />
         </button>
       )}
 
       {/* CSS styles đặt trực tiếp trong component */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes fadeIn {
             from {
               opacity: 0;
@@ -235,8 +242,9 @@ const CategoryNav = () => {
               transform: translateY(0);
             }
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </div>
   );
 };

@@ -47,25 +47,60 @@ interface GigCardProps {
 // Hàm format giá trong Card.tsx
 type Decimal128Like = { $numberDecimal: string };
 
-const formatPrice = (price: number | string | Decimal128Like | null | undefined): string => {
-  let numericalPrice = price as number;
-
-  if (price && typeof price === "object" && "$numberDecimal" in price) {
-    numericalPrice = parseFloat(price.$numberDecimal);
-  } else if (typeof price === "string") {
-    numericalPrice = parseFloat(price);
+// Hàm để lấy giá trị số từ dữ liệu giá
+const extractPrice = (price: any): number | null => {
+  // Trường hợp price là số
+  if (typeof price === 'number') {
+    return price;
   }
+  
+  // Trường hợp price là object có numberDecimal
+  if (typeof price === 'object' && price !== null) {
+    if ('$numberDecimal' in price) {
+      return parseFloat((price as Decimal128Like).$numberDecimal);
+    }
+    
+    // Trường hợp price có phương thức toString
+    if (price.toString && typeof price.toString === 'function') {
+      const strValue = price.toString();
+      if (!isNaN(parseFloat(strValue))) {
+        return parseFloat(strValue);
+      }
+    }
+    
+    // Kiểm tra các trường giá phổ biến
+    if ('price' in price && typeof price.price === 'number') {
+      return price.price;
+    }
+  }
+  
+  // Trường hợp price là string
+  if (typeof price === 'string' && !isNaN(parseFloat(price))) {
+    return parseFloat(price);
+  }
+  
+  return null;
+};
 
-  if (isNaN(numericalPrice)) {
+const formatPrice = (price: number | string | Decimal128Like | null | undefined): string => {
+  // Kiểm tra nếu price là undefined hoặc null
+  if (price === undefined || price === null) {
     return "Liên hệ";
   }
 
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(numericalPrice);
-};
+  // Thử chuyển đổi giá thành số
+  const numericPrice = extractPrice(price);
+  
+  if (numericPrice !== null && !isNaN(numericPrice)) {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(numericPrice);
+  }
 
+  // Mặc định nếu không xác định được giá
+  return "Liên hệ";
+};
 
 const GigCard: React.FC<GigCardProps> = ({
   gig,
@@ -91,7 +126,9 @@ const GigCard: React.FC<GigCardProps> = ({
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const formattedPrice = Number.parseFloat(gig.price.toString());
+  // Xử lý giá cho gig
+  const priceValue = extractPrice(gig.price);
+
   const isCurrentMediaVideo = gig.media[currentSlide]?.type === "video";
 
   useEffect(() => {
@@ -179,7 +216,7 @@ const GigCard: React.FC<GigCardProps> = ({
     <Tooltip.Provider>
       <div
         className={`w-full rounded-lg overflow-hidden shadow-md bg-gray-50 transition-transform hover:scale-[1.02] ${
-          viewMode === "list" ? "flex gap-6 items-start py-4" : ""
+          viewMode === "list" ? "flex gap-6 items-start py-4" : "h-full flex flex-col"
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -276,7 +313,7 @@ const GigCard: React.FC<GigCardProps> = ({
         </div>
 
         {/* Info */}
-        <div className={`p-3 sm:p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
+        <div className={`p-3 sm:p-4 ${viewMode === "list" ? "flex-1" : "flex-1 flex flex-col"}`}>
           {/* Freelancer */}
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <div
@@ -285,9 +322,13 @@ const GigCard: React.FC<GigCardProps> = ({
               } rounded-full overflow-hidden relative`}
             >
               <img
-                src={gig.freelancer?.avatar || "/placeholder.svg"}
+                src={gig.freelancer?.avatar || "/placeholder-avatar.png"}
                 alt={gig.freelancer?.name || "Freelancer"}
                 className="object-cover w-full h-full"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder-avatar.png";
+                }}
               />
             </div>
             <Tooltip.Root>
@@ -306,7 +347,7 @@ const GigCard: React.FC<GigCardProps> = ({
                   side="top"
                   sideOffset={4}
                 >
-                  {gig.freelancer?.name}
+                  {gig.freelancer?.name || "Freelancer"}
                   <Tooltip.Arrow className="fill-black" />
                 </Tooltip.Content>
               </Tooltip.Portal>
@@ -316,10 +357,12 @@ const GigCard: React.FC<GigCardProps> = ({
           {/* Title with Tooltip */}
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
-              <Link to={`/gig/${gig._id}`}>
+              <Link to={`/gig/${gig._id}`} className="flex-1">
                 <h3
-                  className={`font-medium line-clamp-2 min-h-[25px] sm:min-h-[40px] hover:text-blue-600 transition-colors cursor-pointer ${
-                    viewMode === "list" ? "text-lg font-semibold" : "text-sm sm:text-base font-semibold"
+                  className={`font-medium line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer ${
+                    viewMode === "list" 
+                      ? "text-lg font-semibold" 
+                      : "text-sm sm:text-base font-semibold h-[40px] sm:h-[48px] mb-2"
                   }`}
                 >
                   {gig.title}
@@ -340,11 +383,11 @@ const GigCard: React.FC<GigCardProps> = ({
 
           {/* Price */}
           <div
-            className={`font-medium text-blue-600 ${
+            className={`font-medium text-blue-600 mt-auto ${
               viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
             }`}
           >
-            Giá: {formatPrice(formattedPrice)}
+            Giá: {formatPrice(priceValue)}
           </div>
         </div>
       </div>
