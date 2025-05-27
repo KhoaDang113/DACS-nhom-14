@@ -3,7 +3,17 @@ import { useParams, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical, Lock, EyeIcon } from "lucide-react";
+import {
+  Heart,
+  Star,
+  Clock,
+  MessageSquare,
+  CheckCircle,
+  FileText,
+  MoreVertical,
+  Lock,
+  EyeIcon,
+} from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
 import CustomerReviews from "../components/Review/CustomerReviews";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
@@ -439,7 +449,7 @@ const GigDetailPage = () => {
           Dịch vụ bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.
         </p>
         <Link
-          to="/dash-board"
+          to="/dashboard"
           className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md transition-colors"
         >
           Quay lại trang chính
