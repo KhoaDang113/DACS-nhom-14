@@ -24,6 +24,8 @@ function Dashboard() {
   const fetchGigs = async () => {
     try {
       setLoading(true);
+      setError(null); // Reset error state khi bắt đầu gọi API
+      
       const response = await axios.get("http://localhost:5000/api/gigs", {
         withCredentials: true,
       });
@@ -57,6 +59,11 @@ function Dashboard() {
     }
 
     setLastScrollY(currentScrollY);
+  };
+
+  // Hàm tải lại trang và dữ liệu
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   // Gọi API khi component được mount
@@ -228,6 +235,24 @@ function Dashboard() {
                 >
                   Mới nhất
                 </button>
+                
+                {/* Thêm nút tải lại */}
+                <button 
+                  onClick={handleRefresh}
+                  className="px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 text-sm font-medium w-32 text-center bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                >
+                  <span className="flex items-center justify-center gap-1">
+                    <svg 
+                      className="w-4 h-4" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Tải lại
+                  </span>
+                </button>
               </div>
               {/* All Gigs Grid Section */}
               <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 transition-all duration-300 hover:shadow-2xl">
@@ -296,8 +321,21 @@ function Dashboard() {
                 </div>
 
                 {error && (
-                  <div className="p-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg animate-pulse">
-                    {error}
+                  <div className="p-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+                        </svg>
+                        {error}
+                      </div>
+                      <button 
+                        onClick={handleRefresh}
+                        className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                      >
+                        Tải lại
+                      </button>
+                    </div>
                   </div>
                 )}
 

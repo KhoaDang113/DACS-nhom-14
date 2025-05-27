@@ -1,14 +1,12 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Modal from "../../components/ui/admin/Modal";
-import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/admin/Dropdown";
-import { Search, Plus, Folder, Edit, Trash2, PlusCircle, Loader2, AlertCircle, MoreHorizontal } from "lucide-react";
+import { Search, Plus, Folder, Edit, Trash2, PlusCircle, Loader2, AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
 
 interface Category {
   _id: string;
@@ -27,35 +25,38 @@ const CategoryManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddSubcategoryModalOpen, setIsAddSubcategoryModalOpen] =
-    useState(false);
-  const [isSubcategoriesModalOpen, setIsSubcategoriesModalOpen] =
-    useState(false);
-  const [
-    selectedCategoryForSubcategories,
-    setSelectedCategoryForSubcategories,
-  ] = useState<Category | null>(null);
-  const [subcategories, setSubcategories] = useState<Category[]>([]);
-  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
-  const [subcategoryError, setSubcategoryError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
+  
   // Trạng thái cho modal thêm/sửa danh mục
   const [categoryName, setCategoryName] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
+  const [categorySlug, setCategorySlug] = useState("");
+  const [autoGenerateSlug, setAutoGenerateSlug] = useState(true);
   const [parentCategory, setParentCategory] = useState<string>("");
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
-
-  // Phân trang (mỗi trang hiển thị 10 mục)
-  const itemsPerPage = 10;
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [originalName, setOriginalName] = useState("");
+  
+  // Trạng thái cho hiển thị cây danh mục
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Tự động tạo slug từ tên danh mục
+  useEffect(() => {
+    if (autoGenerateSlug && categoryName) {
+      const slug = categoryName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, "")
+        .replace(/\s+/g, "-");
+      setCategorySlug(slug);
+    }
+  }, [categoryName, autoGenerateSlug]);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -69,9 +70,6 @@ const CategoryManagement: React.FC = () => {
       );
       if (response.data && !response.data.error) {
         setCategories(response.data.data || []);
-        setTotalPages(
-          Math.ceil((response.data.data?.length || 0) / itemsPerPage)
-        );
       } else {
         setError(response.data.message || "Có lỗi khi tải danh mục");
       }
@@ -89,7 +87,8 @@ const CategoryManagement: React.FC = () => {
         "http://localhost:5000/api/admin/category/create",
         {
           categoryName,
-          description: categoryDescription,
+          description: "",
+          slug: categorySlug,
           parentCategory: parentCategory || null,
         },
         {
@@ -102,9 +101,7 @@ const CategoryManagement: React.FC = () => {
 
       // Đóng modal và reset form
       setIsModalOpen(false);
-      setCategoryName("");
-      setCategoryDescription("");
-      setParentCategory("");
+      resetForm();
     } catch (err: unknown) {
       console.error("Lỗi khi tạo danh mục:", err);
       if (axios.isAxiosError(err) && err.response) {
@@ -117,13 +114,20 @@ const CategoryManagement: React.FC = () => {
 
   const handleUpdateCategory = async () => {
     if (!currentCategory) return;
+    
+    // Kiểm tra nếu tên đã thay đổi nhưng slug chưa thay đổi
+    if (originalName !== categoryName && currentCategory.slug === categorySlug) {
+      setSlugError("Bạn đã đổi tên danh mục, vui lòng cập nhật slug mới");
+      return;
+    }
 
     try {
       await axios.put(
         `http://localhost:5000/api/admin/category/${currentCategory._id}/update`,
         {
           categoryName,
-          description: categoryDescription,
+          description: "",
+          slug: categorySlug,
           parentCategory: parentCategory || null,
         },
         {
@@ -136,10 +140,7 @@ const CategoryManagement: React.FC = () => {
 
       // Đóng modal và reset form
       setIsEditModalOpen(false);
-      setCategoryName("");
-      setCategoryDescription("");
-      setParentCategory("");
-      setCurrentCategory(null);
+      resetForm();
     } catch (err: unknown) {
       console.error("Lỗi khi cập nhật danh mục:", err);
       if (axios.isAxiosError(err) && err.response) {
@@ -175,120 +176,138 @@ const CategoryManagement: React.FC = () => {
     }
   };
 
+  const resetForm = () => {
+    setCategoryName("");
+    setCategorySlug("");
+    setParentCategory("");
+    setAutoGenerateSlug(true);
+    setCurrentCategory(null);
+    setSlugError(null);
+    setOriginalName("");
+  };
+
   const openEditModal = (category: Category) => {
     setCurrentCategory(category);
     setCategoryName(category.name);
-    setCategoryDescription(category.description || "");
+    setOriginalName(category.name);
+    setCategorySlug(category.slug || "");
     setParentCategory(category.parentCategory || "");
+    setAutoGenerateSlug(false);
+    setSlugError(null);
     setIsEditModalOpen(true);
   };
 
   const openAddSubcategoryModal = (parentId: string) => {
+    resetForm();
     setParentCategory(parentId);
-    setCategoryName("");
-    setCategoryDescription("");
-    setIsAddSubcategoryModalOpen(true);
+    setIsModalOpen(true);
   };
 
-  // Hàm lấy danh sách danh mục con của một danh mục
-  const fetchSubcategories = async (categoryId: string) => {
-    setLoadingSubcategories(true);
-    setSubcategoryError(null);
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/admin/category/subcategories/${categoryId}`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (response.data && !response.data.error) {
-        return response.data.subcategories || [];
-      } else {
-        setSubcategoryError(
-          response.data.message || "Có lỗi khi tải danh mục con"
-        );
-        return [];
-      }
-    } catch (err: unknown) {
-      console.error("Lỗi khi tải danh mục con:", err);
-      if (axios.isAxiosError(err) && err.response) {
-        setSubcategoryError(
-          err.response.data?.message || "Không thể tải danh mục con"
-        );
-      } else {
-        setSubcategoryError("Không thể tải danh mục con");
-      }
-      return [];
-    } finally {
-      setLoadingSubcategories(false);
-    }
-  };
-
-  // Mở modal hiển thị danh mục con
-  const openSubcategoriesModal = async (category: Category) => {
-    setSelectedCategoryForSubcategories(category);
-    setIsSubcategoriesModalOpen(true);
-
-    // Lấy danh sách danh mục con từ API
-    const subCategories = await fetchSubcategories(category._id);
-    setSubcategories(subCategories);
-  };
-
-  // Xử lý xóa danh mục con
-  const handleDeleteSubcategory = async (subcategoryId: string) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục con này?")) {
-      return;
-    }
-
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/admin/category/${subcategoryId}/delete`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      // Cập nhật lại danh sách danh mục con
-      if (selectedCategoryForSubcategories) {
-        const updatedSubcategories = await fetchSubcategories(
-          selectedCategoryForSubcategories._id
-        );
-        setSubcategories(updatedSubcategories);
-      }
-
-      // Cũng cần cập nhật danh sách danh mục chính
-      fetchCategories();
-    } catch (err: unknown) {
-      console.error("Lỗi khi xóa danh mục con:", err);
-      if (axios.isAxiosError(err) && err.response) {
-        setSubcategoryError(
-          err.response.data?.message || "Không thể xóa danh mục con"
-        );
-      } else {
-        setSubcategoryError("Không thể xóa danh mục con");
-      }
-    }
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
   };
 
   // Lọc danh mục theo từ khóa tìm kiếm
-  const filteredCategories = categories.filter(
-    (category) =>
-      category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.slug?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filterCategories = (categories: Category[]): Category[] => {
+    if (!searchTerm) return categories;
+    
+    return categories.filter(category => {
+      // Kiểm tra nếu category hiện tại khớp với từ khóa tìm kiếm
+      const currentCategoryMatches = 
+        category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        category.slug?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Nếu category hiện tại khớp, trả về true
+      if (currentCategoryMatches) return true;
+      
+      // Nếu category có children, kiểm tra đệ quy trong children
+      if (category.children && category.children.length > 0) {
+        const filteredChildren = filterCategories(category.children);
+        // Nếu có bất kỳ children nào khớp, trả về true và thay thế children với kết quả đã lọc
+        if (filteredChildren.length > 0) {
+          category.children = filteredChildren;
+          return true;
+        }
+      }
+      
+      return false;
+    });
+  };
 
-  // Phân trang
-  const paginatedCategories = filteredCategories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  // Đếm số lượng danh mục con trong mỗi danh mục
-  const getCategoryStats = (category: Category) => {
-    const childCount = category.children?.length || 0;
+  const filteredCategories = filterCategories([...categories]);
 
-    return { childCount };
+  // Hiển thị danh mục dạng cây
+  const renderCategoryTree = (categories: Category[], level = 0) => {
+    return categories.map((category) => (
+      <React.Fragment key={category._id}>
+        <div 
+          className={`
+            flex items-center p-3 border-b border-gray-100 hover:bg-gray-50 
+            ${level === 0 ? 'font-medium' : ''}
+            ${level === 1 ? 'pl-10 bg-gray-50' : ''}
+            ${level === 2 ? 'pl-16 bg-gray-100' : ''}
+          `}
+        >
+          <div className="flex-1 flex items-center overflow-hidden">
+            <div style={{ width: `${level * 16}px` }}></div>
+            {category.children && category.children.length > 0 ? (
+              <button 
+                className="p-1 mr-1 rounded-sm hover:bg-gray-200"
+                onClick={() => toggleCategoryExpansion(category._id)}
+              >
+                {expandedCategories[category._id] ? (
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
+            ) : (
+              <div className="ml-5"></div>
+            )}
+            <Folder className="h-5 w-5 text-gray-400 mr-2" />
+            <div className="truncate">
+              <div className="font-medium">{category.name}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {level < 2 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openAddSubcategoryModal(category._id)}
+                icon={<PlusCircle className="h-3.5 w-3.5" />}
+              >
+                Thêm
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openEditModal(category)}
+              icon={<Edit className="h-3.5 w-3.5" />}
+            >
+              Sửa
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              onClick={() => handleDeleteCategory(category._id)}
+              icon={<Trash2 className="h-3.5 w-3.5" />}
+            >
+              Xóa
+            </Button>
+          </div>
+        </div>
+        {category.children && 
+         category.children.length > 0 && 
+         expandedCategories[category._id] &&
+         renderCategoryTree(category.children, level + 1)}
+      </React.Fragment>
+    ));
   };
 
   return (
@@ -323,9 +342,7 @@ const CategoryManagement: React.FC = () => {
 
         <Button
           onClick={() => {
-            setCategoryName("");
-            setCategoryDescription("");
-            setParentCategory("");
+            resetForm();
             setIsModalOpen(true);
           }}
           icon={<Plus className="h-4 w-4" />}
@@ -340,151 +357,31 @@ const CategoryManagement: React.FC = () => {
           <span className="ml-2 text-gray-500">Đang tải dữ liệu...</span>
         </div>
       ) : (
-        <>
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Tên</TableHead>
-                  <TableHead>Mô tả</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Danh mục con</TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {" "}
-                {paginatedCategories.length > 0 ? (
-                  paginatedCategories.map((category) => {
-                    const { childCount } = getCategoryStats(category);
-                    return (
-                      <TableRow key={category._id}>
-                        <TableCell className="font-medium max-w-[100px] truncate">
-                          {category._id}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Folder className="h-5 w-5 text-gray-400" />
-                            <span>{category.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-[300px] truncate">
-                          {category.description || "Không có mô tả"}
-                        </TableCell>
-                        <TableCell className="max-w-[150px] truncate">
-                          {category.slug}
-                        </TableCell>
-                        <TableCell>{childCount}</TableCell>
-                        <TableCell className="text-right">
-                          <Dropdown
-                            trigger={
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                icon={<MoreHorizontal className="h-4 w-4" />}
-                              >
-                                <span className="sr-only">Hành động</span>
-                              </Button>
-                            }
-                            align="right"
-                          >
-                            <DropdownItem
-                              onClick={() => openEditModal(category)}
-                            >
-                              <div className="flex items-center">
-                                <Edit className="h-4 w-4 mr-2" />
-                                Chỉnh sửa
-                              </div>
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() =>
-                                openAddSubcategoryModal(category._id)
-                              }
-                            >
-                              <div className="flex items-center">
-                                <PlusCircle className="h-4 w-4 mr-2" />
-                                Thêm danh mục con
-                              </div>
-                            </DropdownItem>
-                            <DropdownItem
-                              onClick={() => openSubcategoriesModal(category)}
-                            >
-                              <div className="flex items-center">
-                                <Folder className="h-4 w-4 mr-2" />
-                                Xem danh mục con
-                              </div>
-                            </DropdownItem>
-                            <DropdownDivider />
-                            <DropdownItem
-                              className="text-red-600"
-                              onClick={() => handleDeleteCategory(category._id)}
-                            >
-                              <div className="flex items-center">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Xóa
-                              </div>
-                            </DropdownItem>
-                          </Dropdown>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell>
-                      <div className="text-center py-6">
-                        {searchTerm ? (
-                          <p>
-                            Không tìm thấy danh mục phù hợp với từ khóa "
-                            {searchTerm}"
-                          </p>
-                        ) : (
-                          <p>Không có danh mục nào</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{""}</TableCell>
-                    <TableCell>{""}</TableCell>
-                    <TableCell>{""}</TableCell>
-                    <TableCell>{""}</TableCell>
-                    <TableCell>{""}</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="border-b border-gray-200 bg-gray-100 p-3 flex items-center font-medium">
+            <div className="flex-1">Danh mục</div>
+            <div className="w-32 text-right">Hành động</div>
           </div>
-
-          {/* Phân trang */}
-          {filteredCategories.length > itemsPerPage && (
-            <div className="flex items-center justify-end space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              >
-                Trước
-              </Button>
-              <span className="text-sm text-gray-600">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage >= totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-              >
-                Sau
-              </Button>
-            </div>
-          )}
-        </>
+          <div className="divide-y divide-gray-100">
+            {filteredCategories.length > 0 ? (
+              renderCategoryTree(filteredCategories)
+            ) : (
+              <div className="p-6 text-center">
+                {searchTerm ? (
+                  <p>
+                    Không tìm thấy danh mục phù hợp với từ khóa "
+                    {searchTerm}"
+                  </p>
+                ) : (
+                  <p>Không có danh mục nào</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
-      {/* Modal thêm danh mục */}
+      {/* Modal thêm/sửa danh mục */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -506,18 +403,39 @@ const CategoryManagement: React.FC = () => {
             />
           </div>
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Mô tả
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor="slug"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Slug
+              </label>
+              <div className="flex items-center">
+                <input
+                  id="auto-generate"
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={autoGenerateSlug}
+                  onChange={(e) => setAutoGenerateSlug(e.target.checked)}
+                />
+                <label
+                  htmlFor="auto-generate"
+                  className="ml-2 block text-sm text-gray-600"
+                >
+                  Tự động tạo
+                </label>
+              </div>
+            </div>
             <Input
-              id="description"
-              placeholder="Mô tả ngắn về danh mục"
-              value={categoryDescription}
-              onChange={(e) => setCategoryDescription(e.target.value)}
+              id="slug"
+              placeholder="vd: phat-trien-web"
+              value={categorySlug}
+              onChange={(e) => setCategorySlug(e.target.value)}
+              disabled={autoGenerateSlug}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Slug là phiên bản URL-friendly của tên danh mục, được sử dụng trong đường dẫn URL.
+            </p>
           </div>
           <div>
             <label
@@ -535,9 +453,16 @@ const CategoryManagement: React.FC = () => {
               <option value="">Không có (Đây là danh mục gốc)</option>
               {categories.map((cat) => (
                 <option key={cat._id} value={cat._id}>
-                  {cat.name}
+                  {cat.name} (Cấp 1)
                 </option>
               ))}
+              {categories.flatMap(cat => 
+                cat.children?.map(subcat => (
+                  <option key={subcat._id} value={subcat._id}>
+                    {cat.name} &gt; {subcat.name} (Cấp 2)
+                  </option>
+                )) || []
+              )}
             </select>
           </div>
 
@@ -567,21 +492,70 @@ const CategoryManagement: React.FC = () => {
             <Input
               id="edit-name"
               value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
+              onChange={(e) => {
+                setCategoryName(e.target.value);
+                // Nếu tên thay đổi và slug chưa được thay đổi, hiển thị thông báo
+                if (e.target.value !== originalName && currentCategory && currentCategory.slug === categorySlug) {
+                  setSlugError("Bạn đã đổi tên danh mục, vui lòng cập nhật slug mới");
+                } else {
+                  setSlugError(null);
+                }
+              }}
             />
           </div>
           <div>
-            <label
-              htmlFor="edit-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Mô tả
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                htmlFor="edit-slug"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Slug
+              </label>
+              <div className="flex items-center">
+                <input
+                  id="edit-auto-generate"
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={autoGenerateSlug}
+                  onChange={(e) => {
+                    setAutoGenerateSlug(e.target.checked);
+                    if (e.target.checked && categoryName !== originalName) {
+                      // Tự động tạo slug mới dựa trên tên mới
+                      const newSlug = categoryName
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9 ]/g, "")
+                        .replace(/\s+/g, "-");
+                      setCategorySlug(newSlug);
+                      setSlugError(null);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="edit-auto-generate"
+                  className="ml-2 block text-sm text-gray-600"
+                >
+                  Tự động tạo
+                </label>
+              </div>
+            </div>
             <Input
-              id="edit-description"
-              value={categoryDescription}
-              onChange={(e) => setCategoryDescription(e.target.value)}
+              id="edit-slug"
+              value={categorySlug}
+              onChange={(e) => {
+                setCategorySlug(e.target.value);
+                // Nếu slug đã được thay đổi, xóa thông báo lỗi
+                if (currentCategory && e.target.value !== currentCategory.slug) {
+                  setSlugError(null);
+                }
+              }}
+              disabled={autoGenerateSlug}
+              className={slugError ? "border-red-500" : ""}
             />
+            {slugError && (
+              <p className="text-xs text-red-500 mt-1">{slugError}</p>
+            )}
           </div>
           <div>
             <label
@@ -601,9 +575,17 @@ const CategoryManagement: React.FC = () => {
                 .filter((cat) => cat._id !== currentCategory?._id)
                 .map((cat) => (
                   <option key={cat._id} value={cat._id}>
-                    {cat.name}
+                    {cat.name} (Cấp 1)
                   </option>
                 ))}
+              {categories.flatMap(cat => 
+                cat.children?.filter(subcat => subcat._id !== currentCategory?._id)
+                  .map(subcat => (
+                    <option key={subcat._id} value={subcat._id}>
+                      {cat.name} &gt; {subcat.name} (Cấp 2)
+                    </option>
+                  )) || []
+              )}
             </select>
           </div>
 
@@ -611,209 +593,11 @@ const CategoryManagement: React.FC = () => {
             <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Hủy
             </Button>
-            <Button onClick={handleUpdateCategory}>Cập nhật</Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Modal thêm danh mục con */}
-      <Modal
-        isOpen={isAddSubcategoryModalOpen}
-        onClose={() => setIsAddSubcategoryModalOpen(false)}
-        title="Thêm danh mục con"
-      >
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="sub-name"
-              className="block text-sm font-medium text-gray-700 mb-1"
+            <Button 
+              onClick={handleUpdateCategory}
+              disabled={!!slugError}
             >
-              Tên danh mục con
-            </label>
-            <Input
-              id="sub-name"
-              placeholder="VD: Frontend Development"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="sub-description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Mô tả
-            </label>
-            <Input
-              id="sub-description"
-              placeholder="Mô tả ngắn về danh mục con"
-              value={categoryDescription}
-              onChange={(e) => setCategoryDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="pt-2">
-            <p className="text-sm text-gray-600">
-              Danh mục này sẽ được thêm vào bên dưới danh mục cha đã chọn.
-            </p>
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
-            <Button
-              variant="outline"
-              onClick={() => setIsAddSubcategoryModalOpen(false)}
-            >
-              Hủy
-            </Button>
-            <Button onClick={handleCreateCategory}>Thêm danh mục con</Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Modal danh sách danh mục con */}
-      <Modal
-        isOpen={isSubcategoriesModalOpen}
-        onClose={() => setIsSubcategoriesModalOpen(false)}
-        title={`Danh mục con của: ${
-          selectedCategoryForSubcategories?.name || ""
-        }`}
-      >
-        <div className="space-y-4">
-          {subcategoryError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm flex items-center">
-              <AlertCircle className="h-4 w-4 mr-1.5" />
-              <span>{subcategoryError}</span>
-            </div>
-          )}
-
-          {loadingSubcategories ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-              <span className="ml-2 text-gray-500">
-                Đang tải danh mục con...
-              </span>
-            </div>
-          ) : (
-            <>
-              {subcategories.length > 0 ? (
-                <div className="overflow-hidden border border-gray-200 rounded-md">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Tên
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Mô tả
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Slug
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Hành động
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {subcategories.map((subcategory) => (
-                        <tr key={subcategory._id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <Folder className="h-4 w-4 text-gray-400 mr-2" />
-                              <span className="text-sm font-medium text-gray-900">
-                                {subcategory.name}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate">
-                            {subcategory.description || "Không có mô tả"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
-                            {subcategory.slug}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-center">
-                            <div className="flex items-center justify-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setIsSubcategoriesModalOpen(false);
-                                  openEditModal(subcategory);
-                                }}
-                                icon={<Edit className="h-3.5 w-3.5" />}
-                              >
-                                Sửa
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 border-red-200 hover:bg-red-50"
-                                onClick={() =>
-                                  handleDeleteSubcategory(subcategory._id)
-                                }
-                                icon={<Trash2 className="h-3.5 w-3.5" />}
-                              >
-                                Xóa
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-gray-500">
-                    Danh mục này chưa có danh mục con nào.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={() => {
-                      setIsSubcategoriesModalOpen(false);
-                      openAddSubcategoryModal(
-                        selectedCategoryForSubcategories?._id || ""
-                      );
-                    }}
-                    icon={<PlusCircle className="h-4 w-4 mr-1" />}
-                  >
-                    Thêm danh mục con
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-
-          <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
-            {subcategories.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsSubcategoriesModalOpen(false);
-                  openAddSubcategoryModal(
-                    selectedCategoryForSubcategories?._id || ""
-                  );
-                }}
-                icon={<PlusCircle className="h-4 w-4" />}
-              >
-                Thêm danh mục con
-              </Button>
-            )}
-            <Button onClick={() => setIsSubcategoriesModalOpen(false)}>
-              Đóng
+              Cập nhật
             </Button>
           </div>
         </div>

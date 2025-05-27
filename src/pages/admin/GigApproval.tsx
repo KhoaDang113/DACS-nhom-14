@@ -269,7 +269,10 @@ const GigApproval: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to fetch pending gigs");
-      toast.error(err.response?.data?.message || "Failed to fetch pending gigs");
+      // Chỉ hiển thị toast lỗi nếu không phải thông báo không có dịch vụ cần phê duyệt
+      if (err.response?.data?.message !== "Không có dịch vụ nào cần phê duyệt") {
+        toast.error(err.response?.data?.message || "Failed to fetch pending gigs");
+      }
     } finally {
       setLoading(false);
     }
@@ -426,12 +429,18 @@ const GigApproval: React.FC = () => {
           <span className="ml-2 text-gray-600">Đang tải dữ liệu...</span>
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-          {error}
-        </div>
+        error === "Không có dịch vụ nào cần phê duyệt" ? (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-8 rounded-md text-center">
+            Không có dịch vụ nào cần phê duyệt
+          </div>
+        ) : (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            {error}
+          </div>
+        )
       ) : filteredGigs.length === 0 ? (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-8 rounded-md text-center">
-          Không có dịch vụ nào đang chờ phê duyệt.
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-8 rounded-md text-center">
+          Không có dịch vụ nào cần phê duyệt
         </div>
       ) : (
         <div className="bg-white shadow rounded-lg overflow-hidden">
