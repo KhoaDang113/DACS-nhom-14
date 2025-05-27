@@ -2,14 +2,34 @@
 
 import type React from "react";
 import { useState } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/ui/admin/Table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "../../components/ui/admin/Table";
 import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import Badge from "../../components/ui/admin/Badge";
 import Avatar from "../../components/ui/admin/Avatar";
 import Modal from "../../components/ui/admin/Modal";
-import { Dropdown, DropdownItem, DropdownDivider } from "../../components/ui/admin/Dropdown";
-import { Search, Plus, Shield, Mail, Key, Trash2, MoreHorizontal, User } from "lucide-react";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownDivider,
+} from "../../components/ui/admin/Dropdown";
+import {
+  Search,
+  Plus,
+  Shield,
+  Mail,
+  Key,
+  Trash2,
+  MoreHorizontal,
+  User,
+} from "lucide-react";
 
 interface Admin {
   id: string;
@@ -20,54 +40,6 @@ interface Admin {
   status: "Active" | "Inactive";
   lastLogin: string;
 }
-
-const admins: Admin[] = [
-  {
-    id: "A001",
-    name: "John Smith",
-    email: "john.smith@example.com",
-    avatar: "https://via.placeholder.com/150",
-    role: "Super Admin",
-    status: "Active",
-    lastLogin: "Today, 10:30 AM",
-  },
-  {
-    id: "A002",
-    name: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    avatar: "https://via.placeholder.com/150",
-    role: "Content Moderator",
-    status: "Active",
-    lastLogin: "Yesterday, 3:45 PM",
-  },
-  {
-    id: "A003",
-    name: "Michael Brown",
-    email: "michael.b@example.com",
-    avatar: "https://via.placeholder.com/150",
-    role: "User Manager",
-    status: "Inactive",
-    lastLogin: "Apr 20, 2023, 9:15 AM",
-  },
-  {
-    id: "A004",
-    name: "Emily Davis",
-    email: "emily.d@example.com",
-    avatar: "https://via.placeholder.com/150",
-    role: "Finance Admin",
-    status: "Active",
-    lastLogin: "Today, 8:20 AM",
-  },
-  {
-    id: "A005",
-    name: "David Wilson",
-    email: "david.w@example.com",
-    avatar: "https://via.placeholder.com/150",
-    role: "Super Admin",
-    status: "Active",
-    lastLogin: "Yesterday, 11:30 AM",
-  },
-];
 
 const AdminAccounts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -154,7 +126,9 @@ const AdminAccounts: React.FC = () => {
                     }
                     className="capitalize"
                   >
-                    {admin.status === "Active" ? "Hoạt động" : "Không hoạt động"}
+                    {admin.status === "Active"
+                      ? "Hoạt động"
+                      : "Không hoạt động"}
                   </Badge>
                 </TableCell>
                 <TableCell>{admin.lastLogin}</TableCell>

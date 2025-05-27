@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
 import { Menu, Bell, Search, Command } from "lucide-react";
-import Sidebar from "../Sidebar";
+import Sidebar from "../Admin/Sidebar";
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
