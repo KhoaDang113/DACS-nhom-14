@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
-import { Menu, Bell, Search, Command } from "lucide-react";
-import Sidebar from "../Sidebar";
+import { Menu, Search, Command } from "lucide-react";
+import Sidebar from "../Admin/Sidebar";
 
 const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,15 +44,15 @@ const Layout: React.FC = () => {
 
               <div className="flex items-center gap-4">
                 {/* Notification button with badge */}
-                <button className="relative p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full">
+                {/* <button className="relative p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full">
                   <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center">
                     <span className="text-xs font-medium text-white">3</span>
                   </span>
                   <Bell className="h-4 w-4" />
-                </button>
+                </button> */}
 
                 {/* Divider */}
-                <div className="h-6 w-px bg-gray-200" />
+                {/* <div className="h-6 w-px bg-gray-200" /> */}
 
                 {/* User button */}
                 <div className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md">

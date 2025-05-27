@@ -4,7 +4,7 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import SignInPage from "../pages/signIn";
 import SignUpPage from "../pages/signUp";
 import PaymentPage from "../pages/paymentPage";
-import Layout from "../components/layouts/layout";
+import Layout from "../components/Layouts/layout";
 import HomePage from "../pages/homePage";
 import Dashboard from "../pages/dashBoard";
 import ProfilePage from "../pages/profile";
@@ -25,11 +25,11 @@ import RequireAdmin from "../middleware/RequireAdmin";
 import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
 import ProtectedRoute from "../middleware/ProtectedRoute";
 import LockedAccountRoute from "../middleware/LockedAccountRoute"; // Import LockedAccountRoute
-import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout";
+import AuthenticatedLayout from "../components/Layouts/AuthenticatedLayout";
 import PaymentSuccess from "../pages/paymentSuccessPage";
 import PaymentFailed from "../pages/paymentFail";
 //admin
-import AdminLayout from "../components/layouts/AdminLayout";
+import AdminLayout from "../components/Layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
 import AdminAccounts from "../pages/admin/AdminAccounts";
 import AdminCategoryManagement from "../pages/admin/CategoryManagement";
@@ -41,9 +41,10 @@ import AdminUserFeedback from "../pages/admin/UserFeedback";
 import AdminUserPermission from "../pages/admin/UserPermissions";
 import AdminViolationReport from "../pages/admin/ViolationReports";
 // Quảng cáo Job Hot
-import AdminHotJobAds from "../pages/admin/HotJobAds";
-import AdminCreateHotJobAd from "../pages/admin/CreateHotJobAd";
-import ChatBoxLayout from "../components/layouts/ChatBoxLayout";
+import AdminHotJobAds from "../pages/admin/JobBanner";
+import JobHotManagement from "../pages/admin/HotJob";
+import AdminCreateHotJobAd from "../pages/admin/CreateBannerJobAd";
+import ChatBoxLayout from "../components/Layouts/ChatBoxLayout";
 
 // Routes không cần đăng nhập
 const publicRoutes: RouteObject[] = [
@@ -300,8 +301,9 @@ const router: RouteObject[] = [
       { path: "user-permission", element: <AdminUserPermission /> },
       { path: "violation-report", element: <AdminViolationReport /> },
       // Quảng cáo Job Hot
-      { path: "hot-job-ads", element: <AdminHotJobAds /> },
-      { path: "hot-job-ads/create", element: <AdminCreateHotJobAd /> },
+      { path: "job-banners", element: <AdminHotJobAds /> },
+      { path: "job-banners/create", element: <AdminCreateHotJobAd /> },
+      { path: "job-hot", element: <JobHotManagement /> },
     ],
   },
   {
