@@ -12,19 +12,8 @@ export default function ProLanding() {
   }, []);
 
   return (
-    <div className="bg-[#e8f7f1] sm:p-6 md:p-10 lg:p-16 mt-8 sm:mt-12 md:mt-16 lg:mt-20 rounded-xl sm:rounded-2xl md:rounded-3xl">
+    <div className="bg-[#e8f2ff] sm:p-6 md:p-10 lg:p-16 mt-8 sm:mt-12 md:mt-16 lg:mt-20 rounded-xl sm:rounded-2xl md:rounded-3xl">
       <div className="max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center gap-2 font-bold text-lg sm:text-xl mb-8 sm:mb-10 md:mb-12 transition-transform hover:scale-105"
-        >
-          <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-green-500 flex items-center justify-center text-white text-xs sm:text-sm shadow-md">
-            Jop
-          </div>
-          <span className="text-gray-900">JopViet</span>
-        </Link>
-
         {/* Main content */}
         <div
           className={`grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center ${
@@ -36,14 +25,7 @@ export default function ProLanding() {
             {/* Headline */}
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                Giải pháp{" "}
-                <span className="text-emerald-500 relative">
-                  cao cấp
-                  <span className="absolute -bottom-1 left-0 w-full h-1 bg-emerald-500/30 rounded-full hidden md:block"></span>
-                </span>{" "}
-                cho
-                <br className="hidden sm:block" />
-                doanh nghiệp thuê freelancer
+                Giải pháp cao cấp dành cho mọi người khi kết nối với freelancer
               </h2>
             </div>
 
@@ -76,9 +58,6 @@ export default function ProLanding() {
                   : "opacity-0 translate-y-4"
               } transition-all duration-700 delay-500`}
             >
-              <button className="bg-gray-900 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-md font-medium hover:bg-gray-800 transition-all hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">
-                Dùng thử ngay
-              </button>
             </div>
           </div>
 
@@ -96,7 +75,7 @@ export default function ProLanding() {
                 <div className="relative w-6 sm:w-8 h-6 sm:h-8">
                   <div className="absolute inset-0 rounded-full border-3 sm:border-4 border-gray-200"></div>
                   <div
-                    className="absolute inset-0 rounded-full border-3 sm:border-4 border-emerald-500 border-t-transparent border-r-transparent border-b-transparent"
+                    className="absolute inset-0 rounded-full border-3 sm:border-4 border-blue-500 border-t-transparent border-r-transparent border-b-transparent"
                     style={{ transform: "rotate(331deg)" }}
                   ></div>
                 </div>
@@ -117,7 +96,6 @@ export default function ProLanding() {
               <div className="mt-8 rounded-lg overflow-hidden shadow-sm">
                 <img
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-g3D0vlqZkLo8eQYJ516Vh8W1jEwLJM.png"
-                  alt="Freelancers đang làm việc"
                   width={500}
                   height={300}
                   className="w-full h-auto"
@@ -127,13 +105,13 @@ export default function ProLanding() {
               {/* Chart */}
               <div className="mt-4 px-2 sm:px-4">
                 <div className="flex items-center justify-between">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   <div className="h-10 sm:h-12 relative w-full">
                     <svg viewBox="0 0 200 50" className="w-full h-full">
                       <path
                         d="M0,25 Q20,40 40,20 T80,25 T120,10 T160,30 T200,15"
                         fill="none"
-                        stroke="#10b981"
+                        stroke="#3b82f6"
                         strokeWidth="2"
                       />
                     </svg>
@@ -148,10 +126,6 @@ export default function ProLanding() {
                 </div>
               </div>
             </div>
-
-            {/* Decorative elements */}
-            <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-emerald-500/20 rounded-full hidden md:block"></div>
-            <div className="absolute -top-6 -left-6 w-16 h-16 bg-emerald-500/10 rounded-full hidden md:block"></div>
           </div>
         </div>
       </div>
@@ -187,7 +161,7 @@ function FeatureItem({
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-start">
-        <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 mr-2 mt-0.5 flex-shrink-0" />
+        <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
         <h3 className="font-bold text-base sm:text-lg text-gray-900">
           {title}
         </h3>

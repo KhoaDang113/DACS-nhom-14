@@ -12,7 +12,7 @@ import React from "react";
 const formSchema = z.object({
   title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(1000, "Tiêu đề không được vượt quá 1000 ký tự"),
   description: z.string().min(50, "Mô tả phải có ít nhất 50 ký tự").max(10000, "Mô tả không được vượt quá 10000 ký tự"),
-  price: z.coerce.number().min(1, "Giá phải lớn hơn 0"),
+  price: z.coerce.number().min(0, "Giá trị phải lớn hơn hoặc bằng 0"),
   category: z.string().nonempty("Vui lòng chọn danh mục"),
   deliveryTime: z.coerce.number().min(1, "Thời gian giao hàng phải ít nhất 1 ngày"),
 });
@@ -488,28 +488,30 @@ export default function CreateGigForm() {
         {currentStep === 5 && (
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">Giá dịch vụ (VNĐ)</h3>
-            <input
-              type="number"
-              min="1"
-              className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.price ? "border-red-500 bg-red-50" : "border-gray-300"
-              }`}
-              {...register("price")}
-              onKeyPress={handleKeyPress}
-              onFocus={(e) => e.target.select()}
-              onClick={(e) => e.currentTarget.select()}
-              onChange={(e) => {
-                if (e.target.value === "0") {
-                  e.target.value = "";
-                }
-              }}
-            />
-            {errors.price && (
-              <p className="text-sm text-red-500 flex items-center">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                {errors.price.message}
-              </p>
-            )}
+            <div className="relative">
+              <input
+                type="number"
+                min="1000"
+                className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.price ? "border-red-500 bg-red-50" : "border-gray-300"
+                }`}
+                {...register("price")}
+                onKeyPress={handleKeyPress}
+                onFocus={(e) => e.target.select()}
+                onClick={(e) => e.currentTarget.select()}
+                onChange={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.value = "";
+                  }
+                }}
+              />
+              {errors.price && (
+                <div className="absolute left-0 top-full mt-1 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md px-2 py-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.price.message}
+                </div>
+              )}
+            </div>
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
               <button
                 type="button"
