@@ -1,0 +1,325 @@
+[{
+  "_id": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "name": "Đồ họa & Thiết kế",
+  "description": "ok",
+  "slug": "do-hoa-thiet-ke",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "name": "Logo & Nhận diện thương hiệu",
+  "description": "ok",
+  "slug": "logo-nhan-dien-thuong-hieu",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab7d74cf3a9cd5a3ca24a"
+  },
+  "name": "Nghệ thuật & Minh họa",
+  "description": "ok",
+  "slug": "nghe-thuat-minh-hoa",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab7e74cf3a9cd5a3ca24b"
+  },
+  "name": "Thiết kế Web & Ứng dụng",
+  "description": "ok",
+  "slug": "thiet-ke-web-ung-dung",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab7f74cf3a9cd5a3ca24c"
+  },
+  "name": "Thiết kế trực quan",
+  "description": "ok",
+  "slug": "thiet-ke-truc-quan",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab80a4cf3a9cd5a3ca24d"
+  },
+  "name": "Thiết kế Sản phẩm & Trò chơi",
+  "description": "ok",
+  "slug": "thiet-ke-san-pham-tro-choi",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab8254cf3a9cd5a3ca24e"
+  },
+  "name": "Thiết kế in ấn",
+  "description": "ok",
+  "slug": "thiet-ke-in-an",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab8464cf3a9cd5a3ca24f"
+  },
+  "name": "Thiết kế tiếp thị",
+  "description": "ok",
+  "slug": "thiet-ke-tiep-thi",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab85a4cf3a9cd5a3ca250"
+  },
+  "name": "Bao bì & Bìa sách",
+  "description": "ok",
+  "slug": "bao-bi-bia-sach",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab8954cf3a9cd5a3ca251"
+  },
+  "name": "Thiết kế Kiến trúc & Xây dựng",
+  "description": "ok",
+  "slug": "thiet-ke-kien-truc-xay-dung",
+  "parentCategory": {
+    "$oid": "67eab19d4cf3a9cd5a3ca238"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab9744cf3a9cd5a3ca252"
+  },
+  "name": "Thiết kế Logo",
+  "description": "ok",
+  "slug": "thiet-ke-logo",
+  "parentCategory": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab99d4cf3a9cd5a3ca253"
+  },
+  "name": "Hướng dẫn về phong cách thương hiệu",
+  "description": "ok",
+  "slug": "huong-dan-phong-cach-thuong-hieu",
+  "parentCategory": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab9b34cf3a9cd5a3ca254"
+  },
+  "name": "Danh thiếp & Văn phòng phẩm",
+  "description": "ok",
+  "slug": "danh-thiep-van-phong-pham",
+  "parentCategory": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab9c24cf3a9cd5a3ca255"
+  },
+  "name": "Phông chữ & Kiểu chữ",
+  "description": "ok",
+  "slug": "phong-chu-kieu-chu",
+  "parentCategory": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab9d34cf3a9cd5a3ca256"
+  },
+  "name": "Công cụ tạo logo",
+  "description": "ok",
+  "slug": "cong-cu-tao-logo",
+  "parentCategory": {
+    "$oid": "67eab7ba4cf3a9cd5a3ca249"
+  },
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eab19d4cf3a9cd5a3ca239"
+  },
+  "name": "Lập trình & Công nghệ",
+  "description": "ok",
+  "slug": "lap-trinh-cong-nghe",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe67b92940008310a3d2"
+  },
+  "name": "Tiếp thị số",
+  "description": "ok",
+  "slug": "tiep-thi-so",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe71b92940008310a3d4"
+  },
+  "name": "Video & Hoạt hình",
+  "description": "ok",
+  "slug": "video-hoat-hinh",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe79b92940008310a3d6"
+  },
+  "name": "Viết lách & Dịch thuật",
+  "description": "ok",
+  "slug": "viet-lach-dich-thuat",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe83b92940008310a3d8"
+  },
+  "name": "Âm nhạc & Âm thanh",
+  "description": "ok",
+  "slug": "am-nhac-am-thanh",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe8cb92940008310a3da"
+  },
+  "name": "Kinh doanh",
+  "description": "ok",
+  "slug": "kinh-doanh",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabe98b92940008310a3dc"
+  },
+  "name": "Tài chính",
+  "description": "ok",
+  "slug": "tai-chinh",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabea2b92940008310a3de"
+  },
+  "name": "Dịch vụ AI",
+  "description": "ok",
+  "slug": "dich-vu-ai",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabeaab92940008310a3e0"
+  },
+  "name": "Phát triển bản thân",
+  "description": "ok",
+  "slug": "phat-trien-ban-than",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabeb1b92940008310a3e2"
+  },
+  "name": "Tư vấn",
+  "description": "ok",
+  "slug": "tu-van",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabebab92940008310a3e4"
+  },
+  "name": "Dữ liệu",
+  "description": "ok",
+  "slug": "du-lieu",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+},
+{
+  "_id": {
+    "$oid": "67eabec2b92940008310a3e6"
+  },
+  "name": "Nhiếp ảnh",
+  "description": "ok",
+  "slug": "nhiep-anh",
+  "parentCategory": null,
+  "adminId": "123",
+  "isDeleted": false
+}]

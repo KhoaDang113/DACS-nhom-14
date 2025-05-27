@@ -37,6 +37,16 @@ interface CustomerReviewsProps {
   isGigOwner?: boolean;
 }
 
+// Hàm tính phân bố số sao
+const getStarDistribution = (reviews: CustomerReview[]) => {
+  const distribution = [0, 0, 0, 0, 0]; // 5 -> 1 sao
+  reviews.forEach((review) => {
+    const star = Math.round(review.rating);
+    if (star >= 1 && star <= 5) distribution[5 - star]++;
+  });
+  return distribution;
+};
+
 const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   reviews: initialReviews,
   showGigTitle = true,
@@ -55,8 +65,15 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   const [showResponses, setShowResponses] = useState<{
     [key: string]: boolean;
   }>({});
+  const [selectedStar, setSelectedStar] = useState<number | null>(null);
 
   const averageRating = calculateAverageRating(reviews);
+  const starDistribution = getStarDistribution(reviews);
+
+  const filteredReviews = (selectedStar
+    ? reviews.filter((r) => Math.round(r.rating) === selectedStar)
+    : reviews) as CustomerReviewWithResponse[];
+
   useEffect(() => {
     if (!socket.connected) socket.connect();
 
@@ -225,35 +242,51 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      {/* Title and overview */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
-            <div className="flex items-center mr-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={18}
-                  className={`${
-                    star <= Math.round(averageRating)
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300"
-                  }`}
+      {/* Tổng quan đánh giá mới */}
+      <div className=" border-b border-gray-100">
+        <div className="mb-6">
+          {/* Fixed alignment - removed margin and padding that caused indentation */}
+          <div className="flex items-center mb-2">
+            <span className="text-4xl font-bold text-yellow-400 mr-2">
+              {averageRating.toFixed(1)}
+            </span>
+            <div className="flex">
+              {[1,2,3,4,5].map(star => (
+                <Star 
+                  key={star} 
+                  size={32} 
+                  className={star <= Math.round(averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
                 />
               ))}
             </div>
-            <span className="font-medium">{averageRating.toFixed(1)}/5</span>
-            <span className="text-gray-500 ml-2">
-              ({reviews.length} đánh giá)
-            </span>
+            <span className="ml-3 text-gray-600 text-lg">({reviews.length} đánh giá cho dịch vụ này)</span>
+          </div>
+          <div>
+            {[5,4,3,2,1].map((star) => (
+              <div key={star} className="flex items-center mb-1 cursor-pointer group" onClick={() => setSelectedStar(star)}>
+                <span className="w-10 text-sm font-medium group-hover:text-blue-600">{star} sao</span>
+                <div className="flex-1 mx-2 h-3 bg-gray-200 rounded">
+                  <div
+                    className="h-3 bg-yellow-400 rounded"
+                    style={{ width: `${(starDistribution[5-star]/reviews.length)*100 || 2}%` }}
+                  />
+                </div>
+                <span className="w-8 text-sm text-gray-700">{starDistribution[5-star]}</span>
+              </div>
+            ))}
+            {selectedStar && (
+              <button className="mt-2 text-blue-600 text-sm" onClick={() => setSelectedStar(null)}>
+                Xem tất cả đánh giá
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Review list */}
       <div className="divide-y divide-gray-100">
-        {reviews.length > 0 ? (
-          reviews.slice(0, displayCount).map((review) => (
+        {filteredReviews.length > 0 ? (
+          filteredReviews.slice(0, displayCount).map((review) => (
             <div
               key={review.id}
               id={`review-${review.id}`}
@@ -459,7 +492,7 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       </div>
 
       {/* See more button */}
-      {reviews.length > displayCount && (
+      {filteredReviews.length > displayCount && (
         <div className="p-4 text-center border-t border-gray-100">
           <button
             onClick={showMoreReviews}

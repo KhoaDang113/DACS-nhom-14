@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
+import { useLocation } from "react-router-dom";
 // Dữ liệu giả cho API category
 // Sử dụng để mô phỏng API response từ http://localhost:5000/api/category
 
@@ -25,6 +27,23 @@ const CategoryNav = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
   const [showCategory, setShowCategory] = useState(false);
+  const { isSignedIn } = useUser();
+  const location = useLocation(); // Thêm location để kiểm tra đường dẫn hiện tại
+
+  // Danh sách các đường dẫn không hiển thị CategoryNav
+  const excludedPaths = [
+    "/admin",
+    "/become-freelancer",
+    "/create-gig",
+    "/seller-gigs",
+    "/order-management",
+  ];
+
+  // Kiểm tra xem có nên hiển thị CategoryNav không
+  const shouldShowCategoryNav = () => {
+    // Kiểm tra xem đường dẫn hiện tại có trong danh sách loại trừ không
+    return !excludedPaths.some(path => location.pathname.startsWith(path));
+  };
 
   // Thêm effect để kiểm tra scroll position
   useEffect(() => {
@@ -112,7 +131,7 @@ const CategoryNav = () => {
   return (
     <div
       className={`fixed left-0 right-0 bg-white border-b shadow-sm transition-all duration-500 ${
-        showCategory
+        (showCategory || isSignedIn) && shouldShowCategoryNav() // Thêm điều kiện shouldShowCategoryNav
           ? "translate-y-0 opacity-100 z-40"
           : "-translate-y-full opacity-0 -z-10"
       }`}
@@ -131,24 +150,28 @@ const CategoryNav = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {categories.map((category) => (
-          <div
-            key={category._id}
-            className="relative flex-shrink-0 mx-4 first:ml-0 last:mr-0"
-            onMouseEnter={() => handleCategoryHover(category._id)}
-            onMouseLeave={handleCategoryLeave}
-          >
-            <h3
-              className={`font-medium text-[15px] whitespace-nowrap cursor-pointer pb-1.5 transition-all duration-300 ease-in-out ${
-                activeCategory === category._id
-                  ? "text-[#1dbf73] border-b-2 border-[#1dbf73]"
-                  : "text-gray-500 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-200"
-              }`}
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <div
+              key={category._id}
+              className="relative flex-shrink-0 mx-4 first:ml-0 last:mr-0"
+              onMouseEnter={() => handleCategoryHover(category._id)}
+              onMouseLeave={handleCategoryLeave}
             >
-              {category.name}
-            </h3>
-          </div>
-        ))}
+              <h3
+                className={`font-medium text-[15px] whitespace-nowrap cursor-pointer pb-1.5 transition-all duration-300 ease-in-out ${
+                  activeCategory === category._id
+                    ? "text-[#1dbf73] border-b-2 border-[#1dbf73]"
+                    : "text-gray-500 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-200"
+                }`}
+              >
+                {category.name}
+              </h3>
+            </div>
+          ))
+        ) : (
+          <div className="py-2 text-gray-500">Đang tải danh mục...</div>
+        )}
       </div>
 
       {/* Dropdown mega menu */}

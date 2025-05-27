@@ -3,20 +3,20 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/admin/Card";
 import { Eye, CheckCircle, Users, AlertTriangle, Bell } from "lucide-react";
 import { getDashboardStats, DashboardStats } from "../../lib/services/adminDashboardService";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line
+} from 'recharts';
 
 interface StatCardProps {
   title: string;
   value: string;
-  change: string;
-  isPositive: boolean;
   icon: React.ReactNode;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
-  change,
-  isPositive,
   icon,
 }) => {
   return (
@@ -25,13 +25,8 @@ const StatCard: React.FC<StatCardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500">{title}</p>
-            <p className="text-2xl font-semibold mt-1">{value}</p>
-            <div
-              className={`flex items-center mt-1 text-sm ${
-                isPositive ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              <span>{change}</span>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-2xl font-semibold">{value}</p>
             </div>
           </div>
           <div className="p-3 bg-gray-100 rounded-full">{icon}</div>
@@ -45,70 +40,89 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  // Lấy tổng số dịch vụ xem từ API (nếu API có cung cấp)
+
+  // Màu sắc cho các biểu đồ
+  const CHART_COLORS = {
+    blue: '#36A2EB',
+    green: '#4BC0C0',
+    orange: '#FF9F40',
+    purple: '#9966FF',
+    red: '#FF5C5C',
+    yellow: '#FFCC5C',
+  };
+
+  // Màu sắc cho biểu đồ Tổng dịch vụ
+  const SERVICE_COLORS = {
+    active: '#FF9F43',    // Cam đậm cho dịch vụ hoạt động
+    pending: '#FFCC5C',   // Vàng cho dịch vụ chờ duyệt
+    rejected: '#FF5C5C',  // Đỏ nhạt cho dịch vụ bị từ chối
+    hidden: '#C3E6CB',    // Xanh lá nhạt cho dịch vụ ẩn
+    default: '#0088FE'    // Xanh nhạt cho các trạng thái khác
+  };
+  
+  // Màu sắc riêng cho biểu đồ Tổng người dùng
+  const USER_COLORS = {
+    seller: '#FFCC5C',    // Vàng cho người bán/freelancer
+    buyer: '#4BC0C0',     // Xanh lá cho người mua/customer
+    admin: '#36A2EB',     // Xanh dương cho quản trị viên
+    default: '#9966FF'    // Tím cho các loại tài khoản khác
+  };
+
+  // Lấy tổng số dịch vụ xem từ API
   const getTotalViewsFromStats = () => {
     if (!stats) return 0;
-    // Đây là dữ liệu thực tế từ API, không còn sử dụng ước lượng nữa
-    const totalViews = stats.gigsByMonth.reduce(
-      (sum, month) => sum + month.count,
-      0
-    );
-    return totalViews;
-  };
-  // Lấy tỷ lệ thay đổi giữa tháng hiện tại và tháng trước
-  const getChangeRate = (
-    dataByMonth: { _id: number; count: number }[],
-    isReverse: boolean = false
-  ) => {
-    // Nếu không có đủ dữ liệu, trả về "Dữ liệu mới"
-    if (!dataByMonth || dataByMonth.length < 2)
-      return { value: "Dữ liệu mới", isPositive: true };
-
+    
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // getMonth() trả về 0-11
-    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-
-    // Lấy dữ liệu của tháng hiện tại và tháng trước từ API
-    const currentMonthData =
-      dataByMonth.find((m) => m._id === currentMonth)?.count || 0;
-    const previousMonthData =
-      dataByMonth.find((m) => m._id === previousMonth)?.count || 0;
-
-    // Nếu không có dữ liệu tháng nào, trả về "Chưa có dữ liệu"
-    if (currentMonthData === 0 && previousMonthData === 0) {
-      return { value: "Chưa có dữ liệu", isPositive: true };
-    }
-
-    // Nếu chỉ có dữ liệu tháng hiện tại mà không có tháng trước
-    if (previousMonthData === 0 && currentMonthData > 0) {
-      return { value: "Dữ liệu mới", isPositive: true };
-    }
-
-    // Tính tỷ lệ phần trăm thay đổi
-    let changeRate = 0;
-    if (previousMonthData !== 0) {
-      changeRate =
-        ((currentMonthData - previousMonthData) / previousMonthData) * 100;
-
-      // Giới hạn giá trị để không quá cực đoan
-      if (changeRate > 1000) changeRate = 1000;
-      if (changeRate < -100) changeRate = -100;
-    }
-
-    const isPositive = isReverse ? changeRate <= 0 : changeRate >= 0;
-
-    return {
-      value: `${isPositive ? "+" : ""}${changeRate.toFixed(
-        1
-      )}% so với tháng trước`,
-      isPositive,
-    };
+    
+    // Lấy tổng lượt xem của tháng hiện tại
+    const currentMonthViews = stats.gigsByMonth.find(m => m._id === currentMonth)?.count || 0;
+    return currentMonthViews;
   };
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat("vi-VN").format(num);
   };
 
+  // Hàm định dạng dữ liệu cho biểu đồ
+  const prepareChartData = (dataByMonth: { _id: number; count: number }[]) => {
+    if (!dataByMonth || dataByMonth.length === 0) return [];
+    
+    // Sắp xếp dữ liệu theo tháng
+    return [...dataByMonth].sort((a, b) => a._id - b._id).map(item => ({
+      month: `Tháng ${item._id}`,
+      value: item.count,
+      _id: item._id
+    }));
+  };
+
+  // Chuẩn bị dữ liệu cho biểu đồ tròn phân loại người dùng
+  const prepareUserRoleData = () => {
+    if (!stats || !stats.users) return [];
+    
+    return stats.users.map(role => ({
+      name: role._id === 'buyer' ? 'Người mua' : 
+            role._id === 'seller' ? 'Người bán' : 
+            role._id === 'admin' ? 'Quản trị viên' : role._id,
+      value: role.count
+    }));
+  };
+
+  // Chuẩn bị dữ liệu cho biểu đồ tròn trạng thái dịch vụ
+  const prepareServiceStatusData = () => {
+    if (!stats || !stats.gigs) return [];
+    
+    return stats.gigs.map(status => ({
+      name: status._id === 'approved' ? 'Hoạt động' : 
+            status._id === 'pending' ? 'Chờ duyệt' :
+            status._id === 'rejected' ? 'Từ chối' : 
+            status._id === 'hidden' ? 'Ẩn' : status._id,
+      value: status.count,
+      id: status._id
+    }));
+  };
+
+  // Sửa hàm useEffect
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -119,26 +133,41 @@ const Dashboard: React.FC = () => {
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu dashboard:", err);
         setError("Không thể lấy dữ liệu từ server. Vui lòng thử lại sau.");
+        setStats(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
+    
+    // Thêm sự kiện lắng nghe khi tab trở thành active
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchDashboardData();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Tính toán các giá trị từ stats
   const totalViews = getTotalViewsFromStats();
-  const totalGigs = stats?.gigs.find((g) => g._id === "active")?.count || 0;
+  const totalGigs = stats?.gigs.find((g) => g._id === "approved")?.count || 0;
   const totalFreelancers =
     stats?.users.find((u) => u._id === "seller")?.count || 0;
   const totalPending = stats?.gigs.find((g) => g._id === "pending")?.count || 0;
 
-  // Tính tỷ lệ thay đổi
-  const viewsChange = getChangeRate(stats?.gigsByMonth || []);
-  const gigsChange = getChangeRate(stats?.gigsByMonth || []);
-  const freelancersChange = getChangeRate(stats?.usersByMonth || []);
-  const pendingChange = getChangeRate(stats?.gigsByMonth || [], true);
+  // Chuẩn bị dữ liệu cho các biểu đồ
+  const monthlyGigsData = prepareChartData(stats?.gigsByMonth || []);
+  const userRoleData = prepareUserRoleData();
+  const serviceStatusData = prepareServiceStatusData();
+  const currentMonth = new Date().getMonth() + 1;
 
   return (
     <div className="space-y-6 overflow-hidden">
@@ -154,46 +183,40 @@ const Dashboard: React.FC = () => {
         </div>
       ) : error ? (
         <div className="bg-red-50 p-4 rounded-md border border-red-200">
-          <p className="text-red-500">{error}</p>
-          <button
-            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-md"
-            onClick={() => window.location.reload()}
-          >
-            Tải lại trang
-          </button>
+          <div className="flex items-center justify-between">
+            <p className="text-red-500">{error}</p>
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              onClick={() => window.location.reload()}
+            >
+              Tải lại trang
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Lượt xem dịch vụ"
             value={formatNumber(totalViews)}
-            change={viewsChange.value}
-            isPositive={viewsChange.isPositive}
             icon={<Eye className="h-6 w-6 text-gray-500" />}
           />
           <StatCard
             title="Dịch vụ hoạt động"
             value={formatNumber(totalGigs)}
-            change={gigsChange.value}
-            isPositive={gigsChange.isPositive}
             icon={<CheckCircle className="h-6 w-6 text-gray-500" />}
           />
           <StatCard
             title="Người bán hoạt động"
             value={formatNumber(totalFreelancers)}
-            change={freelancersChange.value}
-            isPositive={freelancersChange.isPositive}
             icon={<Users className="h-6 w-6 text-gray-500" />}
           />
           <StatCard
             title="Chờ phê duyệt"
             value={formatNumber(totalPending)}
-            change={pendingChange.value}
-            isPositive={pendingChange.isPositive}
             icon={<AlertTriangle className="h-6 w-6 text-gray-500" />}
           />
         </div>
-      )}{" "}
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -211,47 +234,39 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="h-80">
                 {stats?.gigsByMonth && stats.gigsByMonth.length > 0 ? (
-                  <div className="h-full flex items-end space-x-2 pt-8">
-                    {stats.gigsByMonth.map((month) => {
-                      // Tìm giá trị cao nhất làm chuẩn để tính chiều cao
-                      const maxValue = Math.max(
-                        ...stats.gigsByMonth.map((m) => m.count)
-                      );
-                      // Tính chiều cao phần trăm với ít nhất là 5% để các cột luôn hiển thị
-                      const heightPercent =
-                        maxValue > 0
-                          ? Math.max((month.count / maxValue) * 100, 5)
-                          : 5;
-
-                      // Chọn màu dựa trên tháng hiện tại
-                      const currentMonth = new Date().getMonth() + 1;
-                      const isCurrentMonth = month._id === currentMonth;
-                      const bgColorClass = isCurrentMonth
-                        ? "bg-blue-600"
-                        : "bg-blue-400";
-
-                      return (
-                        <div
-                          key={month._id}
-                          className="flex flex-col items-center flex-1"
-                        >
-                          <div className="relative w-full">
-                            <div
-                              className={`w-full ${bgColorClass} rounded-t-md hover:opacity-80 transition-all duration-300`}
-                              style={{ height: `${heightPercent}%` }}
-                            ></div>
-                            {/* Hiển thị giá trị trên cột */}
-                            <div className="absolute -top-6 w-full text-center">
-                              <span className="text-xs font-semibold">
-                                {month.count}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-xs mt-2 font-medium">{`Tháng ${month._id}`}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={monthlyGigsData}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value) => [`${value} lượt xem`, 'Lượt xem']}
+                        labelFormatter={(label) => `${label}`}
+                      />
+                      <Legend />
+                      <Bar 
+                        dataKey="value" 
+                        name="Lượt xem" 
+                        fill="#2563eb"
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {monthlyGigsData.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry._id === currentMonth ? '#1d4ed8' : '#60a5fa'} 
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 ) : (
                   <div className="h-80 flex items-center justify-center bg-gray-50 rounded-md">
                     <p className="text-gray-500">
@@ -338,7 +353,7 @@ const Dashboard: React.FC = () => {
             )}
           </CardContent>
         </Card>
-      </div>{" "}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <>
@@ -369,20 +384,59 @@ const Dashboard: React.FC = () => {
                 <CardTitle>Tổng người dùng</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatNumber(
-                    stats?.users.reduce((sum, role) => sum + role.count, 0) || 0
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold">
+                    {formatNumber(
+                      stats?.users.reduce((sum, role) => sum + role.count, 0) || 0
+                    )}
+                  </div>
                 </div>
-                <p
-                  className={`text-sm ${
-                    getChangeRate(stats?.usersByMonth || []).isPositive
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {getChangeRate(stats?.usersByMonth || []).value}
-                </p>
+                {userRoleData.length > 0 && (
+                  <div className="h-52 mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={userRoleData.map(role => ({
+                            ...role,
+                            id: role.name === 'Người bán' ? 'seller' : 
+                                role.name === 'Người mua' ? 'buyer' : 
+                                role.name === 'Quản trị viên' ? 'admin' : 'default'
+                          }))}
+                          cx="50%"
+                          cy="45%"
+                          labelLine={true}
+                          outerRadius={70}
+                          fill="#0088FE"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {userRoleData.map((entry, index) => {
+                            const id = entry.name === 'Người bán' ? 'seller' : 
+                                      entry.name === 'Người mua' ? 'buyer' : 
+                                      entry.name === 'Quản trị viên' ? 'admin' : 'default';
+                            return (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={USER_COLORS[id as keyof typeof USER_COLORS]}
+                              />
+                            );
+                          })}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value) => [`${value} người dùng`, '']}
+                        />
+                        <Legend 
+                          layout="horizontal" 
+                          verticalAlign="bottom" 
+                          align="center"
+                          wrapperStyle={{
+                            paddingTop: '15px'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -391,24 +445,46 @@ const Dashboard: React.FC = () => {
                 <CardTitle>Báo cáo vi phạm</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatNumber(
-                    stats?.complaints.reduce(
-                      (sum, status) => sum + status.count,
-                      0
-                    ) || 0
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold">
+                    {formatNumber(
+                      stats?.complaints.reduce(
+                        (sum, status) => sum + status.count,
+                        0
+                      ) || 0
+                    )}
+                  </div>
                 </div>
-                <p
-                  className={`text-sm ${
-                    getChangeRate(stats?.complaintsByMonth || [], true)
-                      .isPositive
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {getChangeRate(stats?.complaintsByMonth || [], true).value}
-                </p>
+                {stats?.complaintsByMonth && stats.complaintsByMonth.length > 0 && (
+                  <div className="h-52 mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={prepareChartData(stats.complaintsByMonth)}
+                        margin={{
+                          top: 10,
+                          right: 10,
+                          left: 10,
+                          bottom: 20,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value) => [`${value} báo cáo`, 'Số báo cáo']}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          name="Báo cáo vi phạm"
+                          stroke={CHART_COLORS.red}
+                          activeDot={{ r: 8 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -417,23 +493,55 @@ const Dashboard: React.FC = () => {
                 <CardTitle>Tổng dịch vụ</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatNumber(
-                    stats?.gigs.reduce(
-                      (sum, status) => sum + status.count,
-                      0
-                    ) || 0
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className="text-2xl font-bold">
+                    {formatNumber(
+                      stats?.gigs.reduce(
+                        (sum, status) => sum + status.count,
+                        0
+                      ) || 0
+                    )}
+                  </div>
                 </div>
-                <p
-                  className={`text-sm ${
-                    getChangeRate(stats?.gigsByMonth || []).isPositive
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {getChangeRate(stats?.gigsByMonth || []).value}
-                </p>
+                {serviceStatusData.length > 0 && (
+                  <div className="h-52 mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={serviceStatusData}
+                          cx="50%"
+                          cy="45%"
+                          labelLine={true}
+                          outerRadius={70}
+                          fill="#0088FE"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {serviceStatusData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={
+                                SERVICE_COLORS[entry.id as keyof typeof SERVICE_COLORS] || 
+                                SERVICE_COLORS.default
+                              } 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value) => [`${value} dịch vụ`, '']}
+                        />
+                        <Legend 
+                          layout="horizontal" 
+                          verticalAlign="bottom" 
+                          align="center"
+                          wrapperStyle={{
+                            paddingTop: '15px'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>
