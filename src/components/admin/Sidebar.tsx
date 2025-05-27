@@ -2,20 +2,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  CheckCircle,
-  MessageSquare,
-  Shield,
-  AlertTriangle,
-  FolderTree,
-  Tags,
-  UserCog,
-  Receipt,
-  Search,
-  X,
-} from "lucide-react";
+import { LayoutDashboard, Users, CheckCircle, AlertTriangle, FolderTree, Receipt, Search, X, Zap } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -34,52 +21,57 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
   const sidebarLinks: SidebarLink[] = [
     {
-      title: "Dashboard",
+      title: "Tổng quan",
       href: "/admin/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      title: "Seller Management",
+      title: "Quản lý người bán",
       href: "/admin/seller-management",
       icon: <Users className="h-5 w-5" />,
     },
     {
-      title: "Gig Approval",
+      title: "Duyệt dịch vụ",
       href: "/admin/gig-approval",
       icon: <CheckCircle className="h-5 w-5" />,
     },
     {
-      title: "User Feedback",
-      href: "/admin/user-feedback",
-      icon: <MessageSquare className="h-5 w-5" />,
+      title: "Quảng cáo việc làm",
+      href: "/admin/hot-job-ads",
+      icon: <Zap className="h-5 w-5" />,
     },
+    // {
+    //   title: "Phản hồi người dùng",
+    //   href: "/admin/user-feedback",
+    //   icon: <MessageSquare className="h-5 w-5" />,
+    // },
+    // {
+    //   title: "Quyền người dùng",
+    //   href: "/admin/user-permission",
+    //   icon: <Shield className="h-5 w-5" />,
+    // },
     {
-      title: "User Permissions",
-      href: "/admin/user-permission",
-      icon: <Shield className="h-5 w-5" />,
-    },
-    {
-      title: "Violation Reports",
+      title: "Báo cáo vi phạm",
       href: "/admin/violation-report",
       icon: <AlertTriangle className="h-5 w-5" />,
     },
     {
-      title: "Categories",
+      title: "Danh mục",
       href: "/admin/category-management",
       icon: <FolderTree className="h-5 w-5" />,
     },
+    // {
+    //   title: "Quản lý thẻ",
+    //   href: "/admin/tag-management",
+    //   icon: <Tags className="h-5 w-5" />,
+    // },
+    // {
+    //   title: "Tài khoản quản trị",
+    //   href: "/admin/accounts",
+    //   icon: <UserCog className="h-5 w-5" />,
+    // },
     {
-      title: "Tag Management",
-      href: "/admin/tag-management",
-      icon: <Tags className="h-5 w-5" />,
-    },
-    {
-      title: "Admin Accounts",
-      href: "/admin/accounts",
-      icon: <UserCog className="h-5 w-5" />,
-    },
-    {
-      title: "Transaction History",
+      title: "Lịch sử giao dịch",
       href: "/admin/transaction-history",
       icon: <Receipt className="h-5 w-5" />,
     },
@@ -109,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-blue-600 to-blue-700">
             <div className="flex items-center">
               <span className="text-xl font-bold text-white">
-                Admin Dashboard
+                Bảng điều khiển
               </span>
             </div>
             <button
@@ -170,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           <div className="flex flex-col h-0 flex-1 bg-white border-r border-gray-200">
             <div className="flex items-center h-[72px] px-6 bg-gradient-to-r from-blue-600 to-blue-700">
               <span className="text-xl font-bold text-white">
-                Admin Dashboard
+                Bảng điều khiển
               </span>
             </div>
 

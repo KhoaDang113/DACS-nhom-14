@@ -183,7 +183,7 @@ const FeaturePage: React.FC<FeatureProp> = () => {
           <div className="h-32 sm:h-36 md:h-48 lg:h-52 xl:h-56 flex items-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal text-white mb-10 md:mb-14 leading-tight">
               <Typewriter 
-                text="Nền tảng kết nối freelancer và khách hàng." 
+                text="Chào mừng bạn đã đến với JopViet." 
                 typingSpeed={100} 
                 pauseDuration={3000}
               />

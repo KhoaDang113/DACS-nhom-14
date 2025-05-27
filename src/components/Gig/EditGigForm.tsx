@@ -38,8 +38,16 @@ const validationSchema = Yup.object().shape({
   title: Yup.string().required('Vui lòng nhập tiêu đề').min(10, 'Tối thiểu 10 ký tự').max(100, 'Tối đa 100 ký tự'),
   description: Yup.string().required('Vui lòng nhập mô tả').min(50, 'Tối thiểu 50 ký tự').max(2000, 'Tối đa 2000 ký tự'),
   category: Yup.string().required('Vui lòng chọn danh mục'),
-  price: Yup.number().required('Vui lòng nhập giá').min(1000, 'Tối thiểu 1000đ'),
-  deliveryTime: Yup.number().required('Vui lòng nhập thời gian').min(1, 'Ít nhất 1 ngày'),
+  price: Yup.number()
+    .required('Vui lòng nhập giá')
+    .min(1000, 'Tối thiểu 1000đ')
+    .positive('Giá phải là số dương')
+    .integer('Giá phải là số nguyên'),
+  deliveryTime: Yup.number()
+    .required('Vui lòng nhập thời gian')
+    .min(1, 'Ít nhất 1 ngày')
+    .positive('Thời gian phải là số dương')
+    .integer('Thời gian phải là số nguyên'),
 });
 
 const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
@@ -275,6 +283,7 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
                     <Field
                       name="price"
                       type="number"
+                      min="1000"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
                     />
                     <ErrorMessage name="price" component="div" className="text-red-500 text-sm" />
@@ -285,6 +294,7 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
                     <Field
                       name="deliveryTime"
                       type="number"
+                      min="1"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200"
                     />
                     <ErrorMessage name="deliveryTime" component="div" className="text-red-500 text-sm" />
