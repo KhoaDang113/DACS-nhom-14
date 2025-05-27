@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import calendar from "dayjs/plugin/calendar";
-import { id } from "date-fns/locale";
 
 dayjs.extend(calendar);
 

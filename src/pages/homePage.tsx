@@ -8,6 +8,7 @@ import PopularCard from "../components/HomePage/PopularCard";
 import ProLanding from "../components/HomePage/ProLandding";
 import ServiceCard from "../components/HomePage/ServiceCard";
 import BenefitItem from "../components/HomePage/BenefitItem";
+import { motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 import { useUser, useAuth } from "@clerk/clerk-react";
@@ -54,24 +55,47 @@ export default function HomePage() {
 
   return (
     <div className="h-full w-screen">
-      <FeaturePage />
-      {/*main*/}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FeaturePage />
+      </motion.div>
+
       <div className="max-w-[1450px] mx-auto">
         {/*list category*/}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8"
+        >
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9 gap-3 sm:gap-4 md:gap-5">
             {categoryContentCards.map((categoryCard, index) => (
-              <CategoryCard
+              <motion.div
                 key={index}
-                icon={categoryCard.icon}
-                title={categoryCard.title}
-              />
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <CategoryCard
+                  icon={categoryCard.icon}
+                  title={categoryCard.title}
+                />
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/*list popular services*/}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8"
+        >
           <div className="mt-4 sm:mt-6 md:mt-10 relative">
             <div className="justify-between items-center mb-6 sm:mb-8">
               <div>
@@ -95,22 +119,34 @@ export default function HomePage() {
               </Slide>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/*ProLandding*/}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8"
+        >
           <ProLanding />
-        </div>
+        </motion.div>
 
-        {/*What success in JobViet */}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        {/* What success in JobViet */}
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8"
+        >
           <div className="flex flex-col mt-10 md:mt-16 lg:mt-20 gap-4">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#404145] leading-tight">
-              Thành công trên JobViet trông như thế nào
+              Thành công trên JopViet trông như thế nào
             </h2>
 
             <span className="text-base sm:text-lg text-[#62646a] mb-4 sm:mb-6 md:mb-8 lg:mb-10 max-w-3xl">
-              Tìm đến các freelancer trên JobViet để biến tầm nhìn của họ thành hiện thực.
+              Tìm đến các freelancer trên JopViet để biến tầm nhìn của họ thành hiện thực.
             </span>
 
             {/* Updated video container */}
@@ -133,10 +169,16 @@ export default function HomePage() {
 
             <p className="text-sm text-[#62646a] mt-3 text-center italic"></p>
           </div>
-        </div>
+        </motion.div>
 
         {/*Trusted service */}
-        <div className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="w-full max-w-7xl mx-auto sm:px-6 px-4 lg:px-8"
+        >
           <div className="flex flex-col gap-2 w-full">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#404145] mb-6 md:mb-10">
               Các dịch vụ đáng tin cậy của chúng tôi !!!
@@ -159,10 +201,16 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/*Make it all happen with freelancers*/}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16"
+        >
           <div className="flex flex-col">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#404145] mb-6 md:mb-10">
               Biến mọi thứ thành hiện thực với các freelancer
@@ -181,37 +229,35 @@ export default function HomePage() {
             {/*CTA Button*/}
             <div className="flex justify-center">
               <SignUpButton mode="modal">
-                <button className="bg-gray-900 text-white px-6 py-3 rounded-md font-medium hover:bg-gray-800 transition-colors text-base md:text-lg">
-                  Join now
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors text-base md:text-lg">
+                  Đăng Ký Ngay
                 </button>
               </SignUpButton>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/*fiver banner - Adjusted absolute elements */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <div
-            className="w-full bg-[#4a1a2a] rounded-lg sm:rounded-xl md:rounded-2xl py-8 sm:py-12 md:py-16 px-4 sm:px-8 md:px-12 
-        flex flex-col items-center justify-center relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff6b4a] opacity-10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#ff6b4a] opacity-10 rounded-full translate-y-1/3 -translate-x-1/3"></div>
-
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-center mb-6 sm:mb-8 md:mb-10 max-w-4xl leading-tight">
-              Freelance services at your{" "}
-              <span className="text-[#ff6b4a] relative inline-block">
-                fingertips
-              </span>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8"
+        >
+          <div className="w-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 flex flex-col items-center">
+            <h1 className="text-gray-800 text-5xl font-bold text-center mb-10 max-w-4xl leading-tight">
+              Công Việc Nằm Trong Tầm Tay Bạn
             </h1>
-
             <SignUpButton mode="modal">
-              <button className="bg-white text-[#4a1a2a] px-6 sm:px-8 py-2.5 sm:py-3 md:py-4 rounded-md sm:rounded-lg font-medium hover:bg-gray-100 transition-all transform hover:scale-105 text-sm sm:text-base md:text-lg shadow-lg">
-                Join JobViet
+              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold 
+                              hover:bg-blue-700 transition-all transform hover:scale-105 
+                              text-lg shadow-lg">
+                Tham Gia JopViet Ngay
               </button>
             </SignUpButton>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
