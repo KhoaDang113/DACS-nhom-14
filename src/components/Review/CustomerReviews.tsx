@@ -70,9 +70,11 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
   const averageRating = calculateAverageRating(reviews);
   const starDistribution = getStarDistribution(reviews);
 
-  const filteredReviews = (selectedStar
-    ? reviews.filter((r) => Math.round(r.rating) === selectedStar)
-    : reviews) as CustomerReviewWithResponse[];
+  const filteredReviews = (
+    selectedStar
+      ? reviews.filter((r) => Math.round(r.rating) === selectedStar)
+      : reviews
+  ) as CustomerReviewWithResponse[];
 
   useEffect(() => {
     if (!socket.connected) socket.connect();
@@ -89,13 +91,10 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
             : review
         )
       );
-      console.log("reviews", reviews);
-
       setShowResponses((prev) => ({
         ...prev,
         [reviewId]: true,
       }));
-      console.log("showResponses", showResponses);
     });
 
     return () => {
@@ -251,31 +250,52 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
               {averageRating.toFixed(1)}
             </span>
             <div className="flex">
-              {[1,2,3,4,5].map(star => (
-                <Star 
-                  key={star} 
-                  size={32} 
-                  className={star <= Math.round(averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} 
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={32}
+                  className={
+                    star <= Math.round(averageRating)
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-300"
+                  }
                 />
               ))}
             </div>
-            <span className="ml-3 text-gray-600 text-lg">({reviews.length} đánh giá cho dịch vụ này)</span>
+            <span className="ml-3 text-gray-600 text-lg">
+              ({reviews.length} đánh giá cho dịch vụ này)
+            </span>
           </div>
           <div>
-            {[5,4,3,2,1].map((star) => (
-              <div key={star} className="flex items-center mb-1 cursor-pointer group" onClick={() => setSelectedStar(star)}>
-                <span className="w-10 text-sm font-medium group-hover:text-blue-600">{star} sao</span>
+            {[5, 4, 3, 2, 1].map((star) => (
+              <div
+                key={star}
+                className="flex items-center mb-1 cursor-pointer group"
+                onClick={() => setSelectedStar(star)}
+              >
+                <span className="w-10 text-sm font-medium group-hover:text-blue-600">
+                  {star} sao
+                </span>
                 <div className="flex-1 mx-2 h-3 bg-gray-200 rounded">
                   <div
                     className="h-3 bg-yellow-400 rounded"
-                    style={{ width: `${(starDistribution[5-star]/reviews.length)*100 || 2}%` }}
+                    style={{
+                      width: `${
+                        (starDistribution[5 - star] / reviews.length) * 100 || 2
+                      }%`,
+                    }}
                   />
                 </div>
-                <span className="w-8 text-sm text-gray-700">{starDistribution[5-star]}</span>
+                <span className="w-8 text-sm text-gray-700">
+                  {starDistribution[5 - star]}
+                </span>
               </div>
             ))}
             {selectedStar && (
-              <button className="mt-2 text-blue-600 text-sm" onClick={() => setSelectedStar(null)}>
+              <button
+                className="mt-2 text-blue-600 text-sm"
+                onClick={() => setSelectedStar(null)}
+              >
                 Xem tất cả đánh giá
               </button>
             )}

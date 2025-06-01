@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Dropdown, DropdownItem } from "../../components/ui/admin/Dropdown";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
@@ -40,6 +40,7 @@ interface JobBanner {
   ctaLink: string;
   createdAt: string;
   updatedAt: string;
+  isDeleted?: boolean;
 }
 
 const JobBanner: React.FC = () => {
@@ -49,7 +50,10 @@ const JobBanner: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { getToken } = useAuth();
+  const navigate = useNavigate();
 
   // Lấy danh sách banner từ API
   const fetchJobBanners = async (page = 1) => {
@@ -137,6 +141,59 @@ const JobBanner: React.FC = () => {
     }
   };
 
+  // Xử lý xóa banner
+  const handleDeleteBanner = async (id: string) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa banner này không?")) {
+      try {
+        setIsDeleting(true);
+        setDeletingId(id);
+        const token = await getToken();
+
+        if (!token) {
+          throw new Error("Không thể lấy token xác thực");
+        }
+
+        const response = await axios.delete(
+          `http://localhost:5000/api/admin/job-banner/delete/${id}`,
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.status === "success") {
+          // Cập nhật lại danh sách sau khi xóa
+          setJobBanners(jobBanners.filter((banner) => banner._id !== id));
+          alert("Xóa banner thành công");
+        } else {
+          throw new Error(response.data.message || "Xóa banner thất bại");
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa banner:", error);
+        alert(
+          error instanceof Error
+            ? error.message
+            : "Đã xảy ra lỗi khi xóa banner"
+        );
+      } finally {
+        setIsDeleting(false);
+        setDeletingId(null);
+      }
+    }
+  };
+
+  // Xử lý cập nhật banner (redirect tới trang edit)
+  const handleEditBanner = (id: string) => {
+    navigate(`/admin/job-banners/edit/${id}`);
+  };
+
+  // Xử lý xem chi tiết banner
+  const handleViewBannerDetails = (id: string) => {
+    navigate(`/admin/job-banners/view/${id}`);
+  };
+
   return (
     <div className="space-y-6 overflow-hidden">
       <div>
@@ -190,7 +247,7 @@ const JobBanner: React.FC = () => {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell className="text-center py-8">
+                <TableCell className="text-center py-8" colSpan={4}>
                   <div className="text-gray-500">Đang tải dữ liệu...</div>
                 </TableCell>
               </TableRow>
@@ -198,7 +255,7 @@ const JobBanner: React.FC = () => {
 
             {!loading && filteredBanners.length === 0 && (
               <TableRow>
-                <TableCell className="text-center py-8">
+                <TableCell className="text-center py-8" colSpan={4}>
                   <div className="text-gray-500">Không tìm thấy banner nào</div>
                 </TableCell>
               </TableRow>
@@ -264,24 +321,34 @@ const JobBanner: React.FC = () => {
                       }
                       align="right"
                     >
-                      <DropdownItem>
-                        <div className="flex items-center">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Xem chi tiết
-                        </div>
-                      </DropdownItem>
-                      <DropdownItem>
-                        <div className="flex items-center">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Chỉnh sửa
-                        </div>
-                      </DropdownItem>
-                      <DropdownItem>
-                        <div className="flex items-center text-red-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Xóa
-                        </div>
-                      </DropdownItem>
+                      <div onWheel={(e) => e.stopPropagation()}>
+                        <DropdownItem
+                          onClick={() => handleViewBannerDetails(banner._id)}
+                        >
+                          <div className="flex items-center">
+                            <Eye className="h-4 w-4 mr-2" />
+                            Xem chi tiết
+                          </div>
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => handleEditBanner(banner._id)}
+                        >
+                          <div className="flex items-center">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Chỉnh sửa
+                          </div>
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => handleDeleteBanner(banner._id)}
+                        >
+                          <div className="flex items-center text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {isDeleting && deletingId === banner._id
+                              ? "Đang xóa..."
+                              : "Xóa"}
+                          </div>
+                        </DropdownItem>
+                      </div>
                     </Dropdown>
                   </TableCell>
                 </TableRow>

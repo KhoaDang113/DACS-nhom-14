@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
 
 // Tạo một instance axios với cấu hình mặc định
 const apiClient = axios.create({
@@ -10,13 +9,19 @@ const apiClient = axios.create({
   },
 });
 
+// Biến để lưu token
+let authToken: string | null = null;
+
+// Hàm để cập nhật token
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+};
+
 // Thêm request interceptor để thêm token xác thực vào mỗi request
 apiClient.interceptors.request.use(async (config) => {
   try {
-    // Lấy token từ localStorage (được lưu bởi AuthenticatedLayout)
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+    if (authToken) {
+      config.headers["Authorization"] = `Bearer ${authToken}`;
     }
   } catch (error) {
     console.error("Error adding auth token to request:", error);

@@ -13,7 +13,6 @@ interface User {
   _id: string;
   name: string;
   avatar: string;
-  level: number;
 }
 
 interface Gig {
@@ -28,10 +27,10 @@ interface Gig {
   keywords: string[];
   status: "pending" | "approved" | "rejected" | "hidden" | "deleted";
   freelancer?: User;
-  rating?: {
-    average: number;
-    count: number;
+  star?: {
+    $numberDecimal: string;
   };
+  ratingsCount?: number;
 }
 
 interface ProfileGigsProps {
@@ -178,7 +177,15 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
               {currentGigs.map((gig: Gig) => (
                 <div key={gig._id} className="relative">
                   <GigCard
-                    gig={gig}
+                    gig={{
+                      _id: gig._id,
+                      title: gig.title,
+                      price: gig.price,
+                      media: gig.media,
+                      freelancer: gig.freelancer,
+                      rating: parseFloat(gig.star?.$numberDecimal || "0"),
+                      ratingsCount: gig.ratingsCount,
+                    }}
                     onFavorite={handleFavoriteToggle}
                     onPlayVideo={handlePlayVideo}
                     onClick={() => handleGigClick(gig._id)}

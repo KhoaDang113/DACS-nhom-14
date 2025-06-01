@@ -54,22 +54,16 @@ interface GigData {
     _id: string;
     name: string;
     avatar: string;
-    level: number;
   };
   freelancerId?: string;
-  status?: 'approved' | 'pending' | 'hidden';
+  status?: "approved" | "pending" | "hidden";
   [key: string]: any;
 }
 
 export default function ProfilePage() {
   const { user: clerkUser } = useUser();
   const { getToken } = useAuth();
-  const {
-    isCustomer,
-    isFreelancer,
-    isAdmin,
-    isLoading: roleLoading,
-  } = useUserRole();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
   const { showNotification } = useNotification();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -116,19 +110,8 @@ export default function ProfilePage() {
                 );
 
                 if (allGigsResponse.data && !allGigsResponse.data.error) {
-                  console.log("Tất cả gigs:", allGigsResponse.data);
-                  // Thêm debug để kiểm tra các ID đang được so sánh
-                  console.log("Đang tìm gigs cho userId:", userId);
-
-                  // Lọc các gig của người dùng cụ thể, kiểm tra nhiều trường hợp khác nhau
                   gigsData =
                     allGigsResponse.data.gigs.filter((gig) => {
-                      // Hiển thị thông tin freelancerId để debug
-                      console.log(
-                        `Gig ${gig._id} có freelancerId:`,
-                        gig.freelancerId
-                      );
-
                       if (gig.freelancerId === userId) return true;
                       if (gig.freelancer && gig.freelancer._id === userId)
                         return true;
@@ -144,25 +127,28 @@ export default function ProfilePage() {
                   // Thêm thông tin freelancer vào mỗi gig nếu chưa có
                   gigsData = gigsData.map((gig: GigData) => {
                     // Nếu đã có thông tin freelancer đầy đủ thì giữ nguyên
-                    if (gig.freelancer && gig.freelancer.avatar && gig.freelancer.name) {
+                    if (
+                      gig.freelancer &&
+                      gig.freelancer.avatar &&
+                      gig.freelancer.name
+                    ) {
                       return gig;
                     }
-                    
+
                     // Nếu chưa có thông tin freelancer, thêm vào từ dữ liệu người dùng
                     return {
                       ...gig,
                       freelancer: {
                         _id: userId,
                         name: profileResponse.data.data.name || "Freelancer",
-                        avatar: profileResponse.data.data.avatar || "/placeholder-avatar.png",
-                        level: 1
+                        avatar:
+                          profileResponse.data.data.avatar ||
+                          "/placeholder-avatar.png",
                       },
                       // Đảm bảo giá luôn có định dạng đúng
-                      price: gig.price || 0
+                      price: gig.price || 0,
                     };
                   });
-
-                  console.log("Gigs của người dùng sau khi xử lý:", gigsData);
                 }
               } catch (error) {
                 console.log("Không thể lấy dữ liệu gig từ API gigs", error);
@@ -207,9 +193,6 @@ export default function ProfilePage() {
               );
 
               if (allGigsResponse.data && !allGigsResponse.data.error) {
-                console.log("Tất cả gigs:", allGigsResponse.data);
-                console.log("Đang tìm gigs cho userId:", userId);
-
                 // Lọc các gig của người dùng cụ thể, áp dụng các điều kiện lọc giống như trên
                 gigsData =
                   allGigsResponse.data.gigs.filter((gig) => {
@@ -232,21 +215,27 @@ export default function ProfilePage() {
                 // Thêm thông tin freelancer vào mỗi gig nếu chưa có
                 gigsData = gigsData.map((gig: GigData) => {
                   // Nếu đã có thông tin freelancer đầy đủ thì giữ nguyên
-                  if (gig.freelancer && gig.freelancer.avatar && gig.freelancer.name) {
+                  if (
+                    gig.freelancer &&
+                    gig.freelancer.avatar &&
+                    gig.freelancer.name
+                  ) {
                     return gig;
                   }
-                  
+
                   // Nếu chưa có thông tin freelancer, thêm vào từ dữ liệu người dùng
                   return {
                     ...gig,
                     freelancer: {
                       _id: userId,
                       name: userResponse.data.data.name || "Freelancer",
-                      avatar: userResponse.data.data.avatar || "/placeholder-avatar.png",
-                      level: 1
+                      avatar:
+                        userResponse.data.data.avatar ||
+                        "/placeholder-avatar.png",
+                      level: 1,
                     },
                     // Đảm bảo giá luôn có định dạng đúng
-                    price: gig.price || 0
+                    price: gig.price || 0,
                   };
                 });
 
@@ -315,21 +304,26 @@ export default function ProfilePage() {
             if (gigsResponse.data?.gigs && gigsResponse.data.gigs.length > 0) {
               processedGigs = gigsResponse.data.gigs.map((gig: GigData) => {
                 // Nếu gig đã có thông tin freelancer đầy đủ thì giữ nguyên
-                if (gig.freelancer && gig.freelancer.avatar && gig.freelancer.name) {
+                if (
+                  gig.freelancer &&
+                  gig.freelancer.avatar &&
+                  gig.freelancer.name
+                ) {
                   return gig;
                 }
-                
+
                 // Nếu không có, thêm thông tin từ user hiện tại
                 return {
                   ...gig,
                   freelancer: {
                     _id: response.data.user._id,
                     name: response.data.user.name || "Freelancer",
-                    avatar: response.data.user.avatar || "/placeholder-avatar.png",
-                    level: 1
+                    avatar:
+                      response.data.user.avatar || "/placeholder-avatar.png",
+                    level: 1,
                   },
                   // Đảm bảo giá luôn có định dạng đúng
-                  price: gig.price || 0
+                  price: gig.price || 0,
                 };
               });
             }

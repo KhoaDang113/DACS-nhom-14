@@ -20,10 +20,10 @@ interface SearchResult {
     name: string;
     email: string;
   };
-  rating?: {
-    average: number;
-    count: number;
+  star: {
+    $numberDecimal: string;
   };
+  ratingsCount: number;
 }
 
 type Category = {
@@ -156,6 +156,165 @@ export default function AdvancedSearchPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Hàm render nội dung tìm kiếm dựa trên trạng thái
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center py-10">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#1dbf73] border-t-transparent"></div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-10">
+          <p className="text-gray-500">{error}</p>
+        </div>
+      );
+    }
+
+    if (searchResults.length === 0) {
+      return (
+        <div className="text-center py-10">
+          <p className="text-gray-500">
+            Không tìm thấy kết quả nào phù hợp với tìm kiếm của bạn.
+          </p>
+        </div>
+      );
+    }
+
+    // Hiển thị kết quả tìm kiếm
+    return (
+      <>
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
+          {searchResults.map((result) => (
+            <GigCard
+              key={result._id}
+              gig={{
+                _id: result._id,
+                title: result.title,
+                price: result.price,
+                media: result.media,
+                freelancer: result.user,
+                rating: parseFloat(result.star.$numberDecimal || "0"),
+                ratingsCount: result.ratingsCount,
+              }}
+              onFavorite={(id) => console.log(`Favorited gig: ${id}`)}
+              onPlayVideo={(url) => console.log(`Playing video: ${url}`)}
+            />
+          ))}
+        </div>
+
+        {/* Phân trang */}
+        <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-6 sm:px-6 mt-6">
+          <div className="flex flex-1 justify-between sm:hidden">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ${
+                currentPage === 1
+                  ? "text-gray-400 ring-gray-300 cursor-not-allowed"
+                  : "text-gray-900 ring-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Trang trước
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ${
+                currentPage === totalPages
+                  ? "text-gray-400 ring-gray-300 cursor-not-allowed"
+                  : "text-gray-900 ring-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Trang sau
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Hiển thị{" "}
+                <span className="font-medium">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </span>{" "}
+                đến{" "}
+                <span className="font-medium">
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalResults)}
+                </span>{" "}
+                trong tổng số{" "}
+                <span className="font-medium">{totalResults}</span> kết quả
+              </p>
+            </div>
+            <div>
+              <nav
+                className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                aria-label="Pagination"
+              >
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${
+                    currentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    if (page >= currentPage - 1 && page <= currentPage + 1)
+                      return true;
+                    return false;
+                  })
+                  .map((page, index, array) => {
+                    if (index > 0 && page - array[index - 1] > 1) {
+                      return (
+                        <span
+                          key={`ellipsis-${page}`}
+                          className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                          currentPage === page
+                            ? "z-10 bg-[#1dbf73] text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1dbf73]"
+                            : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${
+                    currentPage === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-500 hover:bg-gray-50"
+                  }`}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen w-full bg-gray-50 px-4 sm:px-6 md:px-24">
       {/* Bộ lọc ngay dưới navbar - Luôn hiển thị */}
@@ -244,147 +403,8 @@ export default function AdvancedSearchPage() {
             <option value="new">Mới</option>
           </select>
         </div>
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#1dbf73] border-t-transparent"></div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500">{error}</p>
-          </div>
-        ) : searchResults.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-gray-500">
-              Không tìm thấy kết quả nào phù hợp với tìm kiếm của bạn.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
-              {searchResults.map((result) => (
-                <GigCard
-                  key={result._id}
-                  gig={{
-                    _id: result._id,
-                    title: result.title,
-                    price: result.price,
-                    media: result.media,
-                    freelancer: result.user,
-                    rating: result.rating,
-                  }}
-                  onFavorite={(id) => console.log(`Favorited gig: ${id}`)}
-                  onPlayVideo={(url) => console.log(`Playing video: ${url}`)}
-                />
-              ))}
-            </div>
 
-            {/* Phân trang */}
-            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-6 sm:px-6 mt-6">
-              <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ${
-                    currentPage === 1
-                      ? "text-gray-400 ring-gray-300 cursor-not-allowed"
-                      : "text-gray-900 ring-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Trang trước
-                </button>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset ${
-                    currentPage === totalPages
-                      ? "text-gray-400 ring-gray-300 cursor-not-allowed"
-                      : "text-gray-900 ring-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Trang sau
-                </button>
-              </div>
-              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Hiển thị{" "}
-                    <span className="font-medium">
-                      {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-                    </span>{" "}
-                    đến{" "}
-                    <span className="font-medium">
-                      {Math.min(currentPage * ITEMS_PER_PAGE, totalResults)}
-                    </span>{" "}
-                    trong tổng số{" "}
-                    <span className="font-medium">{totalResults}</span> kết quả
-                  </p>
-                </div>
-                <div>
-                  <nav
-                    className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                    aria-label="Pagination"
-                  >
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${
-                        currentPage === 1
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter((page) => {
-                        if (totalPages <= 7) return true;
-                        if (page === 1 || page === totalPages) return true;
-                        if (page >= currentPage - 1 && page <= currentPage + 1)
-                          return true;
-                        return false;
-                      })
-                      .map((page, index, array) => {
-                        if (index > 0 && page - array[index - 1] > 1) {
-                          return (
-                            <span
-                              key={`ellipsis-${page}`}
-                              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700"
-                            >
-                              ...
-                            </span>
-                          );
-                        }
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(page)}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                              currentPage === page
-                                ? "z-10 bg-[#1dbf73] text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1dbf73]"
-                                : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${
-                        currentPage === totalPages
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        {renderContent()}
       </div>
     </div>
   );

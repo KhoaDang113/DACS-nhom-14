@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Gig } from "../data/jobs";
 import GigCard from "../components/Card/Card";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Skeleton from "../components/Card/Sekeleton";
@@ -7,14 +6,39 @@ import axios from "axios";
 import HotJobsBanner from "../components/Dashboard/HotJobsBanner";
 import JobBannerCarousel from "../components/Dashboard/JobBannerCarousel";
 
+// Định nghĩa kiểu dữ liệu cho Dashboard
+interface DashboardUser {
+  _id: string;
+  name: string;
+  avatar: string;
+  level?: number;
+}
+
+interface MediaItem {
+  url: string;
+  type: "image" | "video";
+  thumbnailUrl?: string;
+}
+
+interface Gig {
+  _id: string;
+  title: string;
+  price: number | { $numberDecimal: string };
+  media: MediaItem[];
+  user: DashboardUser;
+  star: { $numberDecimal: string };
+  ratingsCount: number;
+  createdAt?: string;
+}
+
 function Dashboard() {
-  const [videoMessage, setVideoMessage] = useState(null);
-  const [gigs, setGigs] = useState([]);
-  const [viewMode, setViewMode] = useState("grid");
-  const [filteredGigs, setFilteredGigs] = useState([]);
+  const [videoMessage, setVideoMessage] = useState<string | null>(null);
+  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [filteredGigs, setFilteredGigs] = useState<Gig[]>([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -25,7 +49,7 @@ function Dashboard() {
     try {
       setLoading(true);
       setError(null); // Reset error state khi bắt đầu gọi API
-      
+
       const response = await axios.get("http://localhost:5000/api/gigs", {
         withCredentials: true,
       });
@@ -104,33 +128,43 @@ function Dashboard() {
   }, [searchTerm, gigs]);
 
   // Lọc theo danh mục
-  const filterByCategory = (category) => {
+  const filterByCategory = (category: string) => {
     setActiveFilter(category);
 
     if (category === "all") {
       setFilteredGigs(gigs);
     } else if (category === "popular") {
       const popular = [...gigs]
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        .sort((a, b) => {
+          const ratingA = a.star?.$numberDecimal
+            ? parseFloat(a.star.$numberDecimal)
+            : 0;
+          const ratingB = b.star?.$numberDecimal
+            ? parseFloat(b.star.$numberDecimal)
+            : 0;
+          return ratingB - ratingA;
+        })
         .slice(0, 10);
       setFilteredGigs(popular);
     } else if (category === "new") {
       // Giả sử có trường createdAt
-      const newGigs = [...gigs].sort(
-        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-      );
+      const newGigs = [...gigs].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
       setFilteredGigs(newGigs);
     }
   };
 
-  const handlePlayVideo = (videoUrl) => {
+  const handlePlayVideo = (videoUrl: string) => {
     setVideoMessage(`Video đang phát: ${videoUrl}`);
     setTimeout(() => {
       setVideoMessage(null);
     }, 3000);
   };
 
-  const handleFavoriteToggle = async (gigId) => {
+  const handleFavoriteToggle = async (gigId: string) => {
     try {
       await axios.get(`http://localhost:5000/api/favorite/${gigId}`, {
         withCredentials: true,
@@ -144,6 +178,96 @@ function Dashboard() {
     } catch (error) {
       console.error("Lỗi khi thay đổi trạng thái yêu thích:", error);
     }
+  };
+
+  // Hàm render nội dung dựa trên trạng thái
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div
+          className={`${
+            viewMode === "grid"
+              ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6"
+              : "flex flex-col gap-4"
+          }`}
+        >
+          {[...Array(10)].map((_, i) => (
+            <div key={i} className="animate-pulse h-full">
+              <Skeleton />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (filteredGigs.length > 0) {
+      return (
+        <div
+          className={`${
+            viewMode === "grid"
+              ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr"
+              : "flex flex-col gap-4"
+          }`}
+        >
+          {filteredGigs.map((gig, index) => (
+            <div
+              key={gig._id}
+              className="opacity-0 animate-fade-in h-full"
+              style={{
+                animationDelay: `${index * 0.05}s`,
+                animationFillMode: "forwards",
+              }}
+            >
+              <GigCard
+                gig={{
+                  _id: gig._id,
+                  title: gig.title,
+                  price: gig.price,
+                  media: gig.media,
+                  freelancer: gig.user,
+                  rating: parseFloat(gig.star.$numberDecimal),
+                  ratingsCount: gig.ratingsCount,
+                }}
+                onFavorite={(id) => handleFavoriteToggle(id)}
+                onPlayVideo={(url) => handlePlayVideo(url)}
+                viewMode={viewMode}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Trường hợp không có kết quả
+    return (
+      <div className="text-center py-12">
+        <div className="mx-auto w-24 h-24 mb-4 opacity-30">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+        </div>
+        <p className="text-gray-500 text-lg mb-2">
+          Không có dịch vụ nào được tìm thấy.
+        </p>
+        <p className="text-gray-400 text-sm">
+          Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc
+        </p>
+        <button
+          onClick={() => {
+            setSearchTerm("");
+            setActiveFilter("all");
+          }}
+          className="mt-4 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
+        >
+          Xóa bộ lọc
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -235,20 +359,25 @@ function Dashboard() {
                 >
                   Mới nhất
                 </button>
-                
+
                 {/* Thêm nút tải lại */}
-                <button 
+                <button
                   onClick={handleRefresh}
                   className="px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 text-sm font-medium w-32 text-center bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
                 >
                   <span className="flex items-center justify-center gap-1">
-                    <svg 
-                      className="w-4 h-4" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
                     </svg>
                     Tải lại
                   </span>
@@ -324,12 +453,20 @@ function Dashboard() {
                   <div className="p-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          ></path>
                         </svg>
                         {error}
                       </div>
-                      <button 
+                      <button
                         onClick={handleRefresh}
                         className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
                       >
@@ -339,86 +476,7 @@ function Dashboard() {
                   </div>
                 )}
 
-                {loading ? (
-                  <div
-                    className={`${
-                      viewMode === "grid"
-                        ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6"
-                        : "flex flex-col gap-4"
-                    }`}
-                  >
-                    {[...Array(10)].map((_, i) => (
-                      <div key={i} className="animate-pulse h-full">
-                        <Skeleton />
-                      </div>
-                    ))}
-                  </div>
-                ) : filteredGigs.length > 0 ? (
-                  <div
-                    className={`${
-                      viewMode === "grid"
-                        ? "grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 auto-rows-fr"
-                        : "flex flex-col gap-4"
-                    }`}
-                  >
-                    {filteredGigs.map((gig, index) => (
-                      <div
-                        key={gig._id}
-                        className="opacity-0 animate-fade-in h-full"
-                        style={{
-                          animationDelay: `${index * 0.05}s`,
-                          animationFillMode: "forwards",
-                        }}
-                      >
-                        <GigCard
-                          gig={{
-                            _id: gig._id,
-                            title: gig.title,
-                            price: gig.price,
-                            media: gig.media,
-                            freelancer: gig.user,
-                            rating: gig.rating,
-                          }}
-                          onFavorite={(id) => handleFavoriteToggle(id)}
-                          onPlayVideo={(url) => handlePlayVideo(url)}
-                          viewMode={viewMode}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="mx-auto w-24 h-24 mb-4 opacity-30">
-                      <svg
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-gray-500 text-lg mb-2">
-                      Không có dịch vụ nào được tìm thấy.
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc
-                    </p>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setActiveFilter("all");
-                      }}
-                      className="mt-4 px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
-                    >
-                      Xóa bộ lọc
-                    </button>
-                  </div>
-                )}
+                {renderContent()}
               </div>
               {/* Video Message Alert */}
               {videoMessage && (

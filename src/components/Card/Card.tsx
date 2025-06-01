@@ -6,18 +6,22 @@ import { GrFormNext, GrFormPrevious } from "react-icons/gr";
 import { Link } from "react-router-dom";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useFavoritesContext } from "../../contexts/FavoritesContext";
-
+import { StarRating } from "./Star";
 interface User {
   _id: string;
   name: string;
   avatar: string;
-  level: number;
 }
 
 interface MediaItem {
   url: string;
   type: "image" | "video";
   thumbnailUrl?: string;
+}
+
+interface Category {
+  _id: string;
+  name: string;
 }
 
 interface Gig {
@@ -28,10 +32,9 @@ interface Gig {
   };
   media: MediaItem[];
   freelancer?: User;
-  rating?: {
-    average: number;
-    count: number;
-  };
+  category?: Category;
+  rating?: number;
+  ratingsCount?: number;
 }
 
 // Cập nhật interface GigCardProps để bổ sung prop isFavorited và onClick
@@ -48,41 +51,47 @@ interface GigCardProps {
 type Decimal128Like = { $numberDecimal: string };
 
 // Hàm để lấy giá trị số từ dữ liệu giá
-const extractPrice = (price: any): number | null => {
+const extractPrice = (price: unknown): number | null => {
   // Trường hợp price là số
-  if (typeof price === 'number') {
+  if (typeof price === "number") {
     return price;
   }
-  
+
   // Trường hợp price là object có numberDecimal
-  if (typeof price === 'object' && price !== null) {
-    if ('$numberDecimal' in price) {
+  if (typeof price === "object" && price !== null) {
+    if ("$numberDecimal" in price) {
       return parseFloat((price as Decimal128Like).$numberDecimal);
     }
-    
+
     // Trường hợp price có phương thức toString
-    if (price.toString && typeof price.toString === 'function') {
+    if (price && "toString" in price && typeof price.toString === "function") {
       const strValue = price.toString();
       if (!isNaN(parseFloat(strValue))) {
         return parseFloat(strValue);
       }
     }
-    
+
     // Kiểm tra các trường giá phổ biến
-    if ('price' in price && typeof price.price === 'number') {
-      return price.price;
+    if (
+      price &&
+      "price" in price &&
+      typeof (price as { price: number }).price === "number"
+    ) {
+      return (price as { price: number }).price;
     }
   }
-  
+
   // Trường hợp price là string
-  if (typeof price === 'string' && !isNaN(parseFloat(price))) {
+  if (typeof price === "string" && !isNaN(parseFloat(price))) {
     return parseFloat(price);
   }
-  
+
   return null;
 };
 
-const formatPrice = (price: number | string | Decimal128Like | null | undefined): string => {
+const formatPrice = (
+  price: number | string | Decimal128Like | null | undefined
+): string => {
   // Kiểm tra nếu price là undefined hoặc null
   if (price === undefined || price === null) {
     return "Liên hệ";
@@ -90,7 +99,7 @@ const formatPrice = (price: number | string | Decimal128Like | null | undefined)
 
   // Thử chuyển đổi giá thành số
   const numericPrice = extractPrice(price);
-  
+
   if (numericPrice !== null && !isNaN(numericPrice)) {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -215,14 +224,16 @@ const GigCard: React.FC<GigCardProps> = ({
   return (
     <Tooltip.Provider>
       <div
-        className={`w-full rounded-lg overflow-hidden shadow-md bg-gray-50 transition-transform hover:scale-[1.02] ${
-          viewMode === "list" ? "flex gap-6 items-start py-4" : "h-full flex flex-col"
+        className={`w-full rounded-lg overflow-hidden shadow-md bg-white transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+          viewMode === "list"
+            ? "flex gap-6 items-start py-4"
+            : "h-full flex flex-col"
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={onClick}
       >
-        {/* Media Slider */}
+        {/* Media Slider với badge giá */}
         <div
           className={`relative ${
             viewMode === "list"
@@ -240,7 +251,7 @@ const GigCard: React.FC<GigCardProps> = ({
               {media.type === "image" ? (
                 <img
                   src={media.url}
-                  alt={`${gig.title} - image ${index + 1}`}
+                  alt={`${gig.title} #${index + 1}`}
                   className="object-cover w-full h-full"
                 />
               ) : media.type === "video" ? (
@@ -269,7 +280,7 @@ const GigCard: React.FC<GigCardProps> = ({
                   ) : (
                     <img
                       src={media.thumbnailUrl || "/placeholder.svg"}
-                      alt={`${gig.title} - video thumbnail ${index + 1}`}
+                      alt={`${gig.title} thumbnail #${index + 1}`}
                       className="object-cover w-full h-full"
                     />
                   )}
@@ -278,10 +289,22 @@ const GigCard: React.FC<GigCardProps> = ({
             </div>
           ))}
 
+          {/* Badge giá nổi bật */}
+          <div className="absolute bottom-2 left-2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md z-10">
+            {formatPrice(priceValue)}
+          </div>
+
+          {/* Badge danh mục */}
+          {gig.category && (
+            <div className="absolute top-2 left-2 bg-gray-800/70 text-white px-2 py-0.5 rounded text-xs font-medium z-10">
+              {gig.category.name}
+            </div>
+          )}
+
           {/* Controls */}
           {gig.media.length > 1 && (
             <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-              <button 
+              <button
                 className="bg-white border border-gray-300 h-10 w-10 rounded-full shadow-lg p-2 cursor-pointer z-20 ml-2 hover:bg-gray-50 transition-colors"
                 onClick={prevSlide}
               >
@@ -298,7 +321,7 @@ const GigCard: React.FC<GigCardProps> = ({
           {/* Favorite Button */}
           <button
             onClick={toggleFavorite}
-            className="absolute top-2 right-2 z-10 p-1 rounded-full bg-white/80 hover:bg-white transition-colors"
+            className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 hover:bg-white transition-colors shadow-md"
             aria-label={
               isFavorite ? "Remove from favorites" : "Add to favorites"
             }
@@ -313,45 +336,58 @@ const GigCard: React.FC<GigCardProps> = ({
         </div>
 
         {/* Info */}
-        <div className={`p-3 sm:p-4 ${viewMode === "list" ? "flex-1" : "flex-1 flex flex-col"}`}>
+        <div
+          className={`p-3 sm:p-4 ${
+            viewMode === "list" ? "flex-1" : "flex-1 flex flex-col"
+          }`}
+        >
           {/* Freelancer */}
-          <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <div
-              className={`${
-                viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"
-              } rounded-full overflow-hidden relative`}
-            >
-              <img
-                src={gig.freelancer?.avatar || "/placeholder-avatar.png"}
-                alt={gig.freelancer?.name || "Freelancer"}
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder-avatar.png";
-                }}
-              />
+          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+            <div className="flex items-center gap-2">
+              <div
+                className={`${
+                  viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"
+                } rounded-full overflow-hidden relative border border-gray-200`}
+              >
+                <img
+                  src={gig.freelancer?.avatar || "/placeholder-avatar.png"}
+                  alt={gig.freelancer?.name || "Freelancer"}
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder-avatar.png";
+                  }}
+                />
+              </div>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <span
+                    className={`font-medium ${
+                      viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"
+                    } cursor-default truncate max-w-[150px]`}
+                  >
+                    {gig.freelancer?.name || "Freelancer"}
+                  </span>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    className="bg-black text-white px-2 py-1 rounded text-xs"
+                    side="top"
+                    sideOffset={4}
+                  >
+                    {gig.freelancer?.name || "Freelancer"}
+                    <Tooltip.Arrow className="fill-black" />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
             </div>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild>
-                <span
-                  className={`font-medium ${
-                    viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"
-                  } cursor-default`}
-                >
-                  {gig.freelancer?.name || "Freelancer"}
-                </span>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  className="bg-black text-white px-2 py-1 rounded text-xs"
-                  side="top"
-                  sideOffset={4}
-                >
-                  {gig.freelancer?.name || "Freelancer"}
-                  <Tooltip.Arrow className="fill-black" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
+
+            {/* Hiển thị level freelancer */}
+            {/* {gig.freelancer?.level && (
+              <div className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                Lv. {gig.freelancer.level}
+              </div>
+            )} */}
           </div>
 
           {/* Title with Tooltip */}
@@ -360,8 +396,8 @@ const GigCard: React.FC<GigCardProps> = ({
               <Link to={`/gig/${gig._id}`} className="flex-1">
                 <h3
                   className={`font-medium line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer ${
-                    viewMode === "list" 
-                      ? "text-lg font-semibold" 
+                    viewMode === "list"
+                      ? "text-lg font-semibold"
                       : "text-sm sm:text-base font-semibold h-[40px] sm:h-[48px] mb-2"
                   }`}
                 >
@@ -381,13 +417,32 @@ const GigCard: React.FC<GigCardProps> = ({
             </Tooltip.Portal>
           </Tooltip.Root>
 
+          {/* Rating */}
+          {gig.rating !== undefined && (
+            <div className="mb-0">
+              <StarRating rating={gig.rating} count={gig.ratingsCount || 0} />
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="border-t border-gray-100 my-2"></div>
+
           {/* Price */}
-          <div
-            className={`font-medium text-blue-600 mt-auto ${
-              viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
-            }`}
-          >
-            Giá: {formatPrice(priceValue)}
+          <div className="flex items-center justify-between mt-auto">
+            <div
+              className={`font-semibold text-gray-900 ${
+                viewMode === "list" ? "text-base" : "text-xs sm:text-sm"
+              }`}
+            >
+              Giá từ
+            </div>
+            <div
+              className={`font-bold text-blue-600 ${
+                viewMode === "list" ? "text-lg" : "text-base"
+              }`}
+            >
+              {formatPrice(priceValue)}
+            </div>
           </div>
         </div>
       </div>
