@@ -13,7 +13,6 @@ import Button from "../../components/ui/admin/Button";
 import Input from "../../components/ui/admin/Input";
 import {
   Search,
-  Plus,
   Calendar,
   TrendingUp,
   TrendingDown,
@@ -22,7 +21,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { Dropdown, DropdownItem } from "../../components/ui/admin/Dropdown";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
@@ -218,10 +216,6 @@ const JobHotManagement: React.FC = () => {
             }
           />
         </div>
-
-        <Link to="/admin/hot-jobs/create">
-          <Button icon={<Plus className="h-4 w-4" />}>Thêm Job Hot</Button>
-        </Link>
       </div>
 
       {error && (

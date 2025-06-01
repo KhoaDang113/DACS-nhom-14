@@ -23,7 +23,10 @@ interface HotJob {
     name: string;
     avatar: string;
   };
-  rating: number;
+  star: {
+    $numberDecimal: string;
+  };
+  ratingsCount: number;
   isHot: boolean;
   createdAt: string;
 }
@@ -292,7 +295,12 @@ const HotJobsBanner: React.FC = () => {
                           <div className="flex items-center">
                             <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
                             <span className="ml-1 text-xs text-gray-500">
-                              {job.rating ? job.rating.toFixed(1) : "N/A"}
+                              {job.star.$numberDecimal
+                                ? job.star.$numberDecimal
+                                : "N/A"}
+                            </span>
+                            <span className="ml-1 text-xs text-gray-500">
+                              ({job.ratingsCount})
                             </span>
                           </div>
                         </div>

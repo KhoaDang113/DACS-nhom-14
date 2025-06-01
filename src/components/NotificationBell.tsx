@@ -39,7 +39,6 @@ const NotificationBell: React.FC = () => {
   // Hàm fetch thông báo riêng để có thể gọi lại nhiều lần
   const fetchNotifications = async () => {
     try {
-      console.log("Đang tải thông báo...");
       const token = await getToken();
       const res = await axios.get("http://localhost:5000/api/notifications", {
         headers: {

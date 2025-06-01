@@ -45,6 +45,8 @@ import AdminHotJobAds from "../pages/admin/JobBanner";
 import JobHotManagement from "../pages/admin/HotJob";
 import AdminCreateHotJobAd from "../pages/admin/CreateBannerJobAd";
 import ChatBoxLayout from "../components/Layouts/ChatBoxLayout";
+import EditJobBanner from "../pages/admin/EditJobBanner";
+import ViewJobBanner from "../pages/admin/ViewJobBanner";
 
 // Routes không cần đăng nhập
 const publicRoutes: RouteObject[] = [
@@ -304,6 +306,8 @@ const router: RouteObject[] = [
       { path: "job-banners", element: <AdminHotJobAds /> },
       { path: "job-banners/create", element: <AdminCreateHotJobAd /> },
       { path: "job-hot", element: <JobHotManagement /> },
+      { path: "job-banners/edit/:id", element: <EditJobBanner /> },
+      { path: "job-banners/view/:id", element: <ViewJobBanner /> },
     ],
   },
   {

@@ -6,10 +6,8 @@ interface DropdownProps {
   align?: "left" | "right";
   width?: string;
   className?: string;
-  sideOffset?: number;
   side?: "top" | "bottom";
   avoidCollisions?: boolean;
-  alignOffset?: number;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -18,10 +16,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   align = "left",
   width = "w-48",
   className = "",
-  sideOffset = 2,
   side = "bottom",
   avoidCollisions = true, // Mặc định là true để luôn tránh va chạm
-  alignOffset = 0,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<"top" | "bottom">(side);
@@ -31,21 +27,25 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   // Điều chỉnh vị trí hiển thị của dropdown khi mở
   useEffect(() => {
-    if (isOpen && dropdownRef.current && triggerRef.current && menuRef.current) {
+    if (
+      isOpen &&
+      dropdownRef.current &&
+      triggerRef.current &&
+      menuRef.current
+    ) {
       const menuRect = menuRef.current.getBoundingClientRect();
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      
-      // Kiểm tra không gian phía trên và phía dưới
+
+      // Kiểm tra không gian phía dưới
       const spaceBelow = viewportHeight - triggerRect.bottom;
-      const spaceAbove = triggerRect.top;
-      
+
       // Thêm khoảng cách đệm để tránh bị sát cạnh màn hình
       const padding = 20;
 
       // Cải thiện kiểm tra: Ưu tiên hiển thị ở trên nếu không gian phía dưới không đủ
-      const shouldShowOnTop = spaceBelow < (menuRect.height + padding);
-      
+      const shouldShowOnTop = spaceBelow < menuRect.height + padding;
+
       // Nếu không đủ không gian phía dưới HOẶC không gian phía trên đủ để hiển thị và được yêu cầu hiển thị ở trên
       if (shouldShowOnTop) {
         setPosition("top");
@@ -89,8 +89,14 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   // Xử lý việc đóng dropdown khi cuộn trang
   useEffect(() => {
-    const handleScroll = () => {
-      if (isOpen) {
+    const handleScroll = (e: Event) => {
+      // Chỉ đóng dropdown khi scroll trên window, không đóng khi scroll trong dropdown
+      if (
+        isOpen &&
+        (e.target === document ||
+          e.target === window.document.body ||
+          e.target === window)
+      ) {
         setIsOpen(false);
       }
     };
@@ -106,7 +112,6 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <div ref={triggerRef} onClick={() => setIsOpen(!isOpen)}>
         {trigger}
       </div>
-
       {isOpen && (
         <div
           ref={menuRef}
@@ -118,8 +123,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
           `}
           style={{
             maxHeight: "calc(100vh - 100px)",
-            overflowY: "auto"
+            overflowY: "auto",
           }}
+          onWheel={(e) => e.stopPropagation()}
         >
           <div className="py-1">{children}</div>
         </div>

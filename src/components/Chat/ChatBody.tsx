@@ -481,7 +481,7 @@ export default function ChatBody({
             </div>
           ) : (
             selectedFile && (
-              <div className="file-preview-box p-2 border rounded-lg">
+              <div className="absolute bottom-[120px] left-0 mb-2 z-10 bg-white rounded-lg shadow-lg p-2 file-preview-box border">
                 <p>📎 {selectedFile?.name}</p>
                 <button
                   onClick={() => {

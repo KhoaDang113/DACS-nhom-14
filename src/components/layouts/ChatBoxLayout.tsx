@@ -9,7 +9,7 @@ const ChatBoxLayout: React.FC = () => {
       <Navbar />
 
       {/* Main content */}
-      <main className="flex-1 md:w-[92%] w-full mx-auto px-4 pb-0 sm:px-6 lg:px-8 py-4">
+      <main className="flex-1 md:w-[92%] w-full mx-auto px-4 pb-0 sm:px-6 lg:px-8 py-4 pt-12">
         <Outlet />
       </main>
 
