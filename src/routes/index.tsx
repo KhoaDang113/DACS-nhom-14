@@ -11,6 +11,7 @@ import ProfilePage from "../pages/profile";
 import GigDetailPage from "../pages/gigDetail";
 import CustomOrderPage from "../pages/customOrderPage";
 import BuyerOrdersPage from "../pages/buyerOrders";
+import OrderDetailPage from "../pages/orderDetail";
 import AdvancedSearchPage from "../pages/advancedSearchPage";
 import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
@@ -179,6 +180,18 @@ const protectedRoutes: RouteObject[] = [
         <ProtectedRoute>
           <LockedAccountRoute>
             <BuyerOrdersPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/order/:orderId",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <OrderDetailPage />
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
