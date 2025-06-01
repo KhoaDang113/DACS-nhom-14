@@ -3,29 +3,23 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Bell, Mail, Heart, Lock } from "lucide-react";
-import {
-  useUser,
-  UserButton,
-  SignInButton,
-  SignUpButton,
-} from "@clerk/clerk-react";
+import { Menu, X, ChevronDown, Mail, Heart, Lock } from "lucide-react";
+import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
 import NotificationBell from "./NotificationBell";
 import SearchBar from "./Search/SearchBar";
 import useUserRole from "../hooks/useUserRole";
-import useLockedAccount from "../hooks/useLockedAccount"; // Import hook kiểm tra khóa tài khoản
+import useLockedAccount from "../hooks/useLockedAccount";
 import toast from "react-hot-toast";
-import CategoryNav from "./CategoryNav"; // Import CategoryNav component
+import CategoryNav from "./CategoryNav";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const { isSignedIn, user } = useUser();
-  const { isFreelancer, isAdmin, isLoading } = useUserRole();
-  const { isLocked } = useLockedAccount(); // Sử dụng hook useLockedAccount
+  const { isSignedIn } = useUser();
+  const { isFreelancer } = useUserRole();
+  const { isLocked } = useLockedAccount();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
 
@@ -444,51 +438,74 @@ export default function Navbar() {
 
             {/* Mobile Navigation */}
             <nav className="flex flex-col py-2">
-              {navLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  to={
-                    link.path === "/become-freelancer" && isLocked
-                      ? "#"
-                      : link.path
-                  }
-                  className={`flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73] ${
-                    link.path === "/become-freelancer" && isLocked
-                      ? "opacity-50"
-                      : ""
-                  }`}
-                  onClick={(e) => {
-                    if (link.path === "/become-freelancer" && isLocked) {
-                      handleLockedFeatureClick(e, "Trở thành Freelancer");
-                    } else {
-                      setMenuOpen(false);
-                    }
-                  }}
-                >
-                  {link.icon ? (
+              {/* Các nút chức năng chính */}
+              {isSignedIn && (
+                <>
+                  <Link to="#" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                     <div className="flex items-center gap-2">
-                      {link.icon}
-                      <span>{link.title}</span>
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        <NotificationBell />
+                      </div>
+                      <span className="text-sm font-medium">Thông báo</span>
                     </div>
-                  ) : (
-                    <span>{link.title}</span>
-                  )}
-                  {link.path === "/become-freelancer" && isLocked && (
-                    <Lock size={16} />
-                  )}
-                </Link>
-              ))}
+                  </Link>
+                  <Link to="/inbox/null" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        <Mail size={20} />
+                      </div>
+                      <span className="text-sm font-medium">Tin nhắn</span>
+                    </div>
+                  </Link>
+                  <Link to="/bookmarks" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        <Heart size={20} />
+                      </div>
+                      <span className="text-sm font-medium">Yêu thích</span>
+                    </div>
+                  </Link>
+                </>
+              )}
 
+              {/* Nút Trở thành Freelancer */}
+              {!isFreelancer && !isLocked && isSignedIn && (
+                <Link
+                  to="/become-freelancer"
+                  className="px-4 py-3 flex items-center justify-between hover:bg-gray-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <line x1="19" y1="8" x2="19" y2="14"></line>
+                        <line x1="22" y1="11" x2="16" y2="11"></line>
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">Trở thành Freelancer</span>
+                  </div>
+                </Link>
+              )}
+
+              {/* Ngôn ngữ - chỉ hiển thị khi chưa đăng nhập */}
               {!isSignedIn && (
                 <Link
                   to="#"
-                  className="flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-gray-50 hover:text-[#1dbf73]"
+                  className="px-4 py-3 flex items-center gap-2 hover:bg-gray-50"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <div className="flex items-center gap-2">
-                    <span>🌐</span>
-                    <span>English</span>
-                  </div>
+                  <span>🌐</span>
+                  <span className="text-sm font-medium">English</span>
                 </Link>
               )}
 
@@ -587,8 +604,6 @@ export default function Navbar() {
           </div>
         )}
       </header>
-      
-      {/* Thêm CategoryNav component ngay sau header */}
       <CategoryNav />
     </>
   );
