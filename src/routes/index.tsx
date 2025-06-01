@@ -4,13 +4,14 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import SignInPage from "../pages/signIn";
 import SignUpPage from "../pages/signUp";
 import PaymentPage from "../pages/paymentPage";
-import Layout from "../components/Layouts/layout";
+import Layout from "../components/layouts/layout";
 import HomePage from "../pages/homePage";
 import Dashboard from "../pages/dashBoard";
 import ProfilePage from "../pages/profile";
 import GigDetailPage from "../pages/gigDetail";
 import CustomOrderPage from "../pages/customOrderPage";
 import BuyerOrdersPage from "../pages/buyerOrders";
+import OrderDetailPage from "../pages/orderDetail";
 import AdvancedSearchPage from "../pages/advancedSearchPage";
 import CreateGigForm from "../pages/createGig";
 import SellerGigsPage from "../pages/sellerGigs";
@@ -25,11 +26,11 @@ import RequireAdmin from "../middleware/RequireAdmin";
 import Inbox from "../pages/inbox"; // Assuming this is the correct import for the inbox page
 import ProtectedRoute from "../middleware/ProtectedRoute";
 import LockedAccountRoute from "../middleware/LockedAccountRoute"; // Import LockedAccountRoute
-import AuthenticatedLayout from "../components/Layouts/AuthenticatedLayout";
+import AuthenticatedLayout from "../components/layouts/AuthenticatedLayout";
 import PaymentSuccess from "../pages/paymentSuccessPage";
 import PaymentFailed from "../pages/paymentFail";
 //admin
-import AdminLayout from "../components/Layouts/AdminLayout";
+import AdminLayout from "../components/layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/Dashboard";
 import AdminAccounts from "../pages/admin/AdminAccounts";
 import AdminCategoryManagement from "../pages/admin/CategoryManagement";
@@ -44,7 +45,7 @@ import AdminViolationReport from "../pages/admin/ViolationReports";
 import AdminHotJobAds from "../pages/admin/JobBanner";
 import JobHotManagement from "../pages/admin/HotJob";
 import AdminCreateHotJobAd from "../pages/admin/CreateBannerJobAd";
-import ChatBoxLayout from "../components/Layouts/ChatBoxLayout";
+import ChatBoxLayout from "../components/layouts/ChatBoxLayout";
 import EditJobBanner from "../pages/admin/EditJobBanner";
 import ViewJobBanner from "../pages/admin/ViewJobBanner";
 
@@ -179,6 +180,18 @@ const protectedRoutes: RouteObject[] = [
         <ProtectedRoute>
           <LockedAccountRoute>
             <BuyerOrdersPage />
+          </LockedAccountRoute>
+        </ProtectedRoute>
+      </SignedIn>
+    ),
+  },
+  {
+    path: "/order/:orderId",
+    element: (
+      <SignedIn>
+        <ProtectedRoute>
+          <LockedAccountRoute>
+            <OrderDetailPage />
           </LockedAccountRoute>
         </ProtectedRoute>
       </SignedIn>
