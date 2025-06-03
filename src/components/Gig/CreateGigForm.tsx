@@ -5,16 +5,24 @@ import { z } from "zod";
 import { Trash2, Upload, AlertCircle } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import React from "react";
 
 const formSchema = z.object({
-  title: z.string().min(10, "Tiêu đề phải có ít nhất 10 ký tự").max(1000, "Tiêu đề không được vượt quá 1000 ký tự"),
-  description: z.string().min(50, "Mô tả phải có ít nhất 50 ký tự").max(10000, "Mô tả không được vượt quá 10000 ký tự"),
+  title: z
+    .string()
+    .min(10, "Tiêu đề phải có ít nhất 10 ký tự")
+    .max(1000, "Tiêu đề không được vượt quá 1000 ký tự"),
+  description: z
+    .string()
+    .min(50, "Mô tả phải có ít nhất 50 ký tự")
+    .max(10000, "Mô tả không được vượt quá 10000 ký tự"),
   price: z.coerce.number().min(0, "Giá trị phải lớn hơn hoặc bằng 0"),
   category: z.string().nonempty("Vui lòng chọn danh mục"),
-  deliveryTime: z.coerce.number().min(1, "Thời gian giao hàng phải ít nhất 1 ngày"),
+  deliveryTime: z.coerce
+    .number()
+    .min(1, "Thời gian giao hàng phải ít nhất 1 ngày"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,15 +49,14 @@ const steps = [
 
 export default function CreateGigForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [images, setImages] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [visitedSteps, setVisitedSteps] = useState<number[]>([1]);
   const [errorSteps, setErrorSteps] = useState<number[]>([]);
-  const [imageError, setImageError] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const navigate = useNavigate();
-  
 
   const {
     register,
@@ -67,19 +74,27 @@ export default function CreateGigForm() {
     },
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     const newFiles: File[] = [];
     const newUrls: string[] = [];
 
     Array.from(e.target.files).forEach((file) => {
-      if (!file.type.match(/image\/(jpeg|jpg|png)/i)) {
-        setImageError("Chỉ chấp nhận ảnh JPG và PNG");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setImageError("Kích thước ảnh không được vượt quá 5MB");
+      if (file.type.match(/image\/(jpeg|jpg|png)/i)) {
+        if (file.size > 5 * 1024 * 1024) {
+          setMediaError("Kích thước ảnh không được vượt quá 5MB");
+          return;
+        }
+      } else if (file.type.match(/video\/(mp4|quicktime|x-msvideo|webm)/i)) {
+        if (file.size > 50 * 1024 * 1024) {
+          setMediaError("Kích thước video không được vượt quá 50MB");
+          return;
+        }
+      } else {
+        setMediaError(
+          "Chỉ chấp nhận ảnh JPG, PNG hoặc video MP4, MOV, AVI, WEBM"
+        );
         return;
       }
       newFiles.push(file);
@@ -87,29 +102,27 @@ export default function CreateGigForm() {
     });
 
     if (newFiles.length > 0) {
-      setImageError(null);
-      setImages((prev) => [...prev, ...newFiles]);
-      setImageUrls((prev) => [...prev, ...newUrls]);
-      
-      // Remove step 6 from error steps if images were added
+      setMediaError(null);
+      setMediaFiles((prev) => [...prev, ...newFiles]);
+      setMediaUrls((prev) => [...prev, ...newUrls]);
+      // Remove step 6 from error steps if media were added
       if (errorSteps.includes(6)) {
-        setErrorSteps(errorSteps.filter(step => step !== 6));
+        setErrorSteps(errorSteps.filter((step) => step !== 6));
       }
     }
   };
 
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    const newUrls = [...imageUrls];
+  const removeMedia = (index: number) => {
+    const newFiles = [...mediaFiles];
+    const newUrls = [...mediaUrls];
     URL.revokeObjectURL(newUrls[index]);
-    newImages.splice(index, 1);
+    newFiles.splice(index, 1);
     newUrls.splice(index, 1);
-    setImages(newImages);
-    setImageUrls(newUrls);
-    
-    // If no images left, set image error
-    if (newImages.length === 0) {
-      setImageError("Vui lòng tải lên ít nhất một ảnh");
+    setMediaFiles(newFiles);
+    setMediaUrls(newUrls);
+    // If no media left, set error
+    if (newFiles.length === 0) {
+      setMediaError("Vui lòng tải lên ít nhất một ảnh hoặc video");
       if (!errorSteps.includes(6)) {
         setErrorSteps([...errorSteps, 6]);
       }
@@ -135,9 +148,9 @@ export default function CreateGigForm() {
         isValid = await trigger("price");
         break;
       case 6:
-        isValid = images.length > 0;
+        isValid = mediaFiles.length > 0;
         if (!isValid) {
-          setImageError("Vui lòng tải lên ít nhất 1 ảnh");
+          setMediaError("Vui lòng tải lên ít nhất 1 ảnh hoặc video");
         }
         break;
     }
@@ -147,10 +160,12 @@ export default function CreateGigForm() {
   const onSubmit = async (data: FormValues) => {
     const allSteps = [1, 2, 3, 4, 5, 6];
     const validationResults = await Promise.all(
-      allSteps.map(step => validateStep(step))
+      allSteps.map((step) => validateStep(step))
     );
-    
-    const invalidSteps = allSteps.filter((_, index) => !validationResults[index]);
+
+    const invalidSteps = allSteps.filter(
+      (_, index) => !validationResults[index]
+    );
     setErrorSteps(invalidSteps);
 
     if (invalidSteps.length > 0) {
@@ -170,7 +185,7 @@ export default function CreateGigForm() {
       formData.append("price", data.price.toString());
       formData.append("category_id", data.category);
       formData.append("duration", data.deliveryTime.toString());
-      images.forEach((file) => formData.append("files", file));
+      mediaFiles.forEach((file) => formData.append("files", file));
       await axios.post("http://localhost:5000/api/gigs/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
@@ -195,19 +210,19 @@ export default function CreateGigForm() {
 
   const nextStep = async () => {
     const isCurrentStepValid = await validateStep(currentStep);
-    
+
     if (!isCurrentStepValid) {
       if (!errorSteps.includes(currentStep)) {
         setErrorSteps([...errorSteps, currentStep]);
       }
       return;
     }
-    
+
     // Remove current step from error steps if it was valid
     if (errorSteps.includes(currentStep)) {
-      setErrorSteps(errorSteps.filter(step => step !== currentStep));
+      setErrorSteps(errorSteps.filter((step) => step !== currentStep));
     }
-    
+
     if (currentStep < 6) {
       const nextStepNumber = currentStep + 1;
       setCurrentStep(nextStepNumber);
@@ -225,9 +240,9 @@ export default function CreateGigForm() {
         setErrorSteps([...errorSteps, currentStep]);
       }
     } else if (errorSteps.includes(currentStep)) {
-      setErrorSteps(errorSteps.filter(s => s !== currentStep));
+      setErrorSteps(errorSteps.filter((s) => s !== currentStep));
     }
-    
+
     setCurrentStep(step);
     if (!visitedSteps.includes(step)) {
       setVisitedSteps([...visitedSteps, step]);
@@ -235,7 +250,7 @@ export default function CreateGigForm() {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       nextStep();
     }
@@ -259,22 +274,38 @@ export default function CreateGigForm() {
       {isSubmitting && (
         <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center">
-            <svg className="animate-spin h-12 w-12 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              className="animate-spin h-12 w-12 text-indigo-600 mb-3"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             <p className="text-lg font-medium text-indigo-600">Đang xử lý...</p>
           </div>
         </div>
       )}
-      
+
       {/* Steps Navigation */}
       <div className="mb-8">
         <div className="overflow-x-auto">
           <div className="flex items-center min-w-max">
             {steps.map((step) => (
-              <div 
-                key={step.id} 
+              <div
+                key={step.id}
                 className="flex items-center cursor-pointer"
                 onClick={() => handleStepClick(step.id)}
               >
@@ -317,7 +348,9 @@ export default function CreateGigForm() {
       <div className="min-h-[400px]">
         {currentStep === 1 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">Tiêu đề dịch vụ</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Tiêu đề dịch vụ
+            </h3>
             <input
               type="text"
               placeholder="VD: Thiết kế logo chuyên nghiệp"
@@ -347,11 +380,15 @@ export default function CreateGigForm() {
 
         {currentStep === 2 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">Mô tả chi tiết dịch vụ</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Mô tả chi tiết dịch vụ
+            </h3>
             <textarea
               placeholder="Mô tả về quy chi tiết về sản phẩm bạn cung cấp..."
               className={`min-h-[200px] sm:min-h-[300px] w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.description ? "border-red-500 bg-red-50" : "border-gray-300"
+                errors.description
+                  ? "border-red-500 bg-red-50"
+                  : "border-gray-300"
               }`}
               {...register("description")}
               onKeyPress={handleKeyPress}
@@ -394,23 +431,41 @@ export default function CreateGigForm() {
               <option value="">Chọn danh mục</option>
               {categories.map((cat) => (
                 <React.Fragment key={cat._id}>
-                  <option value="" disabled style={{ fontWeight: 'bold' }}>
+                  <option value="" disabled style={{ fontWeight: "bold" }}>
                     {cat.name}
                   </option>
-                  
-                  {cat.subcategories && cat.subcategories.map((sub) => (
-                    <React.Fragment key={sub._id}>
-                      <option value="" disabled style={{ fontWeight: 'bold' }}>
-                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{sub.name}
-                      </option>
-                      
-                      {sub.subcategoryChildren && sub.subcategoryChildren.map((subChild) => (
-                        <option key={subChild._id} value={subChild._id}>
-                          {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{subChild.name}
+
+                  {cat.subcategories &&
+                    cat.subcategories.map((sub) => (
+                      <React.Fragment key={sub._id}>
+                        <option
+                          value=""
+                          disabled
+                          style={{ fontWeight: "bold" }}
+                        >
+                          {"\u00A0"}
+                          {"\u00A0"}
+                          {"\u00A0"}
+                          {"\u00A0"}
+                          {sub.name}
                         </option>
-                      ))}
-                    </React.Fragment>
-                  ))}
+
+                        {sub.subcategoryChildren &&
+                          sub.subcategoryChildren.map((subChild) => (
+                            <option key={subChild._id} value={subChild._id}>
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {subChild.name}
+                            </option>
+                          ))}
+                      </React.Fragment>
+                    ))}
                 </React.Fragment>
               ))}
             </select>
@@ -448,7 +503,9 @@ export default function CreateGigForm() {
               type="number"
               min="1"
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.deliveryTime ? "border-red-500 bg-red-50" : "border-gray-300"
+                errors.deliveryTime
+                  ? "border-red-500 bg-red-50"
+                  : "border-gray-300"
               }`}
               {...register("deliveryTime")}
               onKeyPress={handleKeyPress}
@@ -487,7 +544,9 @@ export default function CreateGigForm() {
 
         {currentStep === 5 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">Giá dịch vụ (VNĐ)</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              Giá dịch vụ (VNĐ)
+            </h3>
             <div className="relative">
               <input
                 type="number"
@@ -533,55 +592,91 @@ export default function CreateGigForm() {
 
         {currentStep === 6 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">Ảnh minh họa</h3>
-            
-            {imageError && (
+            <h3 className="text-lg font-medium text-gray-900">
+              Ảnh hoặc video minh họa
+            </h3>
+            {mediaError && (
               <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
                 <p className="text-sm text-red-600 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
-                  {imageError}
+                  {mediaError}
                 </p>
               </div>
             )}
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {imageUrls.map((url, index) => (
-                <div
-                  key={index}
-                  className="relative overflow-hidden rounded-md border shadow-sm"
-                >
-                  <img
-                    src={url}
-                    alt={`Preview ${index + 1}`}
-                    className="aspect-video w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
-                    onClick={() => removeImage(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+              {mediaUrls.map((url, index) => {
+                const file = mediaFiles[index];
+                if (file.type.startsWith("image/")) {
+                  return (
+                    <div
+                      key={index}
+                      className="relative overflow-hidden rounded-md border shadow-sm"
+                    >
+                      <img
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        className="aspect-video w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
+                        onClick={() => removeMedia(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                } else if (file.type.startsWith("video/")) {
+                  return (
+                    <div
+                      key={index}
+                      className="relative overflow-hidden rounded-md border shadow-sm"
+                    >
+                      <video
+                        src={url}
+                        controls
+                        className="aspect-video w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
+                        onClick={() => removeMedia(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                }
+                return null;
+              })}
               <label
-                htmlFor="image-upload"
+                htmlFor="media-upload"
                 className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed ${
-                  imageError ? "border-red-300 bg-red-50" : "border-gray-300 hover:bg-gray-50"
+                  mediaError
+                    ? "border-red-300 bg-red-50"
+                    : "border-gray-300 hover:bg-gray-50"
                 } px-6 py-10 text-center text-sm ${
-                  imageError ? "text-red-500" : "text-gray-500"
+                  mediaError ? "text-red-500" : "text-gray-500"
                 }`}
               >
-                <Upload className={`mb-2 h-6 w-6 ${imageError ? "text-red-500" : "text-gray-500"}`} />
-                <p>Tải ảnh JPG/PNG (tối đa 5MB)</p>
-                <p className="text-xs mt-1">Vui lòng tải lên ít nhất một ảnh</p>
+                <Upload
+                  className={`mb-2 h-6 w-6 ${
+                    mediaError ? "text-red-500" : "text-gray-500"
+                  }`}
+                />
+                <p>
+                  Tải ảnh JPG/PNG (≤5MB) hoặc video MP4/MOV/AVI/WEBM (≤50MB)
+                </p>
+                <p className="text-xs mt-1">
+                  Vui lòng tải lên ít nhất một ảnh hoặc video
+                </p>
                 <input
                   type="file"
-                  accept="image/jpeg,image/jpg,image/png"
+                  accept="image/jpeg,image/jpg,image/png,video/mp4,video/quicktime,video/x-msvideo,video/webm"
                   multiple
                   className="hidden"
-                  id="image-upload"
-                  onChange={handleImageUpload}
+                  id="media-upload"
+                  onChange={handleMediaUpload}
                 />
               </label>
             </div>
