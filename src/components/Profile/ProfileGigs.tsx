@@ -38,7 +38,6 @@ interface ProfileGigsProps {
 }
 
 const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
-  console.log("Received gigs:", gigs); // Thêm log để debug
   const navigate = useNavigate(); // Thêm hook navigate
 
   const [filter, setFilter] = useState<

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 // Dữ liệu giả cho API category
 // Sử dụng để mô phỏng API response từ http://localhost:5000/api/category
 
@@ -19,10 +19,70 @@ interface Category {
   subcategories: Subcategory[];
 }
 
+// Component Skeleton cho CategoryNav
+const CategorySkeleton = () => {
+  return (
+    <div className="flex items-center space-x-8 py-1.5">
+      {Array(8)
+        .fill(0)
+        .map((_, index) => (
+          <div key={index} className="skeleton-item">
+            <div
+              className="h-5 bg-gray-200 rounded-md skeleton-shimmer"
+              style={{
+                width: `${Math.floor(Math.random() * 40) + 60}px`,
+                animationDelay: `${index * 100}ms`,
+              }}
+            ></div>
+          </div>
+        ))}
+    </div>
+  );
+};
+
+// Component Skeleton cho Dropdown
+const DropdownSkeleton = () => {
+  return (
+    <div className="container mx-auto px-12 py-8 relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pr-8">
+        {Array(12)
+          .fill(0)
+          .map((_, index) => (
+            <div key={index} className="mb-3">
+              <div
+                className="h-6 bg-gray-200 rounded-md mb-3 skeleton-shimmer"
+                style={{
+                  width: `${Math.floor(Math.random() * 60) + 100}px`,
+                  animationDelay: `${index * 150}ms`,
+                }}
+              ></div>
+              <div className="space-y-2.5">
+                {Array(Math.floor(Math.random() * 3) + 2)
+                  .fill(0)
+                  .map((_, subIndex) => (
+                    <div
+                      key={subIndex}
+                      className="h-4 bg-gray-100 rounded-md skeleton-shimmer"
+                      style={{
+                        width: `${Math.floor(Math.random() * 40) + 60}px`,
+                        animationDelay: `${index * 150 + subIndex * 100}ms`,
+                        opacity: 1 - subIndex * 0.15,
+                      }}
+                    ></div>
+                  ))}
+              </div>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+};
+
 const CategoryNav = () => {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
@@ -42,17 +102,20 @@ const CategoryNav = () => {
   // Kiểm tra xem có nên hiển thị CategoryNav không
   const shouldShowCategoryNav = () => {
     // Kiểm tra xem đường dẫn hiện tại có trong danh sách loại trừ không
-    return !excludedPaths.some(path => location.pathname.startsWith(path));
+    return !excludedPaths.some((path) => location.pathname.startsWith(path));
   };
 
   // Thêm effect để kiểm tra scroll position
   useEffect(() => {
     const axiosCategories = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("http://localhost:5000/api/category");
         setCategories(response.data.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
+      } finally {
+        setLoading(false);
       }
     };
     axiosCategories();
@@ -150,7 +213,9 @@ const CategoryNav = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {categories.length > 0 ? (
+        {loading ? (
+          <CategorySkeleton />
+        ) : categories.length > 0 ? (
           categories.map((category) => (
             <div
               key={category._id}
@@ -170,7 +235,7 @@ const CategoryNav = () => {
             </div>
           ))
         ) : (
-          <div className="py-2 text-gray-500">Đang tải danh mục...</div>
+          <div className="py-2 text-gray-500">Không có danh mục nào</div>
         )}
       </div>
 
@@ -185,40 +250,43 @@ const CategoryNav = () => {
           onMouseEnter={() => handleCategoryHover(activeCategory)}
           onMouseLeave={handleCategoryLeave}
         >
-          {/* Container với max-width và padding */}
-          <div className="container mx-auto px-12 py-8 relative">
-            {/* Add hover area on the right */}
-            <div className="absolute right-[-100px] top-0 bottom-0 w-[100px]" />
+          {/* Add hover area on the right */}
+          <div className="absolute right-[-100px] top-0 bottom-0 w-[100px]" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pr-8">
-              {categories
-                .find((cat) => cat._id === activeCategory)
-                ?.subcategories.map((sub) => (
-                  <div key={sub._id} className="mb-3">
-                    {/* Category title */}
-                    <h4 className="font-semibold text-[#404145] mb-2.5 text-[17px] leading-6 transition-all duration-200 ease-in-out hover:text-[#1dbf73] cursor-pointer">
-                      <a href="#">{sub.name}</a>
-                    </h4>
+          {loading ? (
+            <DropdownSkeleton />
+          ) : (
+            <div className="container mx-auto px-12 py-8 relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pr-8">
+                {categories
+                  .find((cat) => cat._id === activeCategory)
+                  ?.subcategories.map((sub) => (
+                    <div key={sub._id} className="mb-3">
+                      {/* Category title */}
+                      <h4 className="font-semibold text-[#404145] mb-2.5 text-[17px] leading-6 transition-all duration-200 ease-in-out cursor-pointer">
+                        {sub.name}
+                      </h4>
 
-                    {sub.subcategoryChildren &&
-                      sub.subcategoryChildren.length > 0 && (
-                        <ul className="space-y-2.5">
-                          {sub.subcategoryChildren.map((subSub) => (
-                            <li key={subSub._id} className="group">
-                              <a
-                                href="#"
-                                className="text-[#74767e] hover:text-[#1dbf73] text-[15px] block transition-all duration-200 hover:translate-x-[2px] font-normal"
-                              >
-                                {subSub.name}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                  </div>
-                ))}
+                      {sub.subcategoryChildren &&
+                        sub.subcategoryChildren.length > 0 && (
+                          <ul className="space-y-2.5">
+                            {sub.subcategoryChildren.map((subSub) => (
+                              <li key={subSub._id} className="group">
+                                <Link
+                                  to={`/advanced-search?category=${subSub._id}`}
+                                  className="text-[#74767e] hover:text-[#1dbf73] text-[15px] block transition-all duration-200 hover:translate-x-[2px] font-normal"
+                                >
+                                  {subSub.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -264,6 +332,26 @@ const CategoryNav = () => {
               opacity: 1;
               transform: translateY(0);
             }
+          }
+
+          @keyframes shimmer {
+            0% {
+              background-position: -200% 0;
+            }
+            100% {
+              background-position: 200% 0;
+            }
+          }
+
+          .skeleton-shimmer {
+            background: linear-gradient(
+              90deg,
+              rgba(0, 0, 0, 0.06) 25%,
+              rgba(0, 0, 0, 0.1) 37%,
+              rgba(0, 0, 0, 0.06) 63%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
           }
         `,
         }}

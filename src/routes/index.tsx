@@ -328,6 +328,19 @@ const router: RouteObject[] = [
     element: <ChatBoxLayout />,
     children: [
       {
+        path: "/inbox",
+        element: (
+          <>
+            <SignedIn>
+              <Inbox />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        ),
+      },
+      {
         path: "/inbox/:id",
         element: (
           <>

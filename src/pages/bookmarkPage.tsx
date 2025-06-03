@@ -16,6 +16,7 @@ const BookmarkPage = () => {
 
   useEffect(() => {
     fetchBookmarks();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const fetchBookmarks = async () => {

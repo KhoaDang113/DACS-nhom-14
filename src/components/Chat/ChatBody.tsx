@@ -106,7 +106,7 @@ export default function ChatBody({
   // Fetch conversation
   useEffect(() => {
     const fetchConversation = async () => {
-      if (!id) return;
+      if (id === "null") return;
 
       try {
         const response = await axios.get(
@@ -145,6 +145,7 @@ export default function ChatBody({
 
     // Fetch initial messages
     const fetchChatMessages = async () => {
+      if (id === "null") return;
       try {
         const response = await axios.get(
           `http://localhost:5000/api/message/${id}/get-all`,
@@ -303,7 +304,6 @@ export default function ChatBody({
 
   // Handle back button click
   const handleBackButtonClick = () => {
-    console.log("Back button clicked");
     if (onBackToList) {
       onBackToList();
     }
