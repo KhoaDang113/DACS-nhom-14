@@ -56,6 +56,9 @@ export default function BuyerOrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   // Fetch đơn hàng từ API
   useEffect(() => {
     const fetchOrders = async () => {
@@ -70,8 +73,6 @@ export default function BuyerOrdersPage() {
         );
 
         if (response.data.error === false) {
-          console.log("Đơn hàng:", response.data.orders);
-
           setOrders(response.data.orders);
           setPagination(response.data.pagination);
         } else {

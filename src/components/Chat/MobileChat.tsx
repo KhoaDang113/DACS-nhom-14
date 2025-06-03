@@ -25,9 +25,8 @@ export default function MobileChat({ currentUser }: MobileChatProps) {
   useEffect(() => {
     const fetchConversation = async () => {
       if (!currentUser || !id || id === "null") return;
-      
+
       try {
-        console.log("Mobile: Fetching conversation for id:", id);
         const response = await axios.post(
           "http://localhost:5000/api/conversation/create-or-get",
           {
@@ -38,9 +37,8 @@ export default function MobileChat({ currentUser }: MobileChatProps) {
             withCredentials: true,
           }
         );
-        
+
         if (response.data && response.data.conversation) {
-          console.log("Mobile: Conversation fetched:", response.data.conversation._id);
           // Chỉ điều hướng nếu conversation ID khác với ID hiện tại
           if (response.data.conversation._id !== id) {
             navigate(`/inbox/${response.data.conversation._id}`);
@@ -50,7 +48,7 @@ export default function MobileChat({ currentUser }: MobileChatProps) {
         console.error("Error fetching or creating conversation:", error);
       }
     };
-    
+
     if (id && id !== "null") {
       fetchConversation();
     }
@@ -68,24 +66,22 @@ export default function MobileChat({ currentUser }: MobileChatProps) {
 
   const handleBackToList = () => {
     setShowChatList(true);
-    navigate('/inbox/null');
+    navigate("/inbox/null");
   };
 
   const handleSelectChat = () => {
     setShowChatList(false);
   };
 
-  console.log("MobileChat render:", { showChatList, id });
-
   // Nếu đang hiển thị danh sách chat
   if (showChatList) {
     return (
       <div className="h-full w-full">
-        <Sidebar 
-          socket={socket} 
-          currentUser={currentUser} 
+        <Sidebar
+          socket={socket}
+          currentUser={currentUser}
           onSelectChat={handleSelectChat}
-          isMobile={true} 
+          isMobile={true}
         />
       </div>
     );
@@ -101,4 +97,4 @@ export default function MobileChat({ currentUser }: MobileChatProps) {
       />
     </div>
   );
-} 
+}

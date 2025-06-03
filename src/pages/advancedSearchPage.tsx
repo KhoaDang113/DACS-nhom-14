@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import GigCard from "../components/Card/Card";
@@ -30,6 +30,7 @@ type Category = {
   _id: string;
   name: string;
   subcategories?: Category[];
+  subcategoryChildren?: Category[];
 };
 
 interface SearchResponse {
@@ -61,9 +62,13 @@ export default function AdvancedSearchPage() {
   // Lấy từ khóa từ URL
   const queryParams = new URLSearchParams(location.search);
   const keywordFromUrl = queryParams.get("keyword") || "";
+  const categoryFromUrl = queryParams.get("category") || "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSelectedCategory(categoryFromUrl);
     performSearch();
-  }, [location]);
+  }, [location, location.search]);
   useEffect(() => {
     // Lấy danh sách danh mục cho bộ lọc
     const fetchCategories = async () => {
@@ -96,7 +101,7 @@ export default function AdvancedSearchPage() {
       if (keywordFromUrl) params.keyword = keywordFromUrl;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-      if (selectedCategory) params.category = selectedCategory;
+      if (categoryFromUrl) params.category = categoryFromUrl;
       params.sortBy = sortOption;
 
       const response = await axios.get<SearchResponse>(
@@ -140,9 +145,6 @@ export default function AdvancedSearchPage() {
 
     // Cập nhật URL mà không reload trang
     navigate(`/advanced-search?${newParams.toString()}`, { replace: true });
-
-    // Thực hiện tìm kiếm
-    performSearch();
   };
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
@@ -359,17 +361,43 @@ export default function AdvancedSearchPage() {
                 >
                   <option value="">Tất cả danh mục</option>
                   {categories.map((cat) => (
-                    <optgroup key={cat._id} label={cat.name}>
-                      {cat.subcategories?.length ? (
-                        cat.subcategories.map((child) => (
-                          <option key={child._id} value={child._id}>
-                            {child.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value={cat._id}>{cat.name}</option>
-                      )}
-                    </optgroup>
+                    <React.Fragment key={cat._id}>
+                      <option value="" disabled style={{ fontWeight: "bold" }}>
+                        {cat.name}
+                      </option>
+
+                      {cat.subcategories &&
+                        cat.subcategories.map((sub) => (
+                          <React.Fragment key={sub._id}>
+                            <option
+                              value=""
+                              disabled
+                              style={{ fontWeight: "bold" }}
+                            >
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {sub.name}
+                            </option>
+
+                            {sub.subcategoryChildren &&
+                              sub.subcategoryChildren.map((subChild) => (
+                                <option key={subChild._id} value={subChild._id}>
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {subChild.name}
+                                </option>
+                              ))}
+                          </React.Fragment>
+                        ))}
+                    </React.Fragment>
                   ))}
                 </select>
               </div>

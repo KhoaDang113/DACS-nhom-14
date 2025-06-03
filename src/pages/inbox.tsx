@@ -11,20 +11,18 @@ export default function Inbox() {
   const { id } = useParams();
   const { user, loading, error } = useUser();
   const [isMobile, setIsMobile] = useState(false);
-
   // Chuyển user từ context sang UserType/UserData cho Sidebar/MobileChat
   const userForChat = user;
+
   useEffect(() => {
-    const getNotification = async () => {
-      const response = await axios.put(
-        `http://localhost:5000/api/notifications/${id}/read`,
-        {
+    if (id && id !== "null") {
+      const getNotification = async () => {
+        await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {
           withCredentials: true,
-        }
-      );
-      console.log(response);
-    };
-    getNotification();
+        });
+      };
+      getNotification();
+    }
   }, [id]);
 
   // Theo dõi kích thước màn hình
