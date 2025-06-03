@@ -429,12 +429,12 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
                   </div>
 
                   {/* Interactions */}
-                  <div className="flex items-center mt-4 text-sm">
-                    <div className="flex items-center mr-4">
+                  <div className="flex flex-col gap-2 mt-4 text-sm sm:flex-row sm:items-center">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleVote(review.id, "like")}
                         disabled={isVoting}
-                        className={`flex items-center px-3 py-1 rounded-full transition-colors mr-2 ${
+                        className={`flex items-center px-3 py-1 rounded-full transition-colors ${
                           votesData[review.id]?.vote === "like"
                             ? "bg-green-600 text-white"
                             : "bg-green-100 text-green-600 hover:bg-green-200"
@@ -458,41 +458,43 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
                       </button>
                     </div>
 
-                    {isGigOwner && !review.isResponse && (
-                      <button
-                        onClick={() =>
-                          setReplyingTo(
-                            replyingTo === review.id ? null : review.id
-                          )
-                        }
-                        className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                      >
-                        <MessageCircle size={14} className="mr-1" />
-                        Phản hồi
-                      </button>
-                    )}
-                    {review.isResponse && (
-                      <button
-                        onClick={() => {
-                          if (!showResponses[review.id]) {
-                            handleGetResponse(review.id);
+                    <div className="flex items-center">
+                      {isGigOwner && !review.isResponse && (
+                        <button
+                          onClick={() =>
+                            setReplyingTo(
+                              replyingTo === review.id ? null : review.id
+                            )
                           }
-                          setShowResponses((prev) => ({
-                            ...prev,
-                            [review.id]: !prev[review.id],
-                          }));
-                        }}
-                        disabled={isLoadingResponse}
-                        className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                      >
-                        <MessageCircle size={14} className="mr-1" />
-                        {isLoadingResponse
-                          ? "Đang tải..."
-                          : showResponses[review.id]
-                          ? "Ẩn phản hồi"
-                          : "Hiện phản hồi"}
-                      </button>
-                    )}
+                          className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        >
+                          <MessageCircle size={14} className="mr-1" />
+                          Phản hồi
+                        </button>
+                      )}
+                      {review.isResponse && (
+                        <button
+                          onClick={() => {
+                            if (!showResponses[review.id]) {
+                              handleGetResponse(review.id);
+                            }
+                            setShowResponses((prev) => ({
+                              ...prev,
+                              [review.id]: !prev[review.id],
+                            }));
+                          }}
+                          disabled={isLoadingResponse}
+                          className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        >
+                          <MessageCircle size={14} className="mr-1" />
+                          {isLoadingResponse
+                            ? "Đang tải..."
+                            : showResponses[review.id]
+                            ? "Ẩn phản hồi"
+                            : "Hiện phản hồi"}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Hiển thị phản hồi nếu có */}

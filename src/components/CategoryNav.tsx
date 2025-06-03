@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
+
 // Dữ liệu giả cho API category
 // Sử dụng để mô phỏng API response từ http://localhost:5000/api/category
 
@@ -40,44 +41,6 @@ const CategorySkeleton = () => {
   );
 };
 
-// Component Skeleton cho Dropdown
-const DropdownSkeleton = () => {
-  return (
-    <div className="container mx-auto px-12 py-8 relative">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pr-8">
-        {Array(12)
-          .fill(0)
-          .map((_, index) => (
-            <div key={index} className="mb-3">
-              <div
-                className="h-6 bg-gray-200 rounded-md mb-3 skeleton-shimmer"
-                style={{
-                  width: `${Math.floor(Math.random() * 60) + 100}px`,
-                  animationDelay: `${index * 150}ms`,
-                }}
-              ></div>
-              <div className="space-y-2.5">
-                {Array(Math.floor(Math.random() * 3) + 2)
-                  .fill(0)
-                  .map((_, subIndex) => (
-                    <div
-                      key={subIndex}
-                      className="h-4 bg-gray-100 rounded-md skeleton-shimmer"
-                      style={{
-                        width: `${Math.floor(Math.random() * 40) + 60}px`,
-                        animationDelay: `${index * 150 + subIndex * 100}ms`,
-                        opacity: 1 - subIndex * 0.15,
-                      }}
-                    ></div>
-                  ))}
-              </div>
-            </div>
-          ))}
-      </div>
-    </div>
-  );
-};
-
 const CategoryNav = () => {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -87,6 +50,7 @@ const CategoryNav = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
   const [showCategory, setShowCategory] = useState(false);
+  const [expandedSubcategories, setExpandedSubcategories] = useState<string[]>([]);
   const { isSignedIn } = useUser();
   const location = useLocation(); // Thêm location để kiểm tra đường dẫn hiện tại
 
@@ -191,6 +155,14 @@ const CategoryNav = () => {
     );
   };
 
+  const toggleSubcategory = (subId: string) => {
+    setExpandedSubcategories(prev =>
+      prev.includes(subId)
+        ? prev.filter(id => id !== subId)
+        : [...prev, subId]
+    );
+  };
+
   return (
     <div
       className={`fixed left-0 right-0 bg-white border-b shadow-sm transition-all duration-500 ${
@@ -242,7 +214,7 @@ const CategoryNav = () => {
       {/* Dropdown mega menu */}
       {activeCategory && (
         <div
-          className="absolute left-0 top-full w-full bg-white shadow-lg z-50 border-t border-gray-100"
+          className="absolute left-0 top-full w-full bg-white shadow-lg z-50 border-t border-gray-100 max-h-[80vh] overflow-y-auto"
           style={{
             boxShadow: "0 6px 16px rgba(0,0,0,0.05)",
             animation: "fadeIn 0.3s ease-in-out forwards",
@@ -250,46 +222,58 @@ const CategoryNav = () => {
           onMouseEnter={() => handleCategoryHover(activeCategory)}
           onMouseLeave={handleCategoryLeave}
         >
-          {/* Add hover area on the right */}
-          <div className="absolute right-[-100px] top-0 bottom-0 w-[100px]" />
-
-          {loading ? (
-            <DropdownSkeleton />
-          ) : (
-            <div className="container mx-auto px-12 py-8 relative">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-4 pr-8">
-                {categories
-                  .find((cat) => cat._id === activeCategory)
-                  ?.subcategories.map((sub) => (
-                    <div key={sub._id} className="mb-3">
-                      {/* Category title */}
-                      <h4 className="font-semibold text-[#404145] mb-2.5 text-[17px] leading-6 transition-all duration-200 ease-in-out cursor-pointer">
+          <div className="container mx-auto px-4 md:px-12 py-4 md:py-8 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {categories
+                .find((cat) => cat._id === activeCategory)
+                ?.subcategories.map((sub) => (
+                  <div key={sub._id} className="mb-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-[#404145] mb-2.5 text-[17px] leading-6">
                         {sub.name}
                       </h4>
-
-                      {sub.subcategoryChildren &&
-                        sub.subcategoryChildren.length > 0 && (
-                          <ul className="space-y-2.5">
-                            {sub.subcategoryChildren.map((subSub) => (
-                              <li key={subSub._id} className="group">
-                                <Link
-                                  to={`/advanced-search?category=${subSub._id}`}
-                                  className="text-[#74767e] hover:text-[#1dbf73] text-[15px] block transition-all duration-200 hover:translate-x-[2px] font-normal"
-                                >
-                                  {subSub.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                      {/* Chỉ hiện nút bấm trên mobile */}
+                      {sub.subcategoryChildren && sub.subcategoryChildren.length > 0 && (
+                        <button
+                          onClick={() => toggleSubcategory(sub._id)}
+                          className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-all duration-200"
+                        >
+                          <ChevronRight
+                            className={`w-4 h-4 transition-transform duration-200 ${
+                              expandedSubcategories.includes(sub._id) ? 'rotate-90' : ''
+                            }`}
+                          />
+                        </button>
+                      )}
                     </div>
-                  ))}
-              </div>
+
+                    {sub.subcategoryChildren && sub.subcategoryChildren.length > 0 && (
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ${
+                          expandedSubcategories.includes(sub._id) ? 'max-h-[500px]' : 'max-h-0'
+                        } md:max-h-full md:opacity-100`} // Luôn hiển thị trên desktop
+                      >
+                        <ul className="space-y-2.5 pl-4 mt-2">
+                          {sub.subcategoryChildren.map((subSub) => (
+                            <li key={subSub._id} className="group">
+                              <Link
+                                key={subSub._id}
+                                to={`/advanced-search?category=${subSub._id}`}
+                                className="text-[#74767e] hover:text-[#1dbf73] text-[15px] block transition-all duration-200 hover:translate-x-[2px] font-normal"
+                              >
+                                {subSub.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                </div>
             </div>
-          )}
         </div>
       )}
-
       {/* Nút điều hướng */}
       {canScrollLeft && (
         <button
@@ -334,6 +318,11 @@ const CategoryNav = () => {
             }
           }
 
+          @media (max-width: 768px) {
+            .max-h-[80vh] {
+              -webkit-overflow-scrolling: touch;
+            }
+          }
           @keyframes shimmer {
             0% {
               background-position: -200% 0;

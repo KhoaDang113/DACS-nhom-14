@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Mail, Heart, Lock } from "lucide-react";
+import { Menu, X, ChevronDown, Mail, Heart, Lock, Search } from "lucide-react";
 import {
   useUser,
   UserButton,
@@ -20,12 +20,14 @@ import CategoryNav from "./CategoryNav";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { isSignedIn } = useUser();
   const { isFreelancer } = useUserRole();
   const { isLocked } = useLockedAccount();
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
+  const [mobileNotificationOpen, setMobileNotificationOpen] = useState(false);
 
   // Xử lý sự kiện cuộn trang và lấy vị trí của thanh tìm kiếm Feature
   useEffect(() => {
@@ -416,46 +418,61 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={toggleMenu}
-            aria-label="Chuyển đổi menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Controls */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              className="p-2"
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              aria-label="Tìm kiếm"
+            >
+              <Search size={24} />
+            </button>
+            <button
+              className="p-2"
+              onClick={toggleMenu}
+              aria-label="Chuyển đổi menu"
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Search Overlay */}
+        {showMobileSearch && (
+          <div className="md:hidden absolute left-0 right-0 top-0 bg-white border-b">
+            <div className="flex items-center h-16 sm:h-20 px-4">
+              <div className="flex-1">
+                <SearchBar />
+              </div>
+              <button
+                className="ml-2 p-2"
+                onClick={() => setShowMobileSearch(false)}
+                aria-label="Đóng tìm kiếm"
+              >
+                <X size={24} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
-            {/* Mobile Search - Chỉ hiển thị khi không ở trang chủ */}
-            {showSearch && (
-              <div className="px-4 py-3 border-b">
-                <SearchBar />
-              </div>
-            )}
-
-            {/* Mobile Navigation */}
+          <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-40 max-h-[calc(100vh-64px)] overflow-y-auto">
+            {/* Remove the search bar from here since we now have a dedicated search button */}
             <nav className="flex flex-col py-2">
-              {/* Các nút chức năng chính */}
               {isSignedIn && (
                 <>
-                  <Link
-                    to="#"
-                    className="px-4 py-3 flex items-center justify-between hover:bg-gray-50"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 flex items-center justify-center">
-                        <NotificationBell />
+                  <div className="relative">
+                    <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          <NotificationBell isMobile />
+                        </div>
+                        <span className="text-sm font-medium">Thông báo</span>
                       </div>
-                      <span className="text-sm font-medium">Thông báo</span>
                     </div>
-                  </Link>
-                  <Link
-                    to="/inbox/null"
-                    className="px-4 py-3 flex items-center justify-between hover:bg-gray-50"
-                  >
+                  </div>
+                  <Link to="/inbox" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 flex items-center justify-center">
                         <Mail size={20} />

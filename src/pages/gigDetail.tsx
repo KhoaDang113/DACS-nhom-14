@@ -3,17 +3,7 @@ import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Heart,
-  Star,
-  Clock,
-  MessageSquare,
-  CheckCircle,
-  FileText,
-  MoreVertical,
-  Lock,
-  EyeIcon,
-} from "lucide-react";
+import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical, Lock, EyeIcon } from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
 import CustomerReviews from "../components/Review/CustomerReviews";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
