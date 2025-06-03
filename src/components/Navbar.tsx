@@ -22,6 +22,7 @@ export default function Navbar() {
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
+  const [mobileNotificationOpen, setMobileNotificationOpen] = useState(false);
 
   // Xử lý sự kiện cuộn trang và lấy vị trí của thanh tìm kiếm Feature
   useEffect(() => {
@@ -438,17 +439,18 @@ export default function Navbar() {
 
             {/* Mobile Navigation */}
             <nav className="flex flex-col py-2">
-              {/* Các nút chức năng chính */}
               {isSignedIn && (
                 <>
-                  <Link to="#" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 flex items-center justify-center">
-                        <NotificationBell />
+                  <div className="relative">
+                    <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 flex items-center justify-center">
+                          <NotificationBell isMobile />
+                        </div>
+                        <span className="text-sm font-medium">Thông báo</span>
                       </div>
-                      <span className="text-sm font-medium">Thông báo</span>
                     </div>
-                  </Link>
+                  </div>
                   <Link to="/inbox/null" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 flex items-center justify-center">

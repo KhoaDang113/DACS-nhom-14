@@ -22,7 +22,14 @@ interface Notification {
   conversationId: string;
 }
 
-const NotificationBell: React.FC = () => {
+// Add props for mobile layout
+interface NotificationBellProps {
+  isMobile?: boolean;
+}
+
+const NotificationBell: React.FC<NotificationBellProps> = ({
+  isMobile,
+}) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { showNotification } = useNotification();
@@ -171,22 +178,22 @@ const NotificationBell: React.FC = () => {
     };
   }, [user, showNotification, location]);
 
-  return (
-    <div className="relative" ref={notificationRef}>
-      <button
-        onClick={() => setShowNotifications(!showNotifications)}
-        className="relative flex items-center"
-      >
-        <Bell size={20} />
-        {notifications.filter((n) => !n.isRead).length > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-            {notifications.filter((n) => !n.isRead).length}
-          </span>
-        )}
-      </button>
+  const handleClick = () => {
+    setShowNotifications(!showNotifications);
+  };
 
+  return (
+    <div className={`${isMobile ? '' : 'relative'}`} ref={notificationRef}>
+      <Bell
+        size={20}
+        className="cursor-pointer hover:text-[#1dbf73]"
+        onClick={handleClick}
+      />
       {showNotifications && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className={`
+          absolute bg-white rounded-md shadow-lg border border-gray-200 p-4 
+          ${isMobile ? 'left-0 right-0 mx-4 mt-2' : 'right-0 mt-2 w-80'}
+        `}>
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold">Thông báo</h3>
