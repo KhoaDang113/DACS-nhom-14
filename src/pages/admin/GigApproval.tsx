@@ -461,7 +461,11 @@ const GigApproval: React.FC = () => {
               {filteredGigs.map((gig) => (
                 <TableRow key={gig._id}>
                   <TableCell className="font-medium">{gig._id.substring(0, 8)}...</TableCell>
-                  <TableCell>{gig.title}</TableCell>
+                  <TableCell className="max-w-[200px]">
+                    <div className="truncate" title={gig.title}>
+                      {gig.title}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar
