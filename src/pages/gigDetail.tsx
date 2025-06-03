@@ -1,25 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Heart,
-  Star,
-  Clock,
-  MessageSquare,
-  CheckCircle,
-  FileText,
-  MoreVertical,
-  Lock,
-  EyeIcon,
-} from "lucide-react";
+import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical, Lock, EyeIcon } from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
 import CustomerReviews from "../components/Review/CustomerReviews";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
 import useRestrictedAccess from "../hooks/useRestrictedAccess";
 import { useAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useUser } from "../hooks/useUser";
 
 // Định nghĩa loại MediaItem cho mảng media
 interface MediaItem {
@@ -91,6 +81,10 @@ const GigDetailPage = () => {
   const { isSignedIn, userId } = useAuth();
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [isLoadingPayment, setIsLoadingPayment] = useState<boolean>(false);
+  const { user } = useUser();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   // Xử lý query parameter reviewId
   useEffect(() => {
     // Lấy reviewId từ query parameters nếu có
@@ -131,8 +125,6 @@ const GigDetailPage = () => {
   // Hàm trích xuất frame đầu tiên từ video làm thumbnail
   const extractVideoThumbnail = async (videoUrl: string): Promise<string> => {
     return new Promise<string>((resolve) => {
-      console.log("Đang trích xuất thumbnail từ:", videoUrl);
-
       const video = document.createElement("video");
       video.crossOrigin = "anonymous";
       video.src = videoUrl;
@@ -143,8 +135,6 @@ const GigDetailPage = () => {
 
       // Xử lý sự kiện khi dữ liệu video đã sẵn sàng
       const handleLoadedData = () => {
-        console.log("Video đã tải xong, bắt đầu tạo thumbnail");
-
         try {
           const canvas = document.createElement("canvas");
           canvas.width = video.videoWidth;
@@ -157,8 +147,6 @@ const GigDetailPage = () => {
 
             // Chuyển đổi canvas thành dạng dữ liệu URL (base64)
             const thumbnailUrl = canvas.toDataURL("image/jpeg");
-            console.log("Đã tạo thumbnail thành công");
-
             // Giải phóng bộ nhớ
             video.removeEventListener("loadeddata", handleLoadedData);
             video.src = "";
@@ -267,7 +255,24 @@ const GigDetailPage = () => {
 
   const naviagteToConversation = () => {
     if (freelancer && freelancer._id) {
-      navigate(`/inbox/${freelancer._id}`);
+      const getConversation = async () => {
+        try {
+          const response = await axios.post(
+            `http://localhost:5000/api/conversation/create-or-get`,
+            {
+              to: freelancer._id,
+              from: user?.user?._id,
+            },
+            {
+              withCredentials: true,
+            }
+          );
+          navigate(`/inbox/${response.data.conversation._id}`);
+        } catch (error) {
+          console.error("Error fetching conversation:", error);
+        }
+      };
+      getConversation();
     } else {
       alert("Không tìm thấy thông tin người bán để liên hệ.");
     }
@@ -376,7 +381,6 @@ const GigDetailPage = () => {
 
       // Lấy ID từ URL và làm sạch
       const gigId = id?.split("/").pop()?.trim();
-      console.log("Gửi báo cáo với id:", gigId);
 
       const response = await axios.post(
         `http://localhost:5000/api/complaint/${gigId}/create`,

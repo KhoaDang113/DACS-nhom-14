@@ -76,6 +76,57 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       : reviews
   ) as CustomerReviewWithResponse[];
 
+  const [votesData, setVotesData] = useState<{
+    [reviewId: string]: {
+      vote: "like" | "dislike" | "none";
+      likeCount: number;
+      dislikeCount: number;
+    };
+  }>({});
+
+  useEffect(() => {
+    const fetchVotes = async () => {
+      const voteResults = await Promise.all(
+        initialReviews.map(async (review) => {
+          try {
+            const res = await axios.get(
+              `http://localhost:5000/api/review-vote/get/${review.id}`,
+              {
+                withCredentials: true,
+              }
+            );
+            return {
+              id: review.id,
+              data: {
+                vote: res.data.vote,
+                likeCount: res.data.likeCount,
+                dislikeCount: res.data.dislikeCount,
+              },
+            };
+          } catch (err) {
+            return {
+              id: review.id,
+              data: {
+                vote: "none",
+                likeCount: 0,
+                dislikeCount: 0,
+              },
+            };
+          }
+        })
+      );
+
+      const voteMap = voteResults.reduce((acc, cur) => {
+        acc[cur.id] = cur.data;
+        return acc;
+      }, {} as typeof votesData);
+
+      setVotesData(voteMap);
+    };
+
+    fetchVotes();
+  }, []);
+
   useEffect(() => {
     if (!socket.connected) socket.connect();
 
@@ -155,7 +206,6 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       setIsSubmitting(false);
     }
   };
-
   const handleVote = async (
     reviewId: string,
     isHelpFull: "like" | "dislike"
@@ -174,18 +224,21 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
       );
 
       if (response.data.success) {
-        setReviews((prevReviews) =>
-          prevReviews.map((review) =>
-            review.id === reviewId
-              ? {
-                  ...review,
-                  vote: {
-                    isHelpFull: response.data.vote?.isHelpFull || "none",
-                  },
-                }
-              : review
-          )
+        const res = await axios.get(
+          `http://localhost:5000/api/review-vote/get/${reviewId}`,
+          {
+            withCredentials: true,
+          }
         );
+
+        setVotesData((prev) => ({
+          ...prev,
+          [reviewId]: {
+            vote: res.data.vote,
+            likeCount: res.data.likeCount,
+            dislikeCount: res.data.dislikeCount,
+          },
+        }));
       }
     } catch (err) {
       console.error("Error voting:", err);
@@ -376,68 +429,72 @@ const CustomerReviews: React.FC<CustomerReviewsProps> = ({
                   </div>
 
                   {/* Interactions */}
-                  <div className="flex items-center mt-4 text-sm">
-                    <div className="flex items-center mr-4">
+                  <div className="flex flex-col gap-2 mt-4 text-sm sm:flex-row sm:items-center">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleVote(review.id, "like")}
                         disabled={isVoting}
-                        className={`flex items-center px-3 py-1 rounded-full transition-colors mr-2 ${
-                          review.vote?.isHelpFull === "like"
+                        className={`flex items-center px-3 py-1 rounded-full transition-colors ${
+                          votesData[review.id]?.vote === "like"
                             ? "bg-green-600 text-white"
                             : "bg-green-100 text-green-600 hover:bg-green-200"
                         }`}
                       >
                         <ThumbsUp size={14} className="mr-1" />
-                        Yes
+                        Yes ({votesData[review.id]?.likeCount ?? 0})
                       </button>
+
                       <button
                         onClick={() => handleVote(review.id, "dislike")}
                         disabled={isVoting}
                         className={`flex items-center px-3 py-1 rounded-full transition-colors ${
-                          review.vote?.isHelpFull === "dislike"
+                          votesData[review.id]?.vote === "dislike"
                             ? "bg-red-600 text-white"
                             : "bg-red-100 text-red-600 hover:bg-red-200"
                         }`}
                       >
                         <ThumbsUp size={14} className="mr-1 rotate-180" />
-                        No
+                        No ({votesData[review.id]?.dislikeCount ?? 0})
                       </button>
                     </div>
-                    {isGigOwner && !review.isResponse && (
-                      <button
-                        onClick={() =>
-                          setReplyingTo(
-                            replyingTo === review.id ? null : review.id
-                          )
-                        }
-                        className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                      >
-                        <MessageCircle size={14} className="mr-1" />
-                        Phản hồi
-                      </button>
-                    )}
-                    {review.isResponse && (
-                      <button
-                        onClick={() => {
-                          if (!showResponses[review.id]) {
-                            handleGetResponse(review.id);
+
+                    <div className="flex items-center">
+                      {isGigOwner && !review.isResponse && (
+                        <button
+                          onClick={() =>
+                            setReplyingTo(
+                              replyingTo === review.id ? null : review.id
+                            )
                           }
-                          setShowResponses((prev) => ({
-                            ...prev,
-                            [review.id]: !prev[review.id],
-                          }));
-                        }}
-                        disabled={isLoadingResponse}
-                        className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                      >
-                        <MessageCircle size={14} className="mr-1" />
-                        {isLoadingResponse
-                          ? "Đang tải..."
-                          : showResponses[review.id]
-                          ? "Ẩn phản hồi"
-                          : "Hiện phản hồi"}
-                      </button>
-                    )}
+                          className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        >
+                          <MessageCircle size={14} className="mr-1" />
+                          Phản hồi
+                        </button>
+                      )}
+                      {review.isResponse && (
+                        <button
+                          onClick={() => {
+                            if (!showResponses[review.id]) {
+                              handleGetResponse(review.id);
+                            }
+                            setShowResponses((prev) => ({
+                              ...prev,
+                              [review.id]: !prev[review.id],
+                            }));
+                          }}
+                          disabled={isLoadingResponse}
+                          className="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                        >
+                          <MessageCircle size={14} className="mr-1" />
+                          {isLoadingResponse
+                            ? "Đang tải..."
+                            : showResponses[review.id]
+                            ? "Ẩn phản hồi"
+                            : "Hiện phản hồi"}
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Hiển thị phản hồi nếu có */}

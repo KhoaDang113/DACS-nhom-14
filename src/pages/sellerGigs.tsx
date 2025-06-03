@@ -1,18 +1,24 @@
-import React from 'react';
-import { Briefcase, Plus } from 'lucide-react';
-import SellerGigManager from '../components/Gig/SellerGigManager';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { Briefcase, Plus } from "lucide-react";
+import SellerGigManager from "../components/Gig/SellerGigManager";
+import { Link } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 // import axios from 'axios';
 
 const SellerGigsPage: React.FC = () => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   return (
     <div className="min-h-screen bg-blue-100 w-full">
       <div className="w-full px-2 sm:max-w-[1400px] sm:mx-auto sm:px-0">
         <div className="w-full px-2 sm:px-8 py-4">
           <div className="flex items-center h-10">
             <div className="bg-blue-50 hover:bg-blue-100 rounded-md transition duration-300">
-              <Link to="/dashboard" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+              >
                 <FaArrowLeft className="mr-2" />
                 <span className="font-medium">Quay lại</span>
               </Link>
@@ -27,10 +33,15 @@ const SellerGigsPage: React.FC = () => {
                 <div className="bg-indigo-100 p-2 sm:p-3 rounded-full">
                   <Briefcase className="w-5 h-5 sm:w-7 sm:h-7 text-indigo-600" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Dịch vụ của bạn</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                  Dịch vụ của bạn
+                </h1>
               </div>
-              
-              <Link to="/create-gig" className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
+
+              <Link
+                to="/create-gig"
+                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto"
+              >
                 <Plus className="w-5 h-5" />
                 <span>Tạo dịch vụ mới</span>
               </Link>
@@ -38,9 +49,13 @@ const SellerGigsPage: React.FC = () => {
 
             <div className="bg-white shadow-lg rounded-xl border border-gray-100">
               <div className="border-b border-gray-100 p-4 sm:p-5">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-700">Danh sách dịch vụ</h2>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">Quản lý tất cả dịch vụ bạn đã đăng trên trang web</p>
-              </div>          
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-700">
+                  Danh sách dịch vụ
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                  Quản lý tất cả dịch vụ bạn đã đăng trên trang web
+                </p>
+              </div>
               <div className="p-4 sm:p-5">
                 <SellerGigManager />
               </div>

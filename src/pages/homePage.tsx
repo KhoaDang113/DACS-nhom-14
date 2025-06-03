@@ -1,4 +1,9 @@
-import { categoryContentCards, popularCards, serviceCards, benefitItems } from "../lib/constant";
+import {
+  categoryContentCards,
+  popularCards,
+  serviceCards,
+  benefitItems,
+} from "../lib/constant";
 import { SignUpButton } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import Slide from "../components/Slide";
@@ -21,7 +26,7 @@ export default function HomePage() {
   const fetchToken = async () => {
     try {
       const token = await getToken({ template: "TemplateClaim" });
-      console.log("Token:", token);
+      // console.log("Token:", token);
       return token;
     } catch (error) {
       console.error("Lỗi khi lấy token:", error);
@@ -103,7 +108,8 @@ export default function HomePage() {
                   Dịch vụ phổ biến
                 </h2>
                 <p className="text-gray-500 text-sm sm:text-base hidden sm:block mb-5">
-                  Khám phá những dịch vụ được săn đón nhất từ các freelancer hàng đầu
+                  Khám phá những dịch vụ được săn đón nhất từ các freelancer
+                  hàng đầu
                 </p>
               </div>
               <Slide>
@@ -146,7 +152,8 @@ export default function HomePage() {
             </h2>
 
             <span className="text-base sm:text-lg text-[#62646a] mb-4 sm:mb-6 md:mb-8 lg:mb-10 max-w-3xl">
-              Tìm đến các freelancer trên JopViet để biến tầm nhìn của họ thành hiện thực.
+              Tìm đến các freelancer trên JopViet để biến tầm nhìn của họ thành
+              hiện thực.
             </span>
 
             {/* Updated video container */}
@@ -161,7 +168,10 @@ export default function HomePage() {
                   playsInline
                   controls
                 >
-                  <source src="/Vontelle Cutdown- Breakthrough V5.mp4" type="video/mp4" />
+                  <source
+                    src="/Vontelle Cutdown- Breakthrough V5.mp4"
+                    type="video/mp4"
+                  />
                   Your browser does not support the video tag.
                 </video>
               </div>
@@ -250,9 +260,11 @@ export default function HomePage() {
               Công Việc Nằm Trong Tầm Tay Bạn
             </h1>
             <SignUpButton mode="modal">
-              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold 
+              <button
+                className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold 
                               hover:bg-blue-700 transition-all transform hover:scale-105 
-                              text-lg shadow-lg">
+                              text-lg shadow-lg"
+              >
                 Tham Gia JopViet Ngay
               </button>
             </SignUpButton>

@@ -309,9 +309,9 @@ const SellerManagement: React.FC = () => {
       />
       
       <div>
-        <h1 className="text-2xl font-bold">Quản lý người bán</h1>
+        <h1 className="text-2xl font-bold">Quản lý người dùng</h1>
         <p className="text-gray-500 mt-1">
-          Quản lý và điều hành người bán trên nền tảng của bạn.
+          Quản lý và điều hành người dùng trên nền tảng của bạn.
         </p>
       </div>
 

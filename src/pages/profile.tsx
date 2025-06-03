@@ -61,6 +61,9 @@ interface GigData {
 }
 
 export default function ProfilePage() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const { user: clerkUser } = useUser();
   const { getToken } = useAuth();
   const { isAdmin, isLoading: roleLoading } = useUserRole();

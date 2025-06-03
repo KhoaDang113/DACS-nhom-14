@@ -2,7 +2,8 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
 // Dữ liệu giả cho API category
 // Sử dụng để mô phỏng API response từ http://localhost:5000/api/category
 
@@ -19,10 +20,32 @@ interface Category {
   subcategories: Subcategory[];
 }
 
+// Component Skeleton cho CategoryNav
+const CategorySkeleton = () => {
+  return (
+    <div className="flex items-center space-x-8 py-1.5">
+      {Array(8)
+        .fill(0)
+        .map((_, index) => (
+          <div key={index} className="skeleton-item">
+            <div
+              className="h-5 bg-gray-200 rounded-md skeleton-shimmer"
+              style={{
+                width: `${Math.floor(Math.random() * 40) + 60}px`,
+                animationDelay: `${index * 100}ms`,
+              }}
+            ></div>
+          </div>
+        ))}
+    </div>
+  );
+};
+
 const CategoryNav = () => {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
@@ -43,17 +66,20 @@ const CategoryNav = () => {
   // Kiểm tra xem có nên hiển thị CategoryNav không
   const shouldShowCategoryNav = () => {
     // Kiểm tra xem đường dẫn hiện tại có trong danh sách loại trừ không
-    return !excludedPaths.some(path => location.pathname.startsWith(path));
+    return !excludedPaths.some((path) => location.pathname.startsWith(path));
   };
 
   // Thêm effect để kiểm tra scroll position
   useEffect(() => {
     const axiosCategories = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("http://localhost:5000/api/category");
         setCategories(response.data.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
+      } finally {
+        setLoading(false);
       }
     };
     axiosCategories();
@@ -159,7 +185,9 @@ const CategoryNav = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {categories.length > 0 ? (
+        {loading ? (
+          <CategorySkeleton />
+        ) : categories.length > 0 ? (
           categories.map((category) => (
             <div
               key={category._id}
@@ -179,7 +207,7 @@ const CategoryNav = () => {
             </div>
           ))
         ) : (
-          <div className="py-2 text-gray-500">Đang tải danh mục...</div>
+          <div className="py-2 text-gray-500">Không có danh mục nào</div>
         )}
       </div>
 
@@ -228,12 +256,13 @@ const CategoryNav = () => {
                         <ul className="space-y-2.5 pl-4 mt-2">
                           {sub.subcategoryChildren.map((subSub) => (
                             <li key={subSub._id} className="group">
-                              <a
-                                href="#"
+                              <Link
+                                key={subSub._id}
+                                to={`/advanced-search?category=${subSub._id}`}
                                 className="text-[#74767e] hover:text-[#1dbf73] text-[15px] block transition-all duration-200 hover:translate-x-[2px] font-normal"
                               >
                                 {subSub.name}
-                              </a>
+                              </Link>
                             </li>
                           ))}
                         </ul>
@@ -241,11 +270,10 @@ const CategoryNav = () => {
                     )}
                   </div>
                 ))}
+                </div>
             </div>
-          </div>
         </div>
       )}
-
       {/* Nút điều hướng */}
       {canScrollLeft && (
         <button
@@ -294,6 +322,25 @@ const CategoryNav = () => {
             .max-h-[80vh] {
               -webkit-overflow-scrolling: touch;
             }
+          }
+          @keyframes shimmer {
+            0% {
+              background-position: -200% 0;
+            }
+            100% {
+              background-position: 200% 0;
+            }
+          }
+
+          .skeleton-shimmer {
+            background: linear-gradient(
+              90deg,
+              rgba(0, 0, 0, 0.06) 25%,
+              rgba(0, 0, 0, 0.1) 37%,
+              rgba(0, 0, 0, 0.06) 63%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
           }
         `,
         }}

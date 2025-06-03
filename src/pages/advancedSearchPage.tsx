@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import GigCard from "../components/Card/Card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sliders } from "lucide-react";
 
 // Định nghĩa kiểu dữ liệu cho kết quả tìm kiếm
 interface SearchResult {
@@ -30,6 +30,7 @@ type Category = {
   _id: string;
   name: string;
   subcategories?: Category[];
+  subcategoryChildren?: Category[];
 };
 
 interface SearchResponse {
@@ -57,13 +58,19 @@ export default function AdvancedSearchPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Lấy từ khóa từ URL
   const queryParams = new URLSearchParams(location.search);
   const keywordFromUrl = queryParams.get("keyword") || "";
+  
+  const categoryFromUrl = queryParams.get("category") || "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSelectedCategory(categoryFromUrl);
     performSearch();
-  }, [location]);
+  }, [location, location.search]);
   useEffect(() => {
     // Lấy danh sách danh mục cho bộ lọc
     const fetchCategories = async () => {
@@ -96,8 +103,18 @@ export default function AdvancedSearchPage() {
       if (keywordFromUrl) params.keyword = keywordFromUrl;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-      if (selectedCategory) params.category = selectedCategory;
-      params.sortBy = sortOption;
+      if (categoryFromUrl) params.category = categoryFromUrl;
+      
+      // Xử lý các tùy chọn sắp xếp
+      if (sortOption === "price_asc") {
+        params.sortField = "price";
+        params.sortOrder = "asc";
+      } else if (sortOption === "price_desc") {
+        params.sortField = "price";
+        params.sortOrder = "desc";
+      } else {
+        params.sortBy = sortOption;
+      }
 
       const response = await axios.get<SearchResponse>(
         "http://localhost:5000/api/search",
@@ -141,9 +158,11 @@ export default function AdvancedSearchPage() {
     // Cập nhật URL mà không reload trang
     navigate(`/advanced-search?${newParams.toString()}`, { replace: true });
 
-    // Thực hiện tìm kiếm
-    performSearch();
+
+    // Đóng filter trên mobile sau khi áp dụng
+    setShowMobileFilters(false);
   };
+  
   const handleSortChange = (newSortBy: string) => {
     setSortBy(newSortBy);
     performSearch(newSortBy);
@@ -154,6 +173,96 @@ export default function AdvancedSearchPage() {
     performSearch(sortBy, newPage);
     // Cuộn lên đầu trang khi chuyển trang
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Render bộ lọc ở cột bên trái
+  const renderFilters = () => {
+    return (
+      <div className="filter-section bg-white rounded-lg shadow-md p-4 sticky top-40 max-h-[calc(100vh-180px)] overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Bộ lọc tìm kiếm</h3>
+        
+        {/* Lọc theo khoảng giá */}
+        <div className="mb-6">
+          <p className="font-medium mb-3 text-sm">Khoảng giá</p>
+          <div className="flex flex-col gap-3">
+            <input
+              type="number"
+              min="0"
+              placeholder="Giá tối thiểu"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-sm"
+            />
+            <input
+              type="number"
+              min="0"
+              placeholder="Giá tối đa"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Lọc theo danh mục */}
+        <div>
+                <p className="font-medium mb-2 text-sm">Danh mục</p>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm scrollbar-hidden"
+                >
+                  <option value="">Tất cả danh mục</option>
+                  {categories.map((cat) => (
+                    <React.Fragment key={cat._id}>
+                      <option value="" disabled style={{ fontWeight: "bold" }}>
+                        {cat.name}
+                      </option>
+
+                      {cat.subcategories &&
+                        cat.subcategories.map((sub) => (
+                          <React.Fragment key={sub._id}>
+                            <option
+                              value=""
+                              disabled
+                              style={{ fontWeight: "bold" }}
+                            >
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {"\u00A0"}
+                              {sub.name}
+                            </option>
+
+                            {sub.subcategoryChildren &&
+                              sub.subcategoryChildren.map((subChild) => (
+                                <option key={subChild._id} value={subChild._id}>
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {"\u00A0"}
+                                  {subChild.name}
+                                </option>
+                              ))}
+                          </React.Fragment>
+                        ))}
+                    </React.Fragment>
+                  ))}
+                </select>
+              </div>
+        {/* Nút áp dụng bộ lọc */}
+        <button
+          onClick={applyFilters}
+          className="w-full px-4 py-2 bg-[#1dbf73] text-white rounded-md mt-3 hover:bg-[#19a463] transition-colors text-sm font-medium"
+        >
+          Áp dụng lọc
+        </button>
+      </div>
+    );
   };
 
   // Hàm render nội dung tìm kiếm dựa trên trạng thái
@@ -187,7 +296,7 @@ export default function AdvancedSearchPage() {
     // Hiển thị kết quả tìm kiếm
     return (
       <>
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
+        <div className="gig-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
           {searchResults.map((result) => (
             <GigCard
               key={result._id}
@@ -233,20 +342,7 @@ export default function AdvancedSearchPage() {
             </button>
           </div>
           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Hiển thị{" "}
-                <span className="font-medium">
-                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-                </span>{" "}
-                đến{" "}
-                <span className="font-medium">
-                  {Math.min(currentPage * ITEMS_PER_PAGE, totalResults)}
-                </span>{" "}
-                trong tổng số{" "}
-                <span className="font-medium">{totalResults}</span> kết quả
-              </p>
-            </div>
+            <div></div>
             <div>
               <nav
                 className="isolate inline-flex -space-x-px rounded-md shadow-sm"
@@ -316,95 +412,66 @@ export default function AdvancedSearchPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 px-4 sm:px-6 md:px-24">
-      {/* Bộ lọc ngay dưới navbar - Luôn hiển thị */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-3">
-            <h2 className="text-lg font-medium mb-3">
-              Kết quả tìm kiếm cho: "{keywordFromUrl}"
-            </h2>
-
-            {/* Bộ lọc luôn hiển thị */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2 ">
-              {/* Lọc theo khoảng giá - chiếm 2 cột */}
-              <div className="md:col-span-2">
-                <p className="font-medium mb-2 text-sm">Khoảng giá</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Tối thiểu"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    placeholder="Tối đa"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Lọc theo danh mục - chiếm 1 cột */}
-              <div>
-                <p className="font-medium mb-2 text-sm">Danh mục</p>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md text-sm scrollbar-hidden"
-                >
-                  <option value="">Tất cả danh mục</option>
-                  {categories.map((cat) => (
-                    <optgroup key={cat._id} label={cat.name}>
-                      {cat.subcategories?.length ? (
-                        cat.subcategories.map((child) => (
-                          <option key={child._id} value={child._id}>
-                            {child.name}
-                          </option>
-                        ))
-                      ) : (
-                        <option value={cat._id}>{cat.name}</option>
-                      )}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              {/* Nút áp dụng bộ lọc - chiếm 1 cột */}
-              <div className="flex items-end">
-                <button
-                  onClick={applyFilters}
-                  className="w-full px-4 py-2 bg-[#1dbf73] text-white rounded-md hover:bg-[#19a463] transition-colors text-sm font-medium"
-                >
-                  Áp dụng lọc
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen w-full bg-gray-50 px-4 sm:px-6 lg:px-8 py-6">
+      {/* Tiêu đề tìm kiếm */}
+      <div className="container mx-auto mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Kết quả tìm kiếm 
+        </h2>
       </div>
 
-      {/* Kết quả tìm kiếm */}
-      <div className="container mx-auto px-4 h-full bg-white rounded-br-2xl rounded-bl-2xl shadow-xl p-4 sm:p-6 md:px-8">
-        {/* Sort By Dropdown */}
-        <div className="mb-6 flex justify-end items-center mr-[20px]">
-          <label className="mr-2 text-gray-700 font-semibold">Sắp xếp:</label>
-          <select
-            value={sortBy}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="border rounded-lg px-3 py-1 text-gray-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="recommended">Đề xuất</option>
-            <option value="hot">Hot</option>
-            <option value="new">Mới</option>
-          </select>
-        </div>
+      {/* Nút hiển thị bộ lọc trên mobile */}
+      <div className="container mx-auto mb-4 lg:hidden">
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-700 hover:bg-gray-50"
+        >
+          <Sliders size={16} />
+          {showMobileFilters ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}
+        </button>
+      </div>
 
-        {renderContent()}
+      {/* Hiển thị bộ lọc trên mobile khi click */}
+      {showMobileFilters && (
+        <div className="container mx-auto mb-4 lg:hidden">
+          {renderFilters()}
+        </div>
+      )}
+
+      {/* Layout 2 cột */}
+      <div className="container mx-auto">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Cột bên trái - Bộ lọc */}
+          <div className="lg:w-1/4 hidden lg:block">
+            {renderFilters()}
+          </div>
+
+          {/* Cột bên phải - Kết quả tìm kiếm */}
+          <div className="gig-list-section lg:w-3/4 bg-white rounded-lg shadow-md p-4">
+            {/* Sort By Dropdown và thông tin số lượng kết quả */}
+            <div className="mb-6 flex justify-between items-center flex-wrap gap-3">
+              <p className="text-sm text-gray-700 font-medium">
+                {totalResults} kết quả được tìm thấy
+              </p>
+              <div className="flex items-center">
+                <label className="mr-2 text-gray-700 font-semibold">Sắp xếp:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="border rounded-lg px-3 py-1 text-gray-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="recommended">Đề xuất</option>
+                  <option value="hot">Hot</option>
+                  <option value="new">Mới</option>
+                  <option value="price_asc">Giá: Thấp đến Cao</option>
+                  <option value="price_desc">Giá: Cao đến Thấp</option>
+                </select>
+              </div>
+            </div>
+
+            {renderContent()}
+          </div>
+        </div>
       </div>
     </div>
   );

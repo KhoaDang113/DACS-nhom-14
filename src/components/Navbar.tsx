@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown, Mail, Heart, Lock } from "lucide-react";
-import { useUser, UserButton, SignInButton, SignUpButton } from "@clerk/clerk-react";
+import { Menu, X, ChevronDown, Mail, Heart, Lock, Search } from "lucide-react";
+import {
+  useUser,
+  UserButton,
+  SignInButton,
+  SignUpButton,
+} from "@clerk/clerk-react";
 import NotificationBell from "./NotificationBell";
 import SearchBar from "./Search/SearchBar";
 import useUserRole from "../hooks/useUserRole";
@@ -15,10 +20,10 @@ import CategoryNav from "./CategoryNav";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const { isSignedIn } = useUser();
   const { isFreelancer } = useUserRole();
   const { isLocked } = useLockedAccount();
-  const navigate = useNavigate();
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
@@ -69,10 +74,6 @@ export default function Navbar() {
     setMenuOpen(!menuOpen);
   };
 
-  const handleSignInSuccess = () => {
-    navigate("/jobs");
-  };
-
   // Xử lý khi người dùng click vào một menu bị khóa
   const handleLockedFeatureClick = (
     e: React.MouseEvent,
@@ -113,7 +114,7 @@ export default function Navbar() {
   const navLinks = isSignedIn
     ? [
         // Người dùng đã đăng nhập
-        { title: "", path: "/inbox/null", icon: <Mail size={20} /> },
+        { title: "", path: "/inbox", icon: <Mail size={20} /> },
         { title: "", path: "/bookmarks", icon: <Heart size={20} /> },
         // Hiển thị nút "Trở thành Freelancer" chỉ khi người dùng chưa là freelancer và không bị khóa
         ...(!isFreelancer && !isLocked
@@ -178,7 +179,9 @@ export default function Navbar() {
             {isSignedIn && (
               <div className="relative" ref={functionsDropdownRef}>
                 <button
-                  onClick={() => setFunctionsDropdownOpen(!functionsDropdownOpen)}
+                  onClick={() =>
+                    setFunctionsDropdownOpen(!functionsDropdownOpen)
+                  }
                   className="text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base flex items-center"
                 >
                   Chức năng <ChevronDown className="ml-1" size={16} />
@@ -400,9 +403,7 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <SignInButton
-                  mode="modal"
-                >
+                <SignInButton mode="modal">
                   <div className="cursor-pointer text-black hover:text-[#1dbf73] font-medium text-sm lg:text-base whitespace-nowrap">
                     Đăng ký
                   </div>
@@ -417,27 +418,47 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={toggleMenu}
-            aria-label="Chuyển đổi menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Controls */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              className="p-2"
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              aria-label="Tìm kiếm"
+            >
+              <Search size={24} />
+            </button>
+            <button
+              className="p-2"
+              onClick={toggleMenu}
+              aria-label="Chuyển đổi menu"
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Search Overlay */}
+        {showMobileSearch && (
+          <div className="md:hidden absolute left-0 right-0 top-0 bg-white border-b">
+            <div className="flex items-center h-16 sm:h-20 px-4">
+              <div className="flex-1">
+                <SearchBar />
+              </div>
+              <button
+                className="ml-2 p-2"
+                onClick={() => setShowMobileSearch(false)}
+                aria-label="Đóng tìm kiếm"
+              >
+                <X size={24} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-50 max-h-[calc(100vh-64px)] overflow-y-auto">
-            {/* Mobile Search - Chỉ hiển thị khi không ở trang chủ */}
-            {showSearch && (
-              <div className="px-4 py-3 border-b">
-                <SearchBar />
-              </div>
-            )}
-
-            {/* Mobile Navigation */}
+          <div className="md:hidden fixed left-0 right-0 top-[64px] sm:top-[80px] bg-white shadow-lg z-40 max-h-[calc(100vh-64px)] overflow-y-auto">
+            {/* Remove the search bar from here since we now have a dedicated search button */}
             <nav className="flex flex-col py-2">
               {isSignedIn && (
                 <>
@@ -451,7 +472,7 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
-                  <Link to="/inbox/null" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                  <Link to="/inbox" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 flex items-center justify-center">
                         <Mail size={20} />
@@ -459,7 +480,10 @@ export default function Navbar() {
                       <span className="text-sm font-medium">Tin nhắn</span>
                     </div>
                   </Link>
-                  <Link to="/bookmarks" className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                  <Link
+                    to="/bookmarks"
+                    className="px-4 py-3 flex items-center justify-between hover:bg-gray-50"
+                  >
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 flex items-center justify-center">
                         <Heart size={20} />
@@ -494,7 +518,9 @@ export default function Navbar() {
                         <line x1="22" y1="11" x2="16" y2="11"></line>
                       </svg>
                     </div>
-                    <span className="text-sm font-medium">Trở thành Freelancer</span>
+                    <span className="text-sm font-medium">
+                      Trở thành Freelancer
+                    </span>
                   </div>
                 </Link>
               )}
@@ -584,7 +610,9 @@ export default function Navbar() {
                     <div className="w-10 h-10 flex items-center justify-center rounded-full border-2 border-cyan-500 bg-cyan-100 shadow-md">
                       <UserButton />
                     </div>
-                    <span className="text-sm font-medium">Tài khoản của bạn</span>
+                    <span className="text-sm font-medium">
+                      Tài khoản của bạn
+                    </span>
                   </div>
                 </div>
               ) : (

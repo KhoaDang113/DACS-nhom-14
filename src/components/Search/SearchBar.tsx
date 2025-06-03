@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Search } from "lucide-react";
 import axios from "axios";
 
@@ -10,7 +10,7 @@ export default function SearchBar() {
   const [popularCategories, setPopularCategories] = useState<string[]>([]);
   const navigate = useNavigate();
   const wrapperRef = useRef<HTMLDivElement>(null);
-
+  const location = useLocation();
   // Load từ localStorage
   useEffect(() => {
     const stored = localStorage.getItem("recentSearches");
@@ -33,7 +33,14 @@ export default function SearchBar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
+  useEffect(() => {
+    if (
+      location.pathname !== "/search" &&
+      location.pathname !== "/advanced-search"
+    ) {
+      setSearchTerm("");
+    }
+  }, [location.pathname]);
   useEffect(() => {
     const fetchPopularCategories = async () => {
       try {
@@ -104,7 +111,10 @@ export default function SearchBar() {
       </form>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 w-full bg-white border mt-1 rounded-md shadow-md z-[100]" style={{ zIndex: 100 }}>
+        <div
+          className="absolute top-full left-0 w-full bg-white border mt-1 rounded-md shadow-md z-[100]"
+          style={{ zIndex: 100 }}
+        >
           {recentSearches.length > 0 && (
             <div className="px-4 py-2 border-b">
               <div className="flex justify-between items-center mb-1">
