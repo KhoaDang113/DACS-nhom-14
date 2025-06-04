@@ -512,7 +512,7 @@ const GigDetailPage = () => {
     }
   };
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-16 max-w-7xl">
       <ToastContainer />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Content Column - Takes 2/3 on large screens */}
