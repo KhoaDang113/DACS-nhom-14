@@ -424,7 +424,7 @@ export default function OrderDetailPage() {
                         {order.sellerId && (
                           <button
                             onClick={() =>
-                              navigate(`/profileUser/${order.sellerId}`)
+                              navigate(`/profile/${order.sellerId}`)
                             }
                             className="text-sm text-blue-600 hover:underline mt-1 flex items-center gap-1"
                           >

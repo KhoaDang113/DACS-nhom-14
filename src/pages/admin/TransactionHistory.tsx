@@ -396,7 +396,7 @@ const TransactionHistory: React.FC = () => {
                 <TableHead>Ngày</TableHead>
                 <TableHead>Số Tiền</TableHead>
                 <TableHead>Trạng Thái</TableHead>
-                <TableHead className="text-right">Thao Tác</TableHead>
+                {/* <TableHead className="text-right">Thao Tác</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -428,7 +428,7 @@ const TransactionHistory: React.FC = () => {
                       {transaction.status === "Failed" && "Thất Bại"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  {/* <TableCell className="text-right">
                     <Dropdown
                       trigger={
                         <Button
@@ -452,7 +452,7 @@ const TransactionHistory: React.FC = () => {
                       <DropdownDivider />
                       <DropdownItem>Tải hóa đơn</DropdownItem>
                     </Dropdown>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>
