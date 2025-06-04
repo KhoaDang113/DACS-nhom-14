@@ -512,7 +512,7 @@ const GigDetailPage = () => {
     }
   };
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-16 max-w-7xl">
       <ToastContainer />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Content Column - Takes 2/3 on large screens */}
@@ -816,7 +816,7 @@ const GigDetailPage = () => {
 
         {/* Sidebar - Order Box */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-md sticky top-24">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-md sticky top-40">
             {/* Package Options (Tabs) */}
             <div className="flex border-b overflow-auto scrollbar-hide">
               <div className="item-center px-4 py-3 font-medium border-b-2 border-green-500 text-green-500 flex-1">
@@ -827,7 +827,7 @@ const GigDetailPage = () => {
             {/* Package Content */}
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold">Gói cơ bản</h3>
+                <h3 className="font-bold">Giá dịch vụ : </h3>
                 <span className="font-bold text-xl">
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
