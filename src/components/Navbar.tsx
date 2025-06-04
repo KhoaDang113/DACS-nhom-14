@@ -27,7 +27,6 @@ export default function Navbar() {
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [featureSearchHeight, setFeatureSearchHeight] = useState(0);
-  const [mobileNotificationOpen, setMobileNotificationOpen] = useState(false);
 
   // Xử lý sự kiện cuộn trang và lấy vị trí của thanh tìm kiếm Feature
   useEffect(() => {
@@ -246,149 +245,114 @@ export default function Navbar() {
 
                     <hr className="my-1 border-gray-200" />
 
-                    {/* Mục người bán */}
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-400">
-                      NGƯỜI BÁN
-                    </div>
+                    {/* Mục người bán - Chỉ hiển thị khi là freelancer */}
+                    {isFreelancer && (
+                      <>
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-400">
+                          NGƯỜI BÁN
+                        </div>
 
-                    {/* <Link
-                      to={isLocked ? "#" : "/seller-dashboard"}
-                      className={`block px-4 py-2 text-sm ${
-                        isLocked
-                          ? "text-gray-400"
-                          : "text-gray-700 hover:bg-gray-100"
-                      } flex items-center`}
-                      onClick={(e) => {
-                        if (isLocked) {
-                          handleLockedFeatureClick(e, "Tổng quan kinh doanh");
-                        } else {
-                          setFunctionsDropdownOpen(false);
-                        }
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-2"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect
-                          x="3"
-                          y="3"
-                          width="18"
-                          height="18"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <line x1="3" y1="9" x2="21" y2="9"></line>
-                        <line x1="9" y1="21" x2="9" y2="9"></line>
-                      </svg>
-                      Tổng quan kinh doanh
-                      {isLocked && <Lock size={14} className="ml-auto" />}
-                    </Link> */}
-                    <Link
-                      to={isLocked ? "#" : "/create-gig"}
-                      className={`block px-4 py-2 text-sm ${
-                        isLocked
-                          ? "text-gray-400"
-                          : "text-gray-700 hover:bg-gray-100"
-                      } flex items-center`}
-                      onClick={(e) => {
-                        if (isLocked) {
-                          handleLockedFeatureClick(e, "Tạo dịch vụ");
-                        } else {
-                          setFunctionsDropdownOpen(false);
-                        }
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                      Tạo dịch vụ
-                      {isLocked && <Lock size={14} className="ml-auto" />}
-                    </Link>
+                        <Link
+                          to={isLocked ? "#" : "/create-gig"}
+                          className={`block px-4 py-2 text-sm ${
+                            isLocked
+                              ? "text-gray-400"
+                              : "text-gray-700 hover:bg-gray-100"
+                          } flex items-center`}
+                          onClick={(e) => {
+                            if (isLocked) {
+                              handleLockedFeatureClick(e, "Tạo dịch vụ");
+                            } else {
+                              setFunctionsDropdownOpen(false);
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-2"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                          Tạo dịch vụ
+                          {isLocked && <Lock size={14} className="ml-auto" />}
+                        </Link>
 
-                    <Link
-                      to={isLocked ? "#" : "/seller-gigs"}
-                      className={`block px-4 py-2 text-sm ${
-                        isLocked
-                          ? "text-gray-400"
-                          : "text-gray-700 hover:bg-gray-100"
-                      } flex items-center`}
-                      onClick={(e) => {
-                        if (isLocked) {
-                          handleLockedFeatureClick(e, "Quản lý dịch vụ");
-                        } else {
-                          setFunctionsDropdownOpen(false);
-                        }
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-2"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                        <polyline points="13 2 13 9 20 9"></polyline>
-                      </svg>
-                      Quản lý dịch vụ
-                      {isLocked && <Lock size={14} className="ml-auto" />}
-                    </Link>
+                        <Link
+                          to={isLocked ? "#" : "/seller-gigs"}
+                          className={`block px-4 py-2 text-sm ${
+                            isLocked
+                              ? "text-gray-400"
+                              : "text-gray-700 hover:bg-gray-100"
+                          } flex items-center`}
+                          onClick={(e) => {
+                            if (isLocked) {
+                              handleLockedFeatureClick(e, "Quản lý dịch vụ");
+                            } else {
+                              setFunctionsDropdownOpen(false);
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-2"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                          </svg>
+                          Quản lý dịch vụ
+                          {isLocked && <Lock size={14} className="ml-auto" />}
+                        </Link>
 
-                    <Link
-                      to={isLocked ? "#" : "/order-management"}
-                      className={`block px-4 py-2 text-sm ${
-                        isLocked
-                          ? "text-gray-400"
-                          : "text-gray-700 hover:bg-gray-100"
-                      } flex items-center`}
-                      onClick={(e) => {
-                        if (isLocked) {
-                          handleLockedFeatureClick(e, "Quản lý bán hàng");
-                        } else {
-                          setFunctionsDropdownOpen(false);
-                        }
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-2"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="8" y1="6" x2="21" y2="6"></line>
-                        <line x1="8" y1="12" x2="21" y2="12"></line>
-                        <line x1="8" y1="18" x2="21" y2="18"></line>
-                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                      </svg>
-                      Quản lý bán hàng
-                      {isLocked && <Lock size={14} className="ml-auto" />}
-                    </Link>
+                        <Link
+                          to={isLocked ? "#" : "/order-management"}
+                          className={`block px-4 py-2 text-sm ${
+                            isLocked
+                              ? "text-gray-400"
+                              : "text-gray-700 hover:bg-gray-100"
+                          } flex items-center`}
+                          onClick={(e) => {
+                            if (isLocked) {
+                              handleLockedFeatureClick(e, "Quản lý bán hàng");
+                            } else {
+                              setFunctionsDropdownOpen(false);
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-2"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                          </svg>
+                          Quản lý đơn đặt hàng
+                          {isLocked && <Lock size={14} className="ml-auto" />}
+                        </Link>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -468,7 +432,6 @@ export default function Navbar() {
                         <div className="w-5 h-5 flex items-center justify-center">
                           <NotificationBell isMobile />
                         </div>
-                        <span className="text-sm font-medium">Thông báo</span>
                       </div>
                     </div>
                   </div>
@@ -537,31 +500,12 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* Mobile Seller Menu - Chỉ hiển thị khi đã đăng nhập */}
-              {isSignedIn && (
+              {/* Mobile Seller Menu - Chỉ hiển thị khi đã đăng nhập và là freelancer */}
+              {isSignedIn && isFreelancer && (
                 <>
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-t border-gray-200 mt-2">
                     NGƯỜI BÁN
                   </div>
-
-                  {/* <Link
-                    to={isLocked ? "#" : "/seller-dashboard"}
-                    className={`flex items-center justify-between px-4 py-3 text-sm font-medium ${
-                      isLocked
-                        ? "text-gray-400"
-                        : "hover:bg-gray-50 hover:text-[#1dbf73]"
-                    }`}
-                    onClick={(e) => {
-                      if (isLocked) {
-                        handleLockedFeatureClick(e, "Tổng quan kinh doanh");
-                      } else {
-                        setMenuOpen(false);
-                      }
-                    }}
-                  >
-                    <span>Tổng quan kinh doanh</span>
-                    {isLocked && <Lock size={16} />}
-                  </Link> */}
 
                   <Link
                     to={isLocked ? "#" : "/seller-gigs"}
