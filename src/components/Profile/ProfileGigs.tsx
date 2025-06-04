@@ -164,7 +164,7 @@ const ProfileGigs = ({ gigs = [] }: ProfileGigsProps) => {
           <div className="text-center py-8">
             <p className="text-gray-500 text-lg">Chưa có dịch vụ nào</p>
             <Link
-              to="/gigs/create"
+              to="/create-gig"
               className="inline-block mt-4 px-6 py-2 bg-[#1dbf73] text-white rounded-md hover:bg-[#19a463] transition-colors"
             >
               Tạo dịch vụ mới

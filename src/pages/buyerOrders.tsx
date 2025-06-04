@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
-import {
-  Clock,
-  CheckCircle,
-  ShoppingBag,
-  AlertCircle,
-  Search,
-  Filter,
-} from "lucide-react";
+import { Clock, CheckCircle, ShoppingBag, AlertCircle, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 

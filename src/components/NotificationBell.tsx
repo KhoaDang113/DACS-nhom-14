@@ -184,11 +184,18 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
 
   return (
     <div className={`${isMobile ? '' : 'relative'}`} ref={notificationRef}>
-      <Bell
-        size={20}
-        className="cursor-pointer hover:text-[#1dbf73]"
-        onClick={handleClick}
-      />
+      <button
+        onClick={() => setShowNotifications(!showNotifications)}
+        className="relative flex items-center"
+      >
+        <Bell size={20} />
+        {notifications.filter((n) => !n.isRead).length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            {notifications.filter((n) => !n.isRead).length}
+          </span>
+        )}
+      </button>
+
       {showNotifications && (
         <div className={`
           absolute bg-white rounded-md shadow-lg border border-gray-200 p-4 
