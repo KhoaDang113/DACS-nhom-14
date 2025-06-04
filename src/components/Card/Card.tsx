@@ -342,53 +342,55 @@ const GigCard: React.FC<GigCardProps> = ({
           }`}
         >
           {/* Freelancer */}
-          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
-            <div className="flex items-center gap-2">
-              <div
-                className={`${
-                  viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"
-                } rounded-full overflow-hidden relative border border-gray-200`}
-              >
-                <img
-                  src={gig.freelancer?.avatar || "/placeholder-avatar.png"}
-                  alt={gig.freelancer?.name || "Freelancer"}
-                  className="object-cover w-full h-full"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder-avatar.png";
-                  }}
-                />
+          <Link to={`/profile/${gig.freelancer?._id}`}>
+            <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`${
+                    viewMode === "list" ? "w-8 h-8" : "w-6 h-6 sm:w-8 sm:h-8"
+                  } rounded-full overflow-hidden relative border border-gray-200`}
+                >
+                  <img
+                    src={gig.freelancer?.avatar || "/placeholder-avatar.png"}
+                    alt={gig.freelancer?.name || "Freelancer"}
+                    className="object-cover w-full h-full"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder-avatar.png";
+                    }}
+                  />
+                </div>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <span
+                      className={`font-medium ${
+                        viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"
+                      } cursor-default truncate max-w-[150px]`}
+                    >
+                      {gig.freelancer?.name || "Freelancer"}
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      className="bg-black text-white px-2 py-1 rounded text-xs"
+                      side="top"
+                      sideOffset={4}
+                    >
+                      {gig.freelancer?.name || "Freelancer"}
+                      <Tooltip.Arrow className="fill-black" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
               </div>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild>
-                  <span
-                    className={`font-medium ${
-                      viewMode === "list" ? "text-sm" : "text-xs sm:text-sm"
-                    } cursor-default truncate max-w-[150px]`}
-                  >
-                    {gig.freelancer?.name || "Freelancer"}
-                  </span>
-                </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content
-                    className="bg-black text-white px-2 py-1 rounded text-xs"
-                    side="top"
-                    sideOffset={4}
-                  >
-                    {gig.freelancer?.name || "Freelancer"}
-                    <Tooltip.Arrow className="fill-black" />
-                  </Tooltip.Content>
-                </Tooltip.Portal>
-              </Tooltip.Root>
-            </div>
 
-            {/* Hiển thị level freelancer */}
-            {/* {gig.freelancer?.level && (
-              <div className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
-                Lv. {gig.freelancer.level}
-              </div>
-            )} */}
-          </div>
+              {/* Hiển thị level freelancer */}
+              {/* {gig.freelancer?.level && (
+                <div className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                  Lv. {gig.freelancer.level}
+                </div>
+              )} */}
+            </div>
+          </Link>
 
           {/* Title with Tooltip */}
           <Tooltip.Root>

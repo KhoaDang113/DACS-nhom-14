@@ -318,20 +318,6 @@ function Dashboard() {
 
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
             <div className="pt-16 pb-4 sm:py-6 md:py-10">
-              {" "}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-xl mb-6 md:mb-10 transition-all duration-300 hover:shadow-2xl transform hover:-translate-y-1 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 opacity-10">
-                  <div className="w-full h-full bg-white rounded-full transform scale-150 blur-xl"></div>
-                </div>
-
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 relative z-10">
-                  👋 Chào mừng đến với JopViet
-                </h1>
-                <p className="text-sm sm:text-base md:text-lg opacity-95 relative z-10 max-w-2xl whitespace-nowrap">
-                  Nơi kết nối giữa Freelancer và Khách hàng. Khám phá công việc,
-                  tạo sản phẩm mang dấu ấn cá nhân!
-                </p>
-              </div>
               {/* Jobs Banner Carousel */}
               <JobBannerCarousel />
               {/* Hot Jobs Banner */}

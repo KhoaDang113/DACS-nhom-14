@@ -259,6 +259,8 @@ export default function ChatBody({
       setMessageInput("");
       setSelectedFile(null);
       setPreviewUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (documentInputRef.current) documentInputRef.current.value = "";
       setHasSentMessage(true);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -472,6 +474,9 @@ export default function ChatBody({
                   onClick={() => {
                     setSelectedFile(null);
                     setPreviewUrl(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                    if (documentInputRef.current)
+                      documentInputRef.current.value = "";
                   }}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
                 >

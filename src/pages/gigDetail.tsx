@@ -3,7 +3,17 @@ import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Heart, Star, Clock, MessageSquare, CheckCircle, FileText, MoreVertical, Lock, EyeIcon } from "lucide-react";
+import {
+  Heart,
+  Star,
+  Clock,
+  MessageSquare,
+  CheckCircle,
+  FileText,
+  MoreVertical,
+  Lock,
+  EyeIcon,
+} from "lucide-react";
 import { CustomerReview } from "../lib/reviewData";
 import CustomerReviews from "../components/Review/CustomerReviews";
 import { useFavoritesContext } from "../contexts/FavoritesContext";
@@ -615,38 +625,39 @@ const GigDetailPage = () => {
           )}
 
           {/* Seller Info - Top */}
-          <div className="flex items-center mb-6 gap-3">
-            {freelancer ? (
-              <>
-                <img
-                  src={freelancer.avatar || "https://via.placeholder.com/40"}
-                  alt={freelancer.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-medium">{freelancer.name}</p>
-                  <div className="flex items-center justify-start">
-                    <EyeIcon className="w-4 h-4" />
-                    <span className="text-sm font-medium ml-1 text-black">
-                      Lượt xem:
-                    </span>
-                    <div className="text-sm font-medium ml-1 text-black">
-                      {gig.views}
+          <Link to={`/profile/${freelancer?._id}`}>
+            <div className="flex items-center mb-6 gap-3">
+              {freelancer ? (
+                <>
+                  <img
+                    src={freelancer.avatar || "https://via.placeholder.com/40"}
+                    alt={freelancer.name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-medium">{freelancer.name}</p>
+                    <div className="flex items-center justify-start">
+                      <EyeIcon className="w-4 h-4" />
+                      <span className="text-sm font-medium ml-1 text-black">
+                        Lượt xem:
+                      </span>
+                      <div className="text-sm font-medium ml-1 text-black">
+                        {gig.views}
+                      </div>
                     </div>
                   </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div>
+                    <div className="h-4 bg-gray-200 rounded w-20 mb-2 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
-                <div>
-                  <div className="h-4 bg-gray-200 rounded w-20 mb-2 animate-pulse"></div>
-                  <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
-                </div>
-              </div>
-            )}
-          </div>
-
+              )}
+            </div>
+          </Link>
           {/* Main Image Gallery */}
           <div className="mb-6">
             <div className="mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
@@ -723,48 +734,50 @@ const GigDetailPage = () => {
           {/* About The Seller */}
           <div className="bg-gray-50 p-6 rounded-lg mb-10">
             <h2 className="text-xl font-bold mb-4">Về người bán</h2>
-
-            <div className="flex items-center gap-4 mb-6">
-              {freelancer ? (
-                <>
-                  <img
-                    src={freelancer.avatar || "https://via.placeholder.com/40"}
-                    alt={freelancer.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-lg">{freelancer.name}</p>
-                    <p className="text-gray-500">
-                      {freelancer.level === 1
-                        ? "Người bán mới"
-                        : `Cấp độ ${freelancer.level}`}
-                    </p>
-                    <div className="flex items-center mt-1">
-                      <Star
-                        size={16}
-                        className="text-yellow-400 fill-yellow-400"
-                      />
-                      <span className="font-medium ml-1">
-                        {freelancer.rating || "5.0"}
-                      </span>
-                      <span className="text-gray-500 ml-1">
-                        ({freelancer.reviewCount || "0"})
-                      </span>
+            <Link to={`/profile/${freelancer?._id}`}>
+              <div className="flex items-center gap-4 mb-6">
+                {freelancer ? (
+                  <>
+                    <img
+                      src={
+                        freelancer.avatar || "https://via.placeholder.com/40"
+                      }
+                      alt={freelancer.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="font-medium text-lg">{freelancer.name}</p>
+                      <p className="text-gray-500">
+                        {freelancer.level === 1
+                          ? "Người bán mới"
+                          : `Cấp độ ${freelancer.level}`}
+                      </p>
+                      <div className="flex items-center mt-1">
+                        <Star
+                          size={16}
+                          className="text-yellow-400 fill-yellow-400"
+                        />
+                        <span className="font-medium ml-1">
+                          {freelancer.rating || "5.0"}
+                        </span>
+                        <span className="text-gray-500 ml-1">
+                          ({freelancer.reviewCount || "0"})
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div className="w-full">
+                      <div className="h-5 bg-gray-200 rounded w-32 mb-2 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-4 w-full">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse"></div>
-                  <div className="w-full">
-                    <div className="h-5 bg-gray-200 rounded w-32 mb-2 animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-
+                )}
+              </div>
+            </Link>
             <button
               onClick={naviagteToConversation}
               className={`border border-gray-300 rounded-md px-4 py-2 text-gray-700 ${
