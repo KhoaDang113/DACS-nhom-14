@@ -25,6 +25,7 @@ import {
   X,
   Loader,
 } from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 // Định nghĩa interface cho dữ liệu báo cáo vi phạm từ API
 interface Violation {
@@ -324,85 +325,119 @@ const ViolationReports: React.FC = () => {
           Không có báo cáo vi phạm nào
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">ID</TableHead>
-                <TableHead>Dịch vụ</TableHead>
-                <TableHead>Người báo cáo</TableHead>
-                <TableHead>Lý do</TableHead>
-                <TableHead>Ngày tạo</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredViolations.map((violation) => (
-                <TableRow key={violation._id}>
-                  <TableCell className="font-medium">
-                    {violation._id.substring(0, 6)}...
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {violation.gigId.title}
-                  </TableCell>
-                  <TableCell>{violation.userId?.name}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {translateReason(violation.reason)}
-                  </TableCell>
-                  <TableCell>{formatDate(violation.createdAt)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getStatusVariant(violation.status)}
-                      className="capitalize"
-                    >
-                      {translateStatus(violation.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        icon={<Eye className="h-4 w-4" />}
-                        onClick={() => viewViolationDetail(violation._id)}
-                      >
-                        <span className="sr-only">Xem</span>
-                      </Button>
-
-                      {violation.status === "pending" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-green-600"
-                            icon={<Check className="h-4 w-4" />}
-                            onClick={() =>
-                              handleViolation(violation._id, "resolved")
-                            }
-                          >
-                            <span className="sr-only">Phê duyệt</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600"
-                            icon={<X className="h-4 w-4" />}
-                            onClick={() =>
-                              handleViolation(violation._id, "rejected")
-                            }
-                          >
-                            <span className="sr-only">Từ chối</span>
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
+        <Tooltip.Provider>
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">ID</TableHead>
+                  <TableHead>Dịch vụ</TableHead>
+                  <TableHead>Người báo cáo</TableHead>
+                  <TableHead>Nội dung</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredViolations.map((violation) => (
+                  <TableRow key={violation._id}>
+                    <TableCell className="font-medium">
+                      {violation._id.substring(0, 6)}...
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <div className="truncate cursor-default">
+                            {violation.gigId.title}
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="bg-black text-white px-2 py-1 rounded text-xs max-w-md"
+                            side="top"
+                            sideOffset={4}
+                          >
+                            {violation.gigId.title}
+                            <Tooltip.Arrow className="fill-black" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </TableCell>
+                    <TableCell>{violation.userId?.name}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <div className="truncate cursor-default">
+                            {violation.description}
+                          </div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            className="bg-black text-white px-2 py-1 rounded text-xs max-w-md"
+                            side="top"
+                            sideOffset={4}
+                          >
+                            {violation.description}
+                            <Tooltip.Arrow className="fill-black" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </TableCell>
+                    <TableCell>{formatDate(violation.createdAt)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getStatusVariant(violation.status)}
+                        className="capitalize"
+                      >
+                        {translateStatus(violation.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={<Eye className="h-4 w-4" />}
+                          onClick={() => viewViolationDetail(violation._id)}
+                        >
+                          <span className="sr-only">Xem</span>
+                        </Button>
+
+                        {violation.status === "pending" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-600"
+                              icon={<Check className="h-4 w-4" />}
+                              onClick={() =>
+                                handleViolation(violation._id, "resolved")
+                              }
+                            >
+                              <span className="sr-only">Phê duyệt</span>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600"
+                              icon={<X className="h-4 w-4" />}
+                              onClick={() =>
+                                handleViolation(violation._id, "rejected")
+                              }
+                            >
+                              <span className="sr-only">Từ chối</span>
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Tooltip.Provider>
       )}
 
       {!loading && !error && filteredViolations.length > 0 && (

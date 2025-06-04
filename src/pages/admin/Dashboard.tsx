@@ -194,24 +194,24 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard
-            title="Lượt xem dịch vụ"
+            title="Lượt tạo dịch vụ mới trong tháng"
             value={formatNumber(totalViews)}
             icon={<Eye className="h-6 w-6 text-gray-500" />}
           />
           <StatCard
-            title="Dịch vụ hoạt động"
+            title="Số lượng dịch vụ hoạt động"
             value={formatNumber(totalGigs)}
             icon={<CheckCircle className="h-6 w-6 text-gray-500" />}
           />
-          <StatCard
+          {/* <StatCard
             title="Người bán hoạt động"
             value={formatNumber(totalFreelancers)}
             icon={<Users className="h-6 w-6 text-gray-500" />}
-          />
+          /> */}
           <StatCard
-            title="Chờ phê duyệt"
+            title="Số lượng dịch vụ chờ phê duyệt"
             value={formatNumber(totalPending)}
             icon={<AlertTriangle className="h-6 w-6 text-gray-500" />}
           />
@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Phân tích lượt xem dịch vụ theo tháng</CardTitle>
+            <CardTitle>Phân tích số lượng dịch vụ mới theo tháng</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -248,13 +248,13 @@ const Dashboard: React.FC = () => {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip 
-                        formatter={(value) => [`${value} lượt xem`, 'Lượt xem']}
+                        formatter={(value) => [`${value} dịch vụ`, 'Số lượng dịch vụ']}
                         labelFormatter={(label) => `${label}`}
                       />
                       <Legend />
                       <Bar 
                         dataKey="value" 
-                        name="Lượt xem" 
+                        name="Số lượng dịch vụ" 
                         fill="#2563eb"
                         radius={[4, 4, 0, 0]}
                       >
@@ -360,7 +360,7 @@ const Dashboard: React.FC = () => {
             {Array.from({ length: 3 }).map((_, index) => (
               <Card key={index}>
                 <CardHeader>
-                  <div className="h-6 bg-gray-100 rounded animate-pulse"></div>
+                  <div className="h-10 bg-gray-100 rounded animate-pulse"></div>
                 </CardHeader>
                 <CardContent>
                   <div className="h-8 bg-gray-100 rounded animate-pulse mb-2"></div>
