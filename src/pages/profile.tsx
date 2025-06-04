@@ -199,11 +199,6 @@ export default function ProfilePage() {
                 // Lọc các gig của người dùng cụ thể, áp dụng các điều kiện lọc giống như trên
                 gigsData =
                   allGigsResponse.data.gigs.filter((gig) => {
-                    console.log(
-                      `Gig ${gig._id} có freelancerId:`,
-                      gig.freelancerId
-                    );
-
                     if (gig.freelancerId === userId) return true;
                     if (gig.freelancer && gig.freelancer._id === userId)
                       return true;
@@ -241,8 +236,6 @@ export default function ProfilePage() {
                     price: gig.price || 0,
                   };
                 });
-
-                console.log("Gigs của người dùng sau khi xử lý:", gigsData);
               }
             } catch (error) {
               console.log(
