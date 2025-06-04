@@ -319,26 +319,26 @@ const OrderManagement: React.FC = () => {
                   </div>
                 ) : (
                   <div className="overflow-x-auto rounded-xl shadow-md">
-                    <table className="w-full border-collapse min-w-[800px]">
+                    <table className="w-full border-collapse table-fixed">
                       <thead>
                         <tr className="bg-indigo-600 text-white">
-                          <th className="p-4 text-left font-semibold rounded-tl-xl w-[200px]">
-                            Tên Khách Hàng
+                          <th className="p-4 text-left font-semibold rounded-tl-xl w-[180px]">
+                            <div className="truncate">Tên Khách Hàng</div>
                           </th>
-                          <th className="p-4 text-left font-semibold w-[250px]">
-                            Tên Dịch Vụ
-                          </th>
-                          <th className="p-4 text-center font-semibold w-[150px]">
-                            Giá
+                          <th className="p-4 text-left font-semibold w-[200px]">
+                            <div className="truncate">Tên Dịch Vụ</div>
                           </th>
                           <th className="p-4 text-center font-semibold w-[120px]">
-                            Ngày Đặt
+                            <div className="truncate">Giá</div>
+                          </th>
+                          <th className="p-4 text-center font-semibold w-[120px]">
+                            <div className="truncate">Ngày Đặt</div>
                           </th>
                           <th className="p-4 text-center font-semibold w-[150px]">
-                            Trạng Thái
+                            <div className="truncate">Trạng Thái</div>
                           </th>
                           <th className="p-4 text-center font-semibold rounded-tr-xl w-[300px]">
-                            Hành Động
+                            <div className="truncate">Hành Động</div>
                           </th>
                         </tr>
                       </thead>
@@ -351,17 +351,17 @@ const OrderManagement: React.FC = () => {
                                 index % 2 === 0 ? "bg-white" : "bg-gray-50"
                               }`}
                             >
-                              <td className="p-4 border-t w-[200px]">
-                                <div className="font-medium truncate">
+                              <td className="p-4 border-t w-[180px]">
+                                <div className="font-medium truncate hover:text-clip" title={order.customerName}>
                                   {order.customerName}
                                 </div>
                               </td>
-                              <td className="p-4 border-t w-[250px]">
-                                <div className="font-medium truncate">
+                              <td className="p-4 border-t w-[200px]">
+                                <div className="font-medium truncate hover:text-clip" title={order.gigName}>
                                   {order.gigName}
                                 </div>
                               </td>
-                              <td className="p-4 border-t text-center w-[150px]">
+                              <td className="p-4 border-t text-center w-[120px]">
                                 <div className="font-medium text-green-600">
                                   {formatPrice(order.price)}
                                 </div>

@@ -104,12 +104,18 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
     const validUrls: string[] = [];
 
     Array.from(e.target.files).forEach((file) => {
-      if (!file.type.match(/image\/(jpeg|jpg|png)/i)) {
-        setImageError("Chỉ chấp nhận ảnh JPG và PNG");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        setImageError("Kích thước ảnh không được vượt quá 5MB");
+      if (file.type.match(/image\/(jpeg|jpg|png)/i)) {
+        if (file.size > 5 * 1024 * 1024) {
+          setImageError("Kích thước ảnh không được vượt quá 5MB");
+          return;
+        }
+      } else if (file.type.match(/video\/(mp4|quicktime|x-msvideo|webm)/i)) {
+        if (file.size > 50 * 1024 * 1024) {
+          setImageError("Kích thước video không được vượt quá 50MB");
+          return;
+        }
+      } else {
+        setImageError("Chỉ chấp nhận ảnh JPG, PNG hoặc video MP4, MOV, AVI, WEBM");
         return;
       }
       validFiles.push(file);
@@ -317,42 +323,65 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
                     {/* Hiển thị ảnh hiện tại */}
                     {values.images
                       .filter(img => !imagesToDelete.includes(img))
-                      .map((img, idx) => (
-                        <div key={`existing-${idx}`} className="relative overflow-hidden rounded-md border shadow-sm">
-                          <img 
-                            src={img} 
-                            alt={`Ảnh hiện tại ${idx + 1}`} 
-                            className="aspect-video w-full object-cover" 
-                          />
+                      .map((media, idx) => {
+                        const isVideo = media.match(/\.(mp4|mov|avi|webm)$/i);
+                        return (
+                          <div key={`existing-${idx}`} className="relative overflow-hidden rounded-md border shadow-sm">
+                            {isVideo ? (
+                              <video 
+                                src={media}
+                                className="aspect-video w-full object-cover" 
+                                controls
+                              />
+                            ) : (
+                              <img 
+                                src={media} 
+                                alt={`Media ${idx + 1}`} 
+                                className="aspect-video w-full object-cover" 
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(idx, false)}
+                              className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    
+                    {/* Hiển thị preview ảnh/video mới */}
+                    {previewUrls.map((url, idx) => {
+                      const file = newImages[idx];
+                      const isVideo = file.type.startsWith('video/');
+                      return (
+                        <div key={`new-${idx}`} className="relative overflow-hidden rounded-md border shadow-sm">
+                          {isVideo ? (
+                            <video 
+                              src={url} 
+                              className="aspect-video w-full object-cover"
+                              controls
+                            />
+                          ) : (
+                            <img 
+                              src={url} 
+                              alt={`Preview ${idx + 1}`} 
+                              className="aspect-video w-full object-cover" 
+                            />
+                          )}
                           <button
                             type="button"
-                            onClick={() => handleDeleteImage(idx, false)}
+                            onClick={() => handleDeleteImage(idx, true)}
                             className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
                           >
                             <FaTrash className="h-4 w-4" />
                           </button>
                         </div>
-                      ))}
+                      );
+                    })}
                     
-                    {/* Hiển thị preview ảnh mới */}
-                    {previewUrls.map((url, idx) => (
-                      <div key={`new-${idx}`} className="relative overflow-hidden rounded-md border shadow-sm">
-                        <img 
-                          src={url} 
-                          alt={`Preview ${idx + 1}`} 
-                          className="aspect-video w-full object-cover" 
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteImage(idx, true)}
-                          className="absolute right-1 top-1 flex rounded-full bg-red-500 p-1 text-white shadow"
-                        >
-                          <FaTrash className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                    
-                    {/* Ô upload ảnh mới */}
+                    {/* Ô upload media */}
                     <label
                       htmlFor="image-upload"
                       className={`flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed ${
@@ -362,11 +391,11 @@ const EditGigForm: React.FC<EditGigFormProps> = ({ id, onSubmit }) => {
                       }`}
                     >
                       <FaUpload className={`mb-2 h-6 w-6 ${imageError ? "text-red-500" : "text-gray-500"}`} />
-                      <p>Tải ảnh JPG/PNG (tối đa 5MB)</p>
-                      <p className="text-xs mt-1">Vui lòng tải lên ít nhất một ảnh</p>
+                      <p>Tải ảnh JPG/PNG (≤5MB) hoặc video MP4/MOV/AVI/WEBM (≤50MB)</p>
+                      <p className="text-xs mt-1">Vui lòng tải lên ít nhất một ảnh hoặc video</p>
                       <input
                         type="file"
-                        accept="image/jpeg,image/jpg,image/png"
+                        accept="image/jpeg,image/jpg,image/png,video/mp4,video/quicktime,video/x-msvideo,video/webm"
                         multiple
                         className="hidden"
                         id="image-upload"
