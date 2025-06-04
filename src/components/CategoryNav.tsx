@@ -166,7 +166,7 @@ const CategoryNav = () => {
   return (
     <div
       className={`fixed left-0 right-0 bg-white border-b shadow-sm transition-all duration-500 ${
-        (showCategory || isSignedIn) && shouldShowCategoryNav() // Thêm điều kiện shouldShowCategoryNav
+        (showCategory || isSignedIn) && shouldShowCategoryNav()
           ? "translate-y-0 opacity-100 z-40"
           : "-translate-y-full opacity-0 -z-10"
       }`}
