@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     //   icon: <Shield className="h-5 w-5" />,
     // },
     {
-      title: "Quảng lý Job hot",
+      title: "Quảng lý dịch vụ và Job hot",
       href: "/admin/job-hot",
       icon: "🔥",
     },
