@@ -748,22 +748,9 @@ const GigDetailPage = () => {
                     <div>
                       <p className="font-medium text-lg">{freelancer.name}</p>
                       <p className="text-gray-500">
-                        {freelancer.level === 1
-                          ? "Người bán mới"
-                          : `Cấp độ ${freelancer.level}`}
+                        @{freelancer.name}
                       </p>
-                      <div className="flex items-center mt-1">
-                        <Star
-                          size={16}
-                          className="text-yellow-400 fill-yellow-400"
-                        />
-                        <span className="font-medium ml-1">
-                          {freelancer.rating || "5.0"}
-                        </span>
-                        <span className="text-gray-500 ml-1">
-                          ({freelancer.reviewCount || "0"})
-                        </span>
-                      </div>
+
                     </div>
                   </>
                 ) : (
