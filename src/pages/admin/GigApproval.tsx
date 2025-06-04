@@ -396,14 +396,14 @@ const GigApproval: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             icon={<Filter className="h-4 w-4" />}
           >
             Lọc
-          </Button>
-          <Dropdown
+          </Button> */}
+          {/* <Dropdown
             trigger={
               <Button
                 variant="outline"
@@ -419,7 +419,7 @@ const GigApproval: React.FC = () => {
             <DropdownItem>Cũ nhất</DropdownItem>
             <DropdownItem>Danh mục</DropdownItem>
             <DropdownItem>Tên người bán</DropdownItem>
-          </Dropdown>
+          </Dropdown> */}
         </div>
       </div>
 

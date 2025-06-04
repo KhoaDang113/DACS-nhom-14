@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       icon: "📊",
     },
     {
-      title: "Quản lý người bán",
+      title: "Quản lý người dùng",
       href: "/admin/seller-management",
       icon: "👥",
     },

@@ -330,7 +330,7 @@ const SellerManagement: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Dropdown
+          {/* <Dropdown
             trigger={
               <Button
                 variant="outline"
@@ -349,8 +349,8 @@ const SellerManagement: React.FC = () => {
             <DropdownItem onClick={() => setFilterStatus("all")}>Tất cả</DropdownItem>
             <DropdownItem onClick={() => setFilterStatus("false")}>Đang hoạt động</DropdownItem>
             <DropdownItem onClick={() => setFilterStatus("true")}>Đã khóa</DropdownItem>
-          </Dropdown>
-          
+          </Dropdown> */}
+{/*           
           <Dropdown
             trigger={
               <Button
@@ -369,7 +369,7 @@ const SellerManagement: React.FC = () => {
             <DropdownItem onClick={() => handleSort("-createdAt")}>Mới nhất</DropdownItem>
             <DropdownItem onClick={() => handleSort("gigsCount")}>Số lượng dịch vụ (tăng dần)</DropdownItem>
             <DropdownItem onClick={() => handleSort("-gigsCount")}>Số lượng dịch vụ (giảm dần)</DropdownItem>
-          </Dropdown>
+          </Dropdown> */}
         </div>
       </div>
 
@@ -387,7 +387,7 @@ const SellerManagement: React.FC = () => {
               <TableHead>ID</TableHead>
               <TableHead>Người bán</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Dịch vụ</TableHead>
+              {/* <TableHead>Dịch vụ</TableHead> */}
               <TableHead>Ngày tham gia</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Hành động</TableHead>
@@ -427,7 +427,7 @@ const SellerManagement: React.FC = () => {
                     </div>
                   </TableCell>
                   <TableCell>{seller.email}</TableCell>
-                  <TableCell>{seller.gigsCount || 0}</TableCell>
+                  {/* <TableCell>{seller.gigsCount || 0}</TableCell> */}
                   <TableCell>{formatJoinDate(seller.createdAt)}</TableCell>
                   <TableCell>
                     <Badge
