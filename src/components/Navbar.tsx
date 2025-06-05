@@ -129,7 +129,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="font-bold text-2xl sm:text-3xl flex-shrink-0">
             <Link
-              to="/dashboard"
+              to={isSignedIn ? "/dashboard" : "/"}
               className="flex items-center gap-2 font-bold text-xl"
             >
               <img
